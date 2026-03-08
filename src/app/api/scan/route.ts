@@ -94,7 +94,7 @@ function extractLinks(
     const resolved = resolveHref(href, pageUrl);
     if (!resolved) return;
 
-    if (/\.pdf(\?|#|$)/i.test(resolved)) {
+    if (/\.(pdf|docx?|xlsx?)(\?|#|$)/i.test(resolved)) {
       pdfLinks.add(resolved);
     } else if (isSameOrigin(pageUrl, resolved)) {
       internalLinks.add(resolved);
@@ -112,7 +112,11 @@ async function downloadPdf(
 ): Promise<{ buffer: ArrayBuffer; filename: string } | null> {
   try {
     const res = await fetch(url, {
-      headers: { ...BROWSER_HEADERS, Accept: "application/pdf,*/*;q=0.8" },
+      headers: {
+        ...BROWSER_HEADERS,
+        Accept:
+          "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.ms-excel,*/*;q=0.8",
+      },
       signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT),
       redirect: "follow",
     });
@@ -159,10 +163,20 @@ async function analyzePdf(
   filename: string
 ): Promise<AnalyzeResult | null> {
   try {
+    const ext = filename.split(".").pop()?.toLowerCase() || "pdf";
+    const mimeTypes: Record<string, string> = {
+      pdf: "application/pdf",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      doc: "application/msword",
+      xls: "application/vnd.ms-excel",
+    };
+    const mimeType = mimeTypes[ext] || "application/octet-stream";
+
     const formData = new FormData();
     formData.append(
       "file",
-      new Blob([buffer], { type: "application/pdf" }),
+      new Blob([buffer], { type: mimeType }),
       filename
     );
 
@@ -343,6 +357,7 @@ export async function POST(req: NextRequest) {
       scanId,
       url: normalizedUrl,
       pdfCount: pdfUrls.length,
+      documentCount: pdfUrls.length,
       pdfUrls: pdfUrls.slice(0, MAX_PDF_URLS_RETURNED),
       samplePdf,
     });

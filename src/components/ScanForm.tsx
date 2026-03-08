@@ -85,7 +85,7 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
       }
 
       if (data.pdfCount === 0) {
-        setError("No PDFs found on that site. Try a different URL or check the address.");
+        setError("No documents found on that site. Try a different URL or check the address.");
         return;
       }
 
@@ -147,7 +147,7 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
             <div>
               <p className="text-sm font-semibold text-caso-glacier">Scan Complete</p>
               <p className="mt-0.5 text-lg font-bold text-caso-white">
-                We found <span className="text-caso-blue">{pdfCount} PDF{pdfCount !== 1 ? "s" : ""}</span> on {domain}
+                We found <span className="text-caso-blue">{pdfCount} document{pdfCount !== 1 ? "s" : ""}</span> on {domain}
               </p>
             </div>
             <button
@@ -199,7 +199,7 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
               </ul>
               {pdfCount > 1 && (
                 <p className="mt-3 text-xs text-caso-slate">
-                  + {pdfCount - 1} more PDF{pdfCount - 1 !== 1 ? "s" : ""} need analysis
+                  + {pdfCount - 1} more document{pdfCount - 1 !== 1 ? "s" : ""} need analysis
                 </p>
               )}
             </div>
@@ -227,7 +227,7 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              <span className="font-semibold">We&apos;re analyzing all {result?.pdfCount} PDFs now. Check {email} in a few minutes for your full report!</span>
+              <span className="font-semibold">We&apos;re analyzing all {result?.pdfCount} documents now. Check {email} in a few minutes for your full report!</span>
             </div>
           ) : showEmailForm ? (
             <form onSubmit={handleEmailSubmit} className="flex gap-3">
@@ -257,7 +257,7 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
               </svg>
-              Send Full Report for All {pdfCount} PDFs
+              Send Full Report for All {pdfCount} Documents
             </button>
           )}
         </div>

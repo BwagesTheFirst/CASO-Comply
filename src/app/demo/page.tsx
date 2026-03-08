@@ -422,7 +422,7 @@ function DemoPage() {
               <span className="text-gradient">Live Demo</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-caso-slate">
-              Upload a PDF and watch CASO Comply analyze and remediate it in real time.
+              Upload a document and watch CASO Comply analyze and remediate it in real time.
               See your before and after compliance scores side by side.
             </p>
           </div>
@@ -476,7 +476,7 @@ function DemoPage() {
                 <div className="mb-6 flex flex-col items-center gap-4">
                   <SpinnerIcon className="h-10 w-10 text-caso-blue" />
                   <p className="text-lg font-semibold text-caso-white" aria-live="polite">
-                    {state === "uploading" && "Uploading your PDF..."}
+                    {state === "uploading" && "Uploading your document..."}
                     {state === "analyzing" && "Analyzing accessibility compliance..."}
                     {state === "remediating" && "Generating remediated document..."}
                   </p>

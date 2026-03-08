@@ -9,7 +9,8 @@ const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 const PDF_DOWNLOAD_HEADERS: Record<string, string> = {
   "User-Agent": USER_AGENT,
-  Accept: "application/pdf,*/*;q=0.8",
+  Accept:
+    "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.ms-excel,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9",
 };
 const PDF_DOWNLOAD_TIMEOUT = 15_000;
@@ -64,10 +65,20 @@ async function analyzePdf(
   filename: string
 ): Promise<AnalyzeResult | null> {
   try {
+    const ext = filename.split(".").pop()?.toLowerCase() || "pdf";
+    const mimeTypes: Record<string, string> = {
+      pdf: "application/pdf",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      doc: "application/msword",
+      xls: "application/vnd.ms-excel",
+    };
+    const mimeType = mimeTypes[ext] || "application/octet-stream";
+
     const formData = new FormData();
     formData.append(
       "file",
-      new Blob([buffer], { type: "application/pdf" }),
+      new Blob([buffer], { type: mimeType }),
       filename
     );
     const res = await fetch(`${CASO_API_URL}/api/analyze`, {
@@ -121,16 +132,21 @@ async function processPdfsInBatches(
       batch.map(async (pdfUrl) => {
         const downloaded = await downloadPdf(pdfUrl);
         if (!downloaded) {
+          const failedFilename = decodeURIComponent(
+            new URL(pdfUrl).pathname.split("/").pop() || "document.pdf"
+          );
+          const failedExt = failedFilename.split(".").pop()?.toLowerCase() || "pdf";
           await supabase.from("scan_pdfs").insert({
             scan_id: scanId,
             url: pdfUrl,
-            filename: decodeURIComponent(
-              new URL(pdfUrl).pathname.split("/").pop() || "document.pdf"
-            ),
+            filename: failedFilename,
             error: "Failed to download",
+            original_format: failedExt,
           });
           return null;
         }
+
+        const ext = downloaded.filename.split(".").pop()?.toLowerCase() || "pdf";
 
         const analysis = await analyzePdf(
           downloaded.buffer,
@@ -142,6 +158,7 @@ async function processPdfsInBatches(
             url: pdfUrl,
             filename: downloaded.filename,
             error: "Analysis failed",
+            original_format: ext,
           });
           return null;
         }
@@ -156,6 +173,7 @@ async function processPdfsInBatches(
           issues,
           checks: analysis.score?.checks ?? {},
           page_count: analysis.structure?.page_count ?? 0,
+          original_format: ext,
         });
 
         return analysis.score?.score ?? 0;

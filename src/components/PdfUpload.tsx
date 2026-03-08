@@ -26,8 +26,18 @@ export default function PdfUpload({ onFileSelected, disabled = false }: PdfUploa
     (file: File) => {
       setError(null);
 
-      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-        setError("Please select a PDF file.");
+      const validExtensions = [".pdf", ".docx", ".doc", ".xlsx", ".xls"];
+      const validMimeTypes = [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+      ];
+      const hasValidExt = validExtensions.some((ext) => file.name.toLowerCase().endsWith(ext));
+      const hasValidMime = validMimeTypes.includes(file.type);
+      if (!hasValidExt && !hasValidMime) {
+        setError("Please select a PDF, Word, or Excel file.");
         return;
       }
 
@@ -37,7 +47,7 @@ export default function PdfUpload({ onFileSelected, disabled = false }: PdfUploa
       }
 
       if (file.size === 0) {
-        setError("File is empty. Please select a valid PDF.");
+        setError("File is empty. Please select a valid document.");
         return;
       }
 
@@ -116,7 +126,7 @@ export default function PdfUpload({ onFileSelected, disabled = false }: PdfUploa
       <div
         role="button"
         tabIndex={disabled ? -1 : 0}
-        aria-label={selectedFile ? `Selected file: ${selectedFile.name}. Click to choose a different PDF.` : "Upload a PDF file. Click or drag and drop."}
+        aria-label={selectedFile ? `Selected file: ${selectedFile.name}. Click to choose a different document.` : "Upload a document. Click or drag and drop."}
         aria-disabled={disabled}
         className={`pdf-upload-zone group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 transition-all duration-300 ${
           disabled
@@ -137,7 +147,7 @@ export default function PdfUpload({ onFileSelected, disabled = false }: PdfUploa
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,application/pdf"
+          accept=".pdf,.docx,.xlsx,.doc,.xls"
           onChange={handleFileChange}
           className="hidden"
           aria-hidden="true"
@@ -182,13 +192,13 @@ export default function PdfUpload({ onFileSelected, disabled = false }: PdfUploa
             </div>
             <div>
               <p className="text-sm font-semibold text-caso-white">
-                {isDragOver ? "Drop your PDF here" : "Drag & drop your PDF here"}
+                {isDragOver ? "Drop your file here" : "Drag & drop your PDF, Word, or Excel file"}
               </p>
               <p className="mt-1 text-xs text-caso-slate">
                 or <span className="text-caso-blue underline underline-offset-2">browse to upload</span>
               </p>
             </div>
-            <p className="text-[11px] text-caso-slate/60">PDF files only, up to 250MB</p>
+            <p className="text-[11px] text-caso-slate/60">PDF, Word, and Excel files accepted, up to 250MB</p>
           </div>
         )}
 

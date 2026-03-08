@@ -25,6 +25,27 @@ interface Scan {
   report_status: string | null;
 }
 
+function getFileType(filename: string): string {
+  const ext = filename.split(".").pop()?.toLowerCase() || "";
+  if (ext === "docx" || ext === "doc") return "DOCX";
+  if (ext === "xlsx" || ext === "xls") return "XLSX";
+  return "PDF";
+}
+
+function FileTypeBadge({ filename }: { filename: string }) {
+  const type = getFileType(filename);
+  const colors: Record<string, string> = {
+    PDF: "bg-red-500/10 text-red-400",
+    DOCX: "bg-blue-500/10 text-blue-400",
+    XLSX: "bg-green-500/10 text-green-400",
+  };
+  return (
+    <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold ${colors[type] || colors.PDF}`}>
+      {type}
+    </span>
+  );
+}
+
 const GRADE_COLORS: Record<
   string,
   { bg: string; text: string; ring: string }
@@ -115,7 +136,7 @@ export default async function ReportPage({
             Your report is being generated...
           </h1>
           <p className="mt-4 text-caso-slate">
-            We&apos;re analyzing all PDFs on your site. This usually takes 2-5
+            We&apos;re analyzing all documents on your site. This usually takes 2-5
             minutes. Refresh this page in a moment.
           </p>
           <div className="mt-8 flex justify-center">
@@ -198,12 +219,12 @@ export default async function ReportPage({
             <span className="text-lg text-caso-slate">/100</span>
           </p>
           <p className="mt-2 text-caso-slate">
-            {analyzedPdfs.length} of {typedScan.pdf_count} PDFs analyzed
+            {analyzedPdfs.length} of {typedScan.pdf_count} documents analyzed
           </p>
           {analyzedPdfs.length > 0 && (
             <p className="mt-1 text-sm text-caso-slate">
               {analyzedPdfs.filter((p) => (p.score ?? 0) < 70).length} of{" "}
-              {analyzedPdfs.length} PDFs have accessibility issues
+              {analyzedPdfs.length} documents have accessibility issues
             </p>
           )}
         </div>
@@ -243,9 +264,10 @@ export default async function ReportPage({
                     <GradeBadge grade={pdfGrade} />
                     <div className="min-w-0 flex-1">
                       <p
-                        className="truncate text-sm font-medium text-caso-white"
+                        className="flex items-center gap-2 truncate text-sm font-medium text-caso-white"
                         title={pdf.filename}
                       >
+                        <FileTypeBadge filename={pdf.filename} />
                         {pdf.filename}
                       </p>
                       <p className="text-xs text-caso-slate">
@@ -355,7 +377,7 @@ export default async function ReportPage({
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm text-caso-slate">
             CASO Comply can automatically remediate all {typedScan.pdf_count}{" "}
-            PDFs on your site for full WCAG 2.1 AA and PDF/UA compliance.
+            documents on your site for full WCAG 2.1 AA and PDF/UA compliance.
           </p>
           <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
