@@ -37,6 +37,7 @@ export default function ScreenReaderSim({
   const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playingRef = useRef(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -104,14 +105,30 @@ export default function ScreenReaderSim({
     [tagAssignments, variant]
   );
 
-  const handlePlay = useCallback(async () => {
-    // Stop if playing
-    if (isPlaying && audioRef.current) {
+  const stopPlayback = useCallback(() => {
+    // Stop ElevenLabs audio
+    if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setIsPlaying(false);
-      setActiveIndex(-1);
+      audioRef.current = null;
+    }
+    // Stop Web Speech fallback
+    window.speechSynthesis?.cancel();
+    // Clear tracking interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    playingRef.current = false;
+    setIsPlaying(false);
+    setActiveIndex(-1);
+    setIsLoading(false);
+  }, []);
+
+  const handlePlay = useCallback(async () => {
+    // Stop if currently playing
+    if (playingRef.current) {
+      stopPlayback();
       return;
     }
 
@@ -139,12 +156,14 @@ export default function ScreenReaderSim({
       audioRef.current = audio;
 
       audio.onplay = () => {
+        playingRef.current = true;
         setIsPlaying(true);
         setIsLoading(false);
         startTracking(audio);
       };
 
       audio.onended = () => {
+        playingRef.current = false;
         setIsPlaying(false);
         setActiveIndex(-1);
         if (intervalRef.current) clearInterval(intervalRef.current);
@@ -152,10 +171,7 @@ export default function ScreenReaderSim({
       };
 
       audio.onerror = () => {
-        setIsPlaying(false);
-        setIsLoading(false);
-        setActiveIndex(-1);
-        if (intervalRef.current) clearInterval(intervalRef.current);
+        stopPlayback();
       };
 
       audio.play();
@@ -164,7 +180,7 @@ export default function ScreenReaderSim({
       // Fallback to browser speech
       fallbackWebSpeech(buildSpeechText());
     }
-  }, [isPlaying, buildSpeechText, startTracking]);
+  }, [buildSpeechText, startTracking, stopPlayback]);
 
   // Fallback to Web Speech API
   const fallbackWebSpeech = useCallback(
@@ -174,8 +190,12 @@ export default function ScreenReaderSim({
       synth.cancel();
       const utt = new SpeechSynthesisUtterance(text);
       utt.rate = 1.0;
-      utt.onstart = () => setIsPlaying(true);
+      utt.onstart = () => {
+        playingRef.current = true;
+        setIsPlaying(true);
+      };
       utt.onend = () => {
+        playingRef.current = false;
         setIsPlaying(false);
         setActiveIndex(-1);
       };
@@ -187,11 +207,9 @@ export default function ScreenReaderSim({
   // Cleanup
   useEffect(() => {
     return () => {
-      audioRef.current?.pause();
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      window.speechSynthesis?.cancel();
+      stopPlayback();
     };
-  }, []);
+  }, [stopPlayback]);
 
   return (
     <div className="rounded-xl border border-caso-border bg-caso-navy/80 p-4">
