@@ -52,7 +52,11 @@ async def main():
 
     logger.info("CASO Comply Agent starting (mode=%s)", config.mode)
 
-    db = Database()
+    # Store DB alongside output directory
+    db_dir = Path(config.output_dir).parent
+    db_dir.mkdir(parents=True, exist_ok=True)
+    db_path = str(db_dir / "caso-agent.db")
+    db = Database(db_path)
     await db.init()
 
     license_client = LicenseClient(
