@@ -169,6 +169,8 @@ function DemoPage() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [auditEmail, setAuditEmail] = useState("");
+  const [auditEmailState, setAuditEmailState] = useState<"idle" | "submitting" | "sent" | "error">("idle");
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -768,24 +770,81 @@ function DemoPage() {
                 </button>
               </div>
 
-              {/* CTA */}
+              {/* CTA — Email Capture */}
               <div className="mt-14 rounded-2xl border border-caso-border bg-gradient-to-b from-caso-navy-light to-caso-navy p-8 text-center md:p-10">
                 <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
                   Ready to remediate your entire PDF library?
                 </h3>
                 <p className="mx-auto mt-3 max-w-lg text-sm text-caso-slate">
-                  CASO Comply can scan your website, identify every non-compliant PDF,
-                  and remediate them at scale — starting at just $0.10 per page.
+                  Get a free full-site audit — we&apos;ll scan every PDF on your website,
+                  score them for accessibility, and send you a detailed compliance report.
                 </p>
-                <Link
-                  href="/#scan"
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-caso-blue px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
-                >
-                  Get Your Free Site Audit
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                  </svg>
-                </Link>
+
+                {auditEmailState === "sent" ? (
+                  <div className="mt-6 inline-flex items-center gap-2 rounded-xl bg-caso-green/10 border border-caso-green/30 px-6 py-4 text-caso-green">
+                    <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    <span className="font-medium">We&apos;ll send your full site audit report shortly!</span>
+                  </div>
+                ) : (
+                  <form
+                    className="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:flex-row"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!auditEmail || !auditEmail.includes("@")) return;
+                      setAuditEmailState("submitting");
+                      try {
+                        const res = await fetch("/api/scan/email", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            email: auditEmail,
+                            scanId: searchParams.get("scanId") || "demo-" + crypto.randomUUID(),
+                          }),
+                        });
+                        if (res.ok) {
+                          setAuditEmailState("sent");
+                        } else {
+                          setAuditEmailState("error");
+                        }
+                      } catch {
+                        setAuditEmailState("error");
+                      }
+                    }}
+                  >
+                    <input
+                      type="email"
+                      required
+                      placeholder="your@email.com"
+                      value={auditEmail}
+                      onChange={(e) => {
+                        setAuditEmail(e.target.value);
+                        if (auditEmailState === "error") setAuditEmailState("idle");
+                      }}
+                      className="flex-1 rounded-xl border border-caso-border bg-caso-navy px-4 py-3.5 text-sm text-caso-white placeholder:text-caso-slate focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
+                    />
+                    <button
+                      type="submit"
+                      disabled={auditEmailState === "submitting"}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-caso-blue px-6 py-3.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25 disabled:opacity-60"
+                    >
+                      {auditEmailState === "submitting" ? (
+                        "Sending..."
+                      ) : (
+                        <>
+                          Get Your Free Site Audit
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+                {auditEmailState === "error" && (
+                  <p className="mt-2 text-sm text-caso-red">Something went wrong. Please try again.</p>
+                )}
               </div>
             </div>
           )}
