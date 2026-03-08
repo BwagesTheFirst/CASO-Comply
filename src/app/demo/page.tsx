@@ -39,6 +39,12 @@ interface PageDimension {
   height: number;
 }
 
+interface VerificationInfo {
+  issues_found: string[];
+  verification_score: number;
+  alt_texts: Record<string, { image_index: number; alt_text: string }[]>;
+}
+
 interface RemediateResult {
   before: ScoreResult;
   after: ScoreResult;
@@ -46,6 +52,7 @@ interface RemediateResult {
   improvements: string[];
   tag_assignments: TagAssignment[];
   page_dimensions: PageDimension[];
+  verification?: VerificationInfo;
 }
 
 function ProgressBar({ progress, label }: { progress: number; label: string }) {
@@ -250,6 +257,7 @@ export default function DemoPage() {
           ),
           tag_assignments: raw.tag_assignments || [],
           page_dimensions: raw.page_dimensions || [],
+          verification: raw.verification || undefined,
         };
 
         simulateProgress(90, 100, 500);
@@ -534,6 +542,69 @@ export default function DemoPage() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* AI Verification Results */}
+              {result.verification && (
+                <div className="mt-8 rounded-2xl border border-caso-blue/30 bg-gradient-to-r from-caso-blue/5 to-transparent p-6 md:p-8">
+                  <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-caso-blue/10">
+                      <svg className="h-5 w-5 text-caso-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white">
+                        AI Verification
+                      </h3>
+                      <p className="text-xs text-caso-slate">
+                        Powered by Gemini 2.5 Flash — verified as a screen reader would experience it
+                      </p>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                      <span className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${
+                        result.verification.verification_score >= 0.7
+                          ? "bg-caso-green/10 text-caso-green"
+                          : result.verification.verification_score >= 0.4
+                            ? "bg-yellow-500/10 text-yellow-400"
+                            : "bg-caso-red/10 text-caso-red"
+                      }`}>
+                        <span className={`h-2 w-2 rounded-full ${
+                          result.verification.verification_score >= 0.7
+                            ? "bg-caso-green"
+                            : result.verification.verification_score >= 0.4
+                              ? "bg-yellow-400"
+                              : "bg-caso-red"
+                        }`} />
+                        {Math.round(result.verification.verification_score * 100)}% confidence
+                      </span>
+                    </div>
+                  </div>
+
+                  {result.verification.issues_found.length > 0 && (
+                    <div className="space-y-2">
+                      {result.verification.issues_found.map((issue, i) => (
+                        <div key={i} className="flex items-start gap-2.5 rounded-lg bg-caso-navy/50 px-3 py-2">
+                          <svg className="mt-0.5 h-4 w-4 shrink-0 text-caso-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                          </svg>
+                          <span className="text-sm text-caso-slate">{issue}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {result.verification.issues_found.length === 0 && (
+                    <div className="flex items-center gap-2 rounded-lg bg-caso-green/5 px-4 py-3">
+                      <svg className="h-5 w-5 text-caso-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-sm font-medium text-caso-green">
+                        AI verified — reading order and tag structure are correct
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
