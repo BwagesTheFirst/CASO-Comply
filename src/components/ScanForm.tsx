@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 
 interface ScanFormProps {
   variant?: "hero" | "footer";
@@ -203,6 +204,20 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
               )}
             </div>
           </div>
+
+          {/* Full analysis CTA */}
+          <div className="mt-4 flex justify-center">
+            <Link
+              href={`/demo?url=${encodeURIComponent(samplePdf.url)}`}
+              className="inline-flex items-center gap-2 rounded-xl bg-caso-teal px-6 py-3 text-sm font-bold text-caso-navy transition-all hover:bg-caso-teal/90 hover:shadow-lg hover:shadow-caso-teal/25"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              See Full Analysis &amp; Remediation
+            </Link>
+          </div>
         </div>
 
         {/* Email capture / CTA */}
@@ -288,10 +303,10 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
           <div className="scan-input-glow flex flex-1 rounded-xl border-2 border-caso-border bg-caso-navy-light">
             <input
               id={inputId}
-              type="url"
+              type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Enter your website URL..."
+              placeholder="yoursite.gov"
               required
               disabled={isSubmitting}
               className="flex-1 rounded-xl bg-transparent px-5 py-4 text-base text-caso-white placeholder:text-caso-slate focus:outline-none disabled:opacity-60"
@@ -369,10 +384,10 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
             </svg>
             <input
               id={inputId}
-              type="url"
+              type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Enter your website URL..."
+              placeholder="yoursite.gov"
               required
               disabled={isSubmitting}
               className="w-full bg-transparent py-3 text-base text-caso-white placeholder:text-caso-slate focus:outline-none disabled:opacity-60 sm:text-lg"

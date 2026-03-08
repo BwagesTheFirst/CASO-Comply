@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import PdfUpload from "@/components/PdfUpload";
@@ -152,7 +153,15 @@ function SpinnerIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export default function DemoPage() {
+export default function DemoPageWrapper() {
+  return (
+    <Suspense>
+      <DemoPage />
+    </Suspense>
+  );
+}
+
+function DemoPage() {
   const [state, setState] = useState<DemoState>("idle");
   const [progress, setProgress] = useState(0);
   const [file, setFile] = useState<File | null>(null);
@@ -162,6 +171,8 @@ export default function DemoPage() {
   const [verifying, setVerifying] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const autoLoadedRef = useRef(false);
 
   const simulateProgress = useCallback(
     (from: number, to: number, durationMs: number) => {
@@ -282,6 +293,30 @@ export default function DemoPage() {
     },
     [simulateProgress]
   );
+
+  // Auto-load PDF from ?url= query param (e.g. from scan results)
+  useEffect(() => {
+    const pdfUrl = searchParams.get("url");
+    if (!pdfUrl || autoLoadedRef.current) return;
+    autoLoadedRef.current = true;
+
+    (async () => {
+      try {
+        // Proxy through our API to avoid CORS issues with external PDFs
+        const res = await fetch(`/api/proxy-pdf?url=${encodeURIComponent(pdfUrl)}`);
+        if (!res.ok) throw new Error("Failed to fetch PDF");
+        const blob = await res.blob();
+        const filename = decodeURIComponent(
+          new URL(pdfUrl).pathname.split("/").pop() || "document.pdf"
+        );
+        const pdfFile = new File([blob], filename, { type: "application/pdf" });
+        handleFileSelected(pdfFile);
+      } catch {
+        setState("error");
+        setErrorMessage("Could not load the PDF from that URL. Try uploading it directly.");
+      }
+    })();
+  }, [searchParams, handleFileSelected]);
 
   const handleReset = useCallback(() => {
     if (abortRef.current) {
