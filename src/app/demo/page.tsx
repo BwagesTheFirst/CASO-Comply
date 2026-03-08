@@ -6,7 +6,7 @@ import Link from "next/link";
 import PdfUpload from "@/components/PdfUpload";
 import ScoreCard from "@/components/ScoreCard";
 
-const API_BASE = "http://localhost:8787";
+const API_BASE = process.env.NEXT_PUBLIC_CASO_API_URL || "http://localhost:8787";
 
 type DemoState = "idle" | "uploading" | "analyzing" | "remediating" | "complete" | "error";
 
