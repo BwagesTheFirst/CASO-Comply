@@ -1,0 +1,25 @@
+# CASO Comply Agent -- Quick Start
+# Usage:
+#   1. Copy config.example.yaml to config.yaml and edit
+#   2. Run: docker compose up -d
+#   3. Open http://localhost:9090
+
+services:
+  caso-agent:
+    build: .
+    container_name: caso-comply-agent
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - agent-data:/data
+      # Mount your PDF directories here:
+      # - /path/to/your/documents:/mnt/documents:ro
+    environment:
+      - CASO_MODE=${CASO_MODE:-hybrid}
+      - CASO_LICENSE_KEY=${CASO_LICENSE_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+
+volumes:
+  agent-data:
