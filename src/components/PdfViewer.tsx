@@ -34,6 +34,8 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
   const [currentPage, setCurrentPage] = useState(0);
   const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set());
   const [isVisible, setIsVisible] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -63,6 +65,26 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
     }
     return { total: tagAssignments.length, typeCounts, pages: totalPages };
   }, [tagAssignments, totalPages]);
+
+  // Fetch PDF as blob to avoid cross-origin download trigger
+  useEffect(() => {
+    let revoke: string | null = null;
+    fetch(downloadUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch PDF");
+        return res.blob();
+      })
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        revoke = url;
+        setBlobUrl(url);
+      })
+      .catch(() => setLoadError(true));
+
+    return () => {
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [downloadUrl]);
 
   // Body scroll lock + focus management
   useEffect(() => {
@@ -135,8 +157,8 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
     setCurrentPage(page);
   }, []);
 
-  // Build PDF URL with page fragment
-  const pdfUrl = `${downloadUrl}#page=${currentPage + 1}`;
+  // Build PDF URL with page fragment (use blob URL so browser renders inline)
+  const pdfUrl = blobUrl ? `${blobUrl}#page=${currentPage + 1}` : null;
 
   return (
     <div
@@ -225,11 +247,24 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
             </div>
             {/* PDF embed */}
             <div className="relative flex-1 bg-caso-navy">
-              <iframe
-                src={pdfUrl}
-                className="absolute inset-0 h-full w-full"
-                title="Remediated PDF document"
-              />
+              {loadError ? (
+                <div className="flex h-full items-center justify-center text-sm text-caso-slate">
+                  <p>Could not load PDF preview.</p>
+                </div>
+              ) : pdfUrl ? (
+                <iframe
+                  src={pdfUrl}
+                  className="absolute inset-0 h-full w-full"
+                  title="Remediated PDF document"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <svg className="h-8 w-8 animate-spin text-caso-blue" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                </div>
+              )}
             </div>
           </div>
 
