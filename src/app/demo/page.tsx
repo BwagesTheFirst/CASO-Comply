@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import PdfUpload from "@/components/PdfUpload";
 import ScoreCard from "@/components/ScoreCard";
+import ScreenReaderSim from "@/components/ScreenReaderSim";
 
 const API_BASE = process.env.NEXT_PUBLIC_CASO_API_URL || "http://localhost:8787";
 
@@ -22,11 +23,20 @@ interface ScoreResult {
   checks: Check[];
 }
 
+interface TagAssignment {
+  type: string;
+  text: string;
+  page: number;
+  mcid: number;
+  font_size: number;
+}
+
 interface RemediateResult {
   before: ScoreResult;
   after: ScoreResult;
   download_url: string;
   improvements: string[];
+  tag_assignments: TagAssignment[];
 }
 
 function ProgressBar({ progress, label }: { progress: number; label: string }) {
@@ -228,6 +238,7 @@ export default function DemoPage() {
           improvements: raw.before.structure.issues.filter(
             (issue: string) => !raw.after.structure.issues.includes(issue)
           ),
+          tag_assignments: raw.tag_assignments || [],
         };
 
         simulateProgress(90, 100, 500);
@@ -446,6 +457,30 @@ export default function DemoPage() {
                   label="Score after remediation"
                 />
               </div>
+
+              {/* Screen Reader Comparison */}
+              {result.tag_assignments && result.tag_assignments.length > 0 && (
+                <div className="mt-8 rounded-2xl border border-caso-border bg-caso-navy-light p-6 md:p-8">
+                  <div className="mb-4 text-center">
+                    <h3 className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
+                      Hear the Difference
+                    </h3>
+                    <p className="mt-1 text-sm text-caso-slate">
+                      Listen to how a screen reader interprets your PDF — before and after remediation
+                    </p>
+                  </div>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <ScreenReaderSim
+                      tagAssignments={result.tag_assignments}
+                      variant="before"
+                    />
+                    <ScreenReaderSim
+                      tagAssignments={result.tag_assignments}
+                      variant="after"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Score improvement banner */}
               <div className="mt-8 overflow-hidden rounded-2xl border border-caso-green/20 bg-gradient-to-r from-caso-green/5 to-caso-teal/5 p-6 md:p-8">
