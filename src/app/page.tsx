@@ -1,3 +1,4 @@
+import Image from "next/image";
 import CountdownTimer from "@/components/CountdownTimer";
 import ScanForm from "@/components/ScanForm";
 import MobileNav from "@/components/MobileNav";
@@ -112,11 +113,19 @@ export default function Home() {
       <nav aria-label="Primary navigation" className="sticky top-0 z-40 border-b border-caso-border/50 bg-caso-navy/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2" aria-label="CASO Comply home">
-            <span className="font-[family-name:var(--font-display)] text-xl font-bold tracking-tight">
-              CASO <span className="text-caso-blue">Comply</span>
+          <a href="/" className="flex items-baseline gap-1" aria-label="CASO Comply home">
+            <Image
+              src="/caso-logo.png"
+              alt="CASO"
+              width={164}
+              height={57}
+              className="h-9 w-auto brightness-0 invert"
+              priority
+            />
+            <span className="text-[1.65rem] font-extrabold lowercase leading-none tracking-tight text-caso-blue" style={{ fontFamily: "var(--font-raleway), sans-serif", letterSpacing: "-0.02em" }}>
+              comply
             </span>
-            <span className="hidden rounded border border-caso-border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-caso-glacier sm:inline-block">
+            <span className="ml-1 hidden rounded border border-caso-border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-caso-glacier sm:inline-block">
               Beta
             </span>
           </a>
@@ -539,9 +548,18 @@ export default function Home() {
           <div className="grid gap-10 md:grid-cols-4">
             {/* Brand column */}
             <div className="md:col-span-1">
-              <span className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white">
-                CASO <span className="text-caso-blue">Comply</span>
-              </span>
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/caso-logo.png"
+                  alt="CASO"
+                  width={164}
+                  height={57}
+                  className="h-7 w-auto brightness-0 invert"
+                />
+                <span className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-blue">
+                  Comply
+                </span>
+              </div>
               <p className="mt-3 text-sm leading-relaxed text-caso-slate">
                 AI-powered PDF accessibility remediation by{" "}
                 <a
@@ -643,15 +661,24 @@ export default function Home() {
           {/* Bottom bar */}
           <div className="mt-12 border-t border-caso-border/50 pt-8">
             <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-              <div className="text-center text-sm text-caso-slate md:text-left">
-                <p>
-                  &copy; {new Date().getFullYear()} CASO Document Management,
-                  Inc. All rights reserved.
-                </p>
-                <p className="mt-1">
-                  Accessibility on Demand&trade; is a service of CASO Document
-                  Management.
-                </p>
+              <div className="flex items-center gap-6">
+                <Image
+                  src="/soc2-badge.jpg"
+                  alt="AICPA SOC 2 Type II Certified"
+                  width={130}
+                  height={97}
+                  className="h-12 w-auto"
+                />
+                <div className="text-center text-sm text-caso-slate md:text-left">
+                  <p>
+                    &copy; {new Date().getFullYear()} CASO Document Management,
+                    Inc. All rights reserved.
+                  </p>
+                  <p className="mt-1">
+                    Accessibility on Demand&trade; is a service of CASO Document
+                    Management.
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <a
