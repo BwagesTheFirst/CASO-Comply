@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import CountdownTimer from "@/components/CountdownTimer";
 import ScanForm from "@/components/ScanForm";
 import MobileNav from "@/components/MobileNav";
@@ -391,11 +392,11 @@ export default function Home() {
                   </div>
                   <div className="flex h-48 items-center justify-center rounded-xl border border-caso-border bg-caso-navy/50">
                     <div className="text-center">
-                      <svg className="mx-auto h-12 w-12 text-caso-slate/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                      </svg>
-                      <p className="mt-3 text-sm text-caso-slate/50">
-                        Untagged PDF preview
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caso-red/10">
+                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-caso-red">F</span>
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-caso-red/70">
+                        Score: 23/100
                       </p>
                     </div>
                   </div>
@@ -433,11 +434,11 @@ export default function Home() {
                   </div>
                   <div className="flex h-48 items-center justify-center rounded-xl border border-caso-border bg-caso-navy/50">
                     <div className="text-center">
-                      <svg className="mx-auto h-12 w-12 text-caso-slate/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12" />
-                      </svg>
-                      <p className="mt-3 text-sm text-caso-slate/50">
-                        Remediated PDF preview
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caso-green/10">
+                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-caso-green">A</span>
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-caso-green/70">
+                        Score: 97/100
                       </p>
                     </div>
                   </div>
@@ -462,6 +463,22 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Demo CTA */}
+              <div className="mt-8 text-center">
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center gap-2 rounded-xl bg-caso-blue px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                >
+                  Try the Live Demo
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+                <p className="mt-3 text-sm text-caso-slate">
+                  Upload your own PDF and see the results in real time
+                </p>
               </div>
             </div>
           </div>
