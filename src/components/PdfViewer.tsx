@@ -324,9 +324,13 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
                               : tag.text;
 
                             return (
-                              <div
+                              <button
                                 key={tagKey}
-                                className={`group rounded-lg border px-2.5 py-1.5 transition-colors ${
+                                onClick={() => {
+                                  navigateToPage(pageNum);
+                                  if (isLong) toggleTag(tagKey);
+                                }}
+                                className={`group w-full rounded-lg border px-2.5 py-1.5 text-left transition-colors cursor-pointer ${
                                   isActivePage
                                     ? "border-caso-border/30 bg-caso-navy/60 hover:bg-caso-navy/80"
                                     : "border-transparent bg-transparent hover:bg-caso-navy/40"
@@ -341,23 +345,20 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
                                   </span>
                                   {/* Content */}
                                   <div className="min-w-0 flex-1">
-                                    <button
-                                      onClick={() => isLong && toggleTag(tagKey)}
-                                      className={`text-left text-xs leading-relaxed ${
+                                    <span
+                                      className={`block text-left text-xs leading-relaxed ${
                                         isActivePage ? "text-caso-white/90" : "text-caso-slate"
-                                      } ${isLong ? "cursor-pointer hover:text-caso-white" : "cursor-default"}`}
-                                      aria-expanded={isLong ? isExpanded : undefined}
-                                      tabIndex={isLong ? 0 : -1}
+                                      } group-hover:text-caso-white`}
                                     >
                                       {displayText}
-                                    </button>
+                                    </span>
                                     {/* MCID */}
                                     <span className="mt-0.5 block text-[10px] text-caso-slate/50">
                                       MCID {tag.mcid}
                                     </span>
                                   </div>
                                 </div>
-                              </div>
+                              </button>
                             );
                           })}
                         </div>
