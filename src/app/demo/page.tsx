@@ -327,10 +327,27 @@ export default function DemoPage() {
           {state === "idle" && (
             <div className="demo-fade-in mx-auto max-w-xl">
               <PdfUpload onFileSelected={handleFileSelected} />
-              <p className="mt-6 text-center text-xs text-caso-slate/60">
-                Your file is processed securely and never stored permanently.
-                We evaluate against WCAG 2.1 AA, PDF/UA, and Section 508 standards.
-              </p>
+              <div className="mt-6 text-center">
+                <p className="text-xs text-caso-slate/60">
+                  Your file is processed securely and never stored permanently.
+                  We evaluate against WCAG 2.1 AA, PDF/UA, and Section 508 standards.
+                </p>
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <span className="text-sm text-caso-slate/50">or</span>
+                  <button
+                    onClick={async () => {
+                      const res = await fetch("/sample-budget-report.pdf");
+                      const blob = await res.blob();
+                      const sampleFile = new File([blob], "Springfield-Budget-Report-2026.pdf", { type: "application/pdf" });
+                      handleFileSelected(sampleFile);
+                    }}
+                    className="text-sm font-semibold text-caso-blue underline decoration-caso-blue/30 underline-offset-2 transition-colors hover:text-caso-blue-bright hover:decoration-caso-blue/60"
+                  >
+                    Try a sample PDF
+                  </button>
+                  <span className="text-xs text-caso-slate/40">(3-page government budget report)</span>
+                </div>
+              </div>
             </div>
           )}
 
