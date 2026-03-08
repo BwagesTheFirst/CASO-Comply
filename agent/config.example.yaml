@@ -1,0 +1,14 @@
+mode: hybrid
+license_key: ""
+scan_paths:
+  - /data/documents
+watch: true
+cron: "0 * * * *"
+website_urls: []
+output_dir: /data/remediated
+output_mode: suffix
+max_workers: 1
+gemini_api_key: ""
+phone_home: true
+caso_api_url: https://caso-comply-api.onrender.com
+local_port: 9090
