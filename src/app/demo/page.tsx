@@ -30,6 +30,13 @@ interface TagAssignment {
   page: number;
   mcid: number;
   font_size: number;
+  bbox: [number, number, number, number];
+}
+
+interface PageDimension {
+  page: number;
+  width: number;
+  height: number;
 }
 
 interface RemediateResult {
@@ -38,6 +45,7 @@ interface RemediateResult {
   download_url: string;
   improvements: string[];
   tag_assignments: TagAssignment[];
+  page_dimensions: PageDimension[];
 }
 
 function ProgressBar({ progress, label }: { progress: number; label: string }) {
@@ -241,6 +249,7 @@ export default function DemoPage() {
             (issue: string) => !raw.after.structure.issues.includes(issue)
           ),
           tag_assignments: raw.tag_assignments || [],
+          page_dimensions: raw.page_dimensions || [],
         };
 
         simulateProgress(90, 100, 500);
@@ -597,6 +606,7 @@ export default function DemoPage() {
               : `${API_BASE}${result.download_url}`
           }
           tagAssignments={result.tag_assignments}
+          pageDimensions={result.page_dimensions}
           title={
             result.tag_assignments.find((t) => t.type === "H1")?.text || "Remediated PDF"
           }

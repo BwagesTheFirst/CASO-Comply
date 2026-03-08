@@ -8,37 +8,59 @@ interface TagAssignment {
   page: number;
   mcid: number;
   font_size: number;
+  bbox: [number, number, number, number];
+}
+
+interface PageDimension {
+  page: number;
+  width: number;
+  height: number;
 }
 
 interface PdfViewerProps {
   downloadUrl: string;
   tagAssignments: TagAssignment[];
+  pageDimensions: PageDimension[];
   title?: string;
   onClose: () => void;
 }
 
-const TAG_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  H1: { bg: "bg-blue-500/20", text: "text-blue-400", border: "border-blue-500/30" },
-  H2: { bg: "bg-teal-500/20", text: "text-teal-400", border: "border-teal-500/30" },
-  H3: { bg: "bg-cyan-500/20", text: "text-cyan-400", border: "border-cyan-500/30" },
-  P: { bg: "bg-slate-500/20", text: "text-slate-400", border: "border-slate-500/30" },
-  Table: { bg: "bg-purple-500/20", text: "text-purple-400", border: "border-purple-500/30" },
-  Figure: { bg: "bg-orange-500/20", text: "text-orange-400", border: "border-orange-500/30" },
+const TAG_HIGHLIGHT_COLORS: Record<string, { fill: string; border: string; bg: string; text: string; borderClass: string }> = {
+  H1: { fill: "rgba(59, 130, 246, 0.18)", border: "rgba(59, 130, 246, 0.6)", bg: "bg-blue-500/20", text: "text-blue-400", borderClass: "border-blue-500/30" },
+  H2: { fill: "rgba(20, 184, 166, 0.18)", border: "rgba(20, 184, 166, 0.6)", bg: "bg-teal-500/20", text: "text-teal-400", borderClass: "border-teal-500/30" },
+  H3: { fill: "rgba(6, 182, 212, 0.18)", border: "rgba(6, 182, 212, 0.6)", bg: "bg-cyan-500/20", text: "text-cyan-400", borderClass: "border-cyan-500/30" },
+  P: { fill: "rgba(148, 163, 184, 0.12)", border: "rgba(148, 163, 184, 0.4)", bg: "bg-slate-500/20", text: "text-slate-400", borderClass: "border-slate-500/30" },
+  Table: { fill: "rgba(168, 85, 247, 0.18)", border: "rgba(168, 85, 247, 0.6)", bg: "bg-purple-500/20", text: "text-purple-400", borderClass: "border-purple-500/30" },
+  Figure: { fill: "rgba(249, 115, 22, 0.18)", border: "rgba(249, 115, 22, 0.6)", bg: "bg-orange-500/20", text: "text-orange-400", borderClass: "border-orange-500/30" },
 };
 
 function getTagColor(type: string) {
-  return TAG_COLORS[type] || { bg: "bg-caso-slate/20", text: "text-caso-slate", border: "border-caso-slate/30" };
+  return TAG_HIGHLIGHT_COLORS[type] || {
+    fill: "rgba(148, 163, 184, 0.12)",
+    border: "rgba(148, 163, 184, 0.4)",
+    bg: "bg-caso-slate/20",
+    text: "text-caso-slate",
+    borderClass: "border-caso-slate/30",
+  };
 }
 
-export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose }: PdfViewerProps) {
+export default function PdfViewer({ downloadUrl, tagAssignments, pageDimensions, title, onClose }: PdfViewerProps) {
   const [currentPage, setCurrentPage] = useState(0);
-  const [expandedTags, setExpandedTags] = useState<Set<string>>(new Set());
+  const [selectedTagKey, setSelectedTagKey] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [pdfData, setPdfData] = useState<ArrayBuffer | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [pdfDoc, setPdfDoc] = useState<unknown>(null);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const tagListRef = useRef<HTMLDivElement>(null);
+  const renderTaskRef = useRef<unknown>(null);
 
   // Group tags by page
   const tagsByPage = useMemo(() => {
@@ -55,7 +77,14 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
     return Array.from(pages).sort((a, b) => a - b);
   }, [tagAssignments]);
 
-  const totalPages = pageNumbers.length > 0 ? Math.max(...pageNumbers) + 1 : 1;
+  // Page dimension lookup
+  const getPageDim = useCallback(
+    (pageNum: number) => {
+      const dim = pageDimensions.find((d) => d.page === pageNum);
+      return dim || { width: 612, height: 792 };
+    },
+    [pageDimensions]
+  );
 
   // Summary stats
   const stats = useMemo(() => {
@@ -63,38 +92,170 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
     for (const tag of tagAssignments) {
       typeCounts[tag.type] = (typeCounts[tag.type] || 0) + 1;
     }
-    return { total: tagAssignments.length, typeCounts, pages: totalPages };
-  }, [tagAssignments, totalPages]);
+    const maxPage = pageDimensions.length > 0 ? pageDimensions.length : (pageNumbers.length > 0 ? Math.max(...pageNumbers) + 1 : 1);
+    return { total: tagAssignments.length, typeCounts, pages: maxPage };
+  }, [tagAssignments, pageDimensions, pageNumbers]);
 
-  // Fetch PDF as blob to avoid cross-origin download trigger
+  // Fetch PDF data
   useEffect(() => {
-    let revoke: string | null = null;
     fetch(downloadUrl)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch PDF");
-        return res.blob();
+        return res.arrayBuffer();
       })
-      .then((blob) => {
-        const url = URL.createObjectURL(blob);
-        revoke = url;
-        setBlobUrl(url);
-      })
+      .then((data) => setPdfData(data))
       .catch(() => setLoadError(true));
+  }, [downloadUrl]);
+
+  // Load PDF.js and the document
+  useEffect(() => {
+    if (!pdfData) return;
+
+    let cancelled = false;
+
+    async function loadPdf() {
+      const pdfjsLib = await import("pdfjs-dist");
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/build/pdf.worker.min.mjs",
+        import.meta.url
+      ).toString();
+
+      const doc = await pdfjsLib.getDocument({ data: pdfData! }).promise;
+      if (!cancelled) {
+        setPdfDoc(doc);
+        setTotalPages(doc.numPages);
+      }
+    }
+
+    loadPdf().catch(() => setLoadError(true));
 
     return () => {
-      if (revoke) URL.revokeObjectURL(revoke);
+      cancelled = true;
     };
-  }, [downloadUrl]);
+  }, [pdfData]);
+
+  // Draw highlight rectangles on the overlay using DOM elements
+  const drawHighlights = useCallback(
+    (viewportWidth: number, viewportHeight: number) => {
+      const overlay = overlayRef.current;
+      if (!overlay) return;
+
+      // Clear existing highlights using safe DOM method
+      while (overlay.firstChild) {
+        overlay.removeChild(overlay.firstChild);
+      }
+
+      const pageTags = tagsByPage[currentPage] || [];
+      const pageDim = getPageDim(currentPage);
+
+      const scaleX = viewportWidth / pageDim.width;
+      const scaleY = viewportHeight / pageDim.height;
+
+      for (const tag of pageTags) {
+        const [x0, y0, x1, y1] = tag.bbox;
+        const color = getTagColor(tag.type);
+        const tagKey = `${tag.page}-${tag.mcid}`;
+        const isSelected = selectedTagKey === tagKey;
+
+        const div = document.createElement("div");
+        div.style.position = "absolute";
+        div.style.left = `${x0 * scaleX}px`;
+        div.style.top = `${y0 * scaleY}px`;
+        div.style.width = `${(x1 - x0) * scaleX}px`;
+        div.style.height = `${(y1 - y0) * scaleY}px`;
+        div.style.backgroundColor = isSelected ? color.fill.replace(/[\d.]+\)$/, "0.35)") : color.fill;
+        div.style.border = isSelected ? `2px solid ${color.border}` : `1px solid ${color.border.replace(/[\d.]+\)$/, "0.3)")}`;
+        div.style.borderRadius = "3px";
+        div.style.pointerEvents = "none";
+        div.style.transition = "all 0.2s ease";
+        div.style.boxSizing = "border-box";
+
+        if (isSelected) {
+          div.style.boxShadow = `0 0 12px ${color.border}`;
+          div.style.zIndex = "10";
+        }
+
+        overlay.appendChild(div);
+      }
+    },
+    [tagsByPage, currentPage, getPageDim, selectedTagKey]
+  );
+
+  // Render current page to canvas
+  useEffect(() => {
+    if (!pdfDoc || !canvasRef.current || !containerRef.current) return;
+
+    let cancelled = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const doc = pdfDoc as any;
+
+    async function renderPage() {
+      if (renderTaskRef.current) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (renderTaskRef.current as any).cancel();
+        } catch {
+          // ignore cancel errors
+        }
+      }
+
+      const page = await doc.getPage(currentPage + 1);
+      if (cancelled) return;
+
+      const canvas = canvasRef.current!;
+      const container = containerRef.current!;
+      const ctx = canvas.getContext("2d")!;
+
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      const scaleW = containerWidth / unscaledViewport.width;
+      const scaleH = containerHeight / unscaledViewport.height;
+      const scale = Math.min(scaleW, scaleH) * 0.95;
+
+      const viewport = page.getViewport({ scale });
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const renderTask = page.render({
+        canvasContext: ctx,
+        viewport,
+      });
+      renderTaskRef.current = renderTask;
+
+      await renderTask.promise;
+      if (cancelled) return;
+
+      if (overlayRef.current) {
+        overlayRef.current.style.width = `${viewport.width}px`;
+        overlayRef.current.style.height = `${viewport.height}px`;
+      }
+
+      drawHighlights(viewport.width, viewport.height);
+    }
+
+    renderPage().catch(() => {
+      if (!cancelled) setLoadError(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdfDoc, currentPage, selectedTagKey, drawHighlights]);
 
   // Body scroll lock + focus management
   useEffect(() => {
     previousFocusRef.current = document.activeElement as HTMLElement;
     document.body.style.overflow = "hidden";
-
-    // Animate in
     requestAnimationFrame(() => setIsVisible(true));
-
-    // Focus close button
     setTimeout(() => closeButtonRef.current?.focus(), 50);
 
     return () => {
@@ -106,9 +267,7 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
   // Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleClose();
-      }
+      if (e.key === "Escape") handleClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -144,21 +303,23 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
     setTimeout(onClose, 200);
   }, [onClose]);
 
-  const toggleTag = useCallback((key: string) => {
-    setExpandedTags((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }, []);
+  const handleTagClick = useCallback(
+    (tag: TagAssignment) => {
+      const tagKey = `${tag.page}-${tag.mcid}`;
+      setCurrentPage(tag.page);
+      setSelectedTagKey((prev) => (prev === tagKey ? null : tagKey));
+    },
+    []
+  );
 
-  const navigateToPage = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
-
-  // Build PDF URL with page fragment (use blob URL so browser renders inline)
-  const pdfUrl = blobUrl ? `${blobUrl}#page=${currentPage + 1}` : null;
+  // Scroll the tag list item into view when selected
+  useEffect(() => {
+    if (!selectedTagKey || !tagListRef.current) return;
+    const el = tagListRef.current.querySelector(`[data-tag-key="${selectedTagKey}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [selectedTagKey]);
 
   return (
     <div
@@ -217,14 +378,14 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
 
         {/* Body — split view */}
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-          {/* Left panel: PDF */}
+          {/* Left panel: PDF canvas */}
           <div className="flex flex-col border-b border-caso-border lg:w-[60%] lg:border-b-0 lg:border-r" style={{ minHeight: "40vh" }}>
             {/* Page nav */}
             <div className="flex shrink-0 items-center justify-between border-b border-caso-border/50 bg-caso-navy px-4 py-2">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                onClick={() => { setCurrentPage((p) => Math.max(0, p - 1)); setSelectedTagKey(null); }}
                 disabled={currentPage === 0}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-caso-slate"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white disabled:opacity-30"
                 aria-label="Previous page"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -235,9 +396,9 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
                 Page <span className="text-caso-white">{currentPage + 1}</span> of {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                onClick={() => { setCurrentPage((p) => Math.min(totalPages - 1, p + 1)); setSelectedTagKey(null); }}
                 disabled={currentPage >= totalPages - 1}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-caso-slate"
+                className="flex h-7 w-7 items-center justify-center rounded-md text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white disabled:opacity-30"
                 aria-label="Next page"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -245,124 +406,88 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
                 </svg>
               </button>
             </div>
-            {/* PDF embed */}
-            <div className="relative flex-1 bg-caso-navy">
+            {/* Canvas container */}
+            <div ref={containerRef} className="relative flex flex-1 items-center justify-center overflow-hidden bg-caso-navy">
               {loadError ? (
-                <div className="flex h-full items-center justify-center text-sm text-caso-slate">
-                  <p>Could not load PDF preview.</p>
-                </div>
-              ) : pdfUrl ? (
-                <iframe
-                  src={pdfUrl}
-                  className="absolute inset-0 h-full w-full"
-                  title="Remediated PDF document"
-                />
+                <div className="text-sm text-caso-slate">Could not load PDF preview.</div>
+              ) : !pdfDoc ? (
+                <svg className="h-8 w-8 animate-spin text-caso-blue" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
               ) : (
-                <div className="flex h-full items-center justify-center">
-                  <svg className="h-8 w-8 animate-spin text-caso-blue" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                <div className="relative">
+                  <canvas ref={canvasRef} className="block rounded shadow-lg" />
+                  <div
+                    ref={overlayRef}
+                    className="absolute left-0 top-0"
+                    style={{ pointerEvents: "none" }}
+                  />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right panel: Tag tree */}
+          {/* Right panel: Reading order */}
           <div className="flex min-h-0 flex-col lg:w-[40%]">
             <div className="shrink-0 border-b border-caso-border/50 bg-caso-navy px-4 py-2">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-caso-slate">
-                Tag Structure
+                Reading Order
               </h3>
+              <p className="text-[10px] text-caso-slate/50 mt-0.5">Click a tag to highlight it on the page</p>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4" role="tree" aria-label="PDF tag structure">
-              {pageNumbers.length === 0 ? (
+            <div ref={tagListRef} className="flex-1 overflow-y-auto p-3 sm:p-4" role="list" aria-label="PDF tag reading order">
+              {tagAssignments.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-sm text-caso-slate">
-                  No tags found in this document.
+                  No tags found.
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {pageNumbers.map((pageNum) => {
-                    const isActivePage = pageNum === currentPage;
-                    const tags = tagsByPage[pageNum] || [];
+                <div className="space-y-1">
+                  {tagAssignments.map((tag) => {
+                    const color = getTagColor(tag.type);
+                    const tagKey = `${tag.page}-${tag.mcid}`;
+                    const isSelected = selectedTagKey === tagKey;
+                    const isOnCurrentPage = tag.page === currentPage;
+
                     return (
-                      <div
-                        key={pageNum}
-                        className={`overflow-hidden rounded-xl border transition-colors ${
-                          isActivePage
-                            ? "border-caso-blue/40 bg-caso-blue/5"
-                            : "border-caso-border/50 bg-caso-navy-light/50"
+                      <button
+                        key={tagKey}
+                        data-tag-key={tagKey}
+                        onClick={() => handleTagClick(tag)}
+                        role="listitem"
+                        className={`group w-full rounded-lg border px-2.5 py-2 text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? "border-caso-blue/60 bg-caso-blue/10 shadow-sm shadow-caso-blue/10"
+                            : isOnCurrentPage
+                              ? "border-caso-border/30 bg-caso-navy/60 hover:bg-caso-navy/80"
+                              : "border-transparent bg-transparent hover:bg-caso-navy/40 opacity-60 hover:opacity-100"
                         }`}
-                        role="treeitem"
-                        aria-expanded="true"
+                        aria-label={`${tag.type}: ${tag.text}. Page ${tag.page + 1}`}
                       >
-                        {/* Page header */}
-                        <button
-                          onClick={() => navigateToPage(pageNum)}
-                          className={`flex w-full items-center justify-between px-3 py-2 text-left transition-colors hover:bg-caso-navy-light ${
-                            isActivePage ? "text-caso-blue" : "text-caso-slate hover:text-caso-white"
-                          }`}
-                          aria-label={`Navigate to page ${pageNum + 1}`}
-                        >
-                          <span className="text-xs font-bold uppercase tracking-wider">
-                            Page {pageNum + 1}
+                        <div className="flex items-start gap-2">
+                          <span
+                            className={`mt-0.5 inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${color.bg} ${color.text} border ${color.borderClass}`}
+                          >
+                            {tag.type}
                           </span>
-                          <span className="text-[10px] text-caso-slate">
-                            {tags.length} tag{tags.length !== 1 ? "s" : ""}
-                          </span>
-                        </button>
-
-                        {/* Tags */}
-                        <div className="space-y-1 px-2 pb-2" role="group">
-                          {tags.map((tag, idx) => {
-                            const color = getTagColor(tag.type);
-                            const tagKey = `${pageNum}-${idx}`;
-                            const isExpanded = expandedTags.has(tagKey);
-                            const isLong = tag.text.length > 80;
-                            const displayText = isLong && !isExpanded
-                              ? tag.text.slice(0, 80) + "..."
-                              : tag.text;
-
-                            return (
-                              <button
-                                key={tagKey}
-                                onClick={() => {
-                                  navigateToPage(pageNum);
-                                  if (isLong) toggleTag(tagKey);
-                                }}
-                                className={`group w-full rounded-lg border px-2.5 py-1.5 text-left transition-colors cursor-pointer ${
-                                  isActivePage
-                                    ? "border-caso-border/30 bg-caso-navy/60 hover:bg-caso-navy/80"
-                                    : "border-transparent bg-transparent hover:bg-caso-navy/40"
-                                }`}
-                              >
-                                <div className="flex items-start gap-2">
-                                  {/* Tag badge */}
-                                  <span
-                                    className={`mt-0.5 inline-flex shrink-0 items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${color.bg} ${color.text} border ${color.border}`}
-                                  >
-                                    {tag.type}
-                                  </span>
-                                  {/* Content */}
-                                  <div className="min-w-0 flex-1">
-                                    <span
-                                      className={`block text-left text-xs leading-relaxed ${
-                                        isActivePage ? "text-caso-white/90" : "text-caso-slate"
-                                      } group-hover:text-caso-white`}
-                                    >
-                                      {displayText}
-                                    </span>
-                                    {/* MCID */}
-                                    <span className="mt-0.5 block text-[10px] text-caso-slate/50">
-                                      MCID {tag.mcid}
-                                    </span>
-                                  </div>
-                                </div>
-                              </button>
-                            );
-                          })}
+                          <div className="min-w-0 flex-1">
+                            <span
+                              className={`block text-left text-xs leading-relaxed ${
+                                isSelected ? "text-caso-white" : isOnCurrentPage ? "text-caso-white/90" : "text-caso-slate"
+                              } group-hover:text-caso-white`}
+                            >
+                              {tag.text.length > 100 ? tag.text.slice(0, 100) + "..." : tag.text}
+                            </span>
+                            <span className="mt-0.5 flex items-center gap-2 text-[10px] text-caso-slate/50">
+                              <span>Page {tag.page + 1}</span>
+                              <span>MCID {tag.mcid}</span>
+                            </span>
+                          </div>
+                          {isSelected && (
+                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-caso-blue animate-pulse" />
+                          )}
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -389,7 +514,7 @@ export default function PdfViewer({ downloadUrl, tagAssignments, title, onClose 
                 return (
                   <span
                     key={type}
-                    className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${color.bg} ${color.text} border ${color.border}`}
+                    className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${color.bg} ${color.text} border ${color.borderClass}`}
                   >
                     {type} <span className="opacity-70">{count}</span>
                   </span>
