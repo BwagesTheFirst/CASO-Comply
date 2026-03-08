@@ -7,7 +7,7 @@ interface PdfUploadProps {
   disabled?: boolean;
 }
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 250 * 1024 * 1024; // 250MB
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -188,7 +188,7 @@ export default function PdfUpload({ onFileSelected, disabled = false }: PdfUploa
                 or <span className="text-caso-blue underline underline-offset-2">browse to upload</span>
               </p>
             </div>
-            <p className="text-[11px] text-caso-slate/60">PDF files only, up to 50MB</p>
+            <p className="text-[11px] text-caso-slate/60">PDF files only, up to 250MB</p>
           </div>
         )}
 
