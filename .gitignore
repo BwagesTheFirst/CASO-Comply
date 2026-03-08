@@ -46,3 +46,5 @@ api-service/__pycache__/
 api-service/uploads/
 api-service/output/
 *.pyc
+.env*.local
+agent/.venv/

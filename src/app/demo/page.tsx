@@ -46,6 +46,7 @@ interface VerificationInfo {
 }
 
 interface RemediateResult {
+  file_id: string;
   before: ScoreResult;
   after: ScoreResult;
   download_url: string;
@@ -158,6 +159,7 @@ export default function DemoPage() {
   const [result, setResult] = useState<RemediateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showPdfViewer, setShowPdfViewer] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -221,7 +223,7 @@ export default function DemoPage() {
         const remediateForm = new FormData();
         remediateForm.append("file", selectedFile);
 
-        const remediateRes = await fetch(`${API_BASE}/api/remediate`, {
+        const remediateRes = await fetch(`${API_BASE}/api/remediate?verify=false`, {
           method: "POST",
           body: remediateForm,
           signal: controller.signal,
@@ -241,6 +243,7 @@ export default function DemoPage() {
           }));
 
         const remediateData: RemediateResult = {
+          file_id: raw.file_id,
           before: {
             score: raw.before.score.score,
             grade: raw.before.score.grade,
@@ -297,6 +300,43 @@ export default function DemoPage() {
       ? result.download_url
       : `${API_BASE}${result.download_url}`;
     window.open(url, "_blank", "noopener,noreferrer");
+  }, [result]);
+
+  const handleVerify = useCallback(async () => {
+    if (!result?.file_id) return;
+    setVerifying(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/verify/${result.file_id}`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        throw new Error(`Verification failed: ${res.statusText}`);
+      }
+      const data = await res.json();
+      setResult((prev) => {
+        if (!prev) return prev;
+        const transformChecks = (checksObj: Record<string, { passed: boolean; description: string }>) =>
+          Object.entries(checksObj).map(([, val]) => ({
+            name: val.description,
+            passed: val.passed,
+          }));
+        return {
+          ...prev,
+          verification: data.verification || undefined,
+          tag_assignments: data.tag_assignments || prev.tag_assignments,
+          page_dimensions: data.page_dimensions || prev.page_dimensions,
+          after: data.after?.score ? {
+            score: data.after.score.score,
+            grade: data.after.score.grade,
+            checks: transformChecks(data.after.score.checks),
+          } : prev.after,
+        };
+      });
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setVerifying(false);
+    }
   }, [result]);
 
   const isProcessing = state === "uploading" || state === "analyzing" || state === "remediating";
@@ -545,7 +585,53 @@ export default function DemoPage() {
                 </div>
               )}
 
-              {/* AI Verification Results */}
+              {/* AI Verification — Premium Feature */}
+              {!result.verification && (
+                <div className="mt-8 overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/5 via-caso-navy-light to-amber-500/5 p-6 md:p-8">
+                  <div className="flex flex-col items-center gap-5 text-center md:flex-row md:text-left">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 ring-1 ring-amber-500/20">
+                      <svg className="h-7 w-7 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <div className="mb-1 flex items-center justify-center gap-2 md:justify-start">
+                        <h3 className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
+                          AI Verification
+                        </h3>
+                        <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 ring-1 ring-amber-500/30">
+                          Premium
+                        </span>
+                      </div>
+                      <p className="text-sm text-caso-slate">
+                        Use Gemini AI to verify reading order, heading hierarchy, and alt text —
+                        exactly as a screen reader would experience your document.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleVerify}
+                      disabled={verifying}
+                      className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3.5 text-sm font-bold text-caso-navy shadow-lg shadow-amber-500/20 transition-all hover:from-amber-400 hover:to-amber-500 hover:shadow-xl hover:shadow-amber-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {verifying ? (
+                        <>
+                          <SpinnerIcon className="h-4 w-4 text-caso-navy" />
+                          Verifying...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                          </svg>
+                          Run AI Verification
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Verification Results (shown after running) */}
               {result.verification && (
                 <div className="mt-8 rounded-2xl border border-caso-blue/30 bg-gradient-to-r from-caso-blue/5 to-transparent p-6 md:p-8">
                   <div className="mb-4 flex items-center gap-3">
@@ -563,6 +649,9 @@ export default function DemoPage() {
                       </p>
                     </div>
                     <div className="ml-auto flex items-center gap-2">
+                      <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 ring-1 ring-amber-500/30">
+                        Premium
+                      </span>
                       <span className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold ${
                         result.verification.verification_score >= 0.7
                           ? "bg-caso-green/10 text-caso-green"
