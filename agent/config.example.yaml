@@ -1,14 +1,77 @@
+# ============================================================
+# CASO Comply Agent — Configuration
+# ============================================================
+# Full docs: https://caso-comply.vercel.app/setup
+# ============================================================
+
+# ── Processing Mode ──────────────────────────────────────────
+# cloud   → PDFs uploaded to CASO cloud for processing ($0.10/page)
+#           Fastest setup. Best for public/non-sensitive docs.
+#
+# hybrid  → Remediation runs locally. Only page images are sent
+#           to Gemini AI for quality verification ($0.20/page).
+#           PDFs and text never leave your network.
+#
+# local   → Everything runs on-premise. Nothing leaves your
+#           network. Requires Enterprise license.
 mode: hybrid
+
+# ── License ──────────────────────────────────────────────────
+# Get your key at https://caso-comply.vercel.app
 license_key: ""
+
+# ── What to Scan ─────────────────────────────────────────────
+# Add as many folders as you need. The agent scans recursively.
+# Use the paths AS THEY APPEAR INSIDE THE CONTAINER.
+# Example: if you mount -v /shared/docs:/data/documents
+#          then use /data/documents here.
 scan_paths:
   - /data/documents
-watch: true
-cron: "0 * * * *"
+  # - /data/shared-drive
+  # - /data/website-exports
+
+# Websites to crawl for PDFs (optional)
 website_urls: []
+  # - https://your-website.gov
+  # - https://intranet.your-org.local
+
+# ── Output ───────────────────────────────────────────────────
+# Where remediated PDFs are saved
 output_dir: /data/remediated
+
+# How to name output files:
+#   suffix    → report_remediated.pdf (keeps original intact)
+#   overwrite → replaces the original file
+#   directory → saves all output to output_dir with same filename
 output_mode: suffix
+
+# ── Schedule ─────────────────────────────────────────────────
+# Standard cron format: minute hour day month weekday
+# Examples:
+#   "0 2 * * *"     → Every night at 2:00 AM
+#   "0 */4 * * *"   → Every 4 hours
+#   "0 * * * *"     → Every hour
+#   "30 1 * * 1-5"  → 1:30 AM, weekdays only
+cron: "0 2 * * *"
+
+# Re-scan even if files haven't changed?
+watch: true
+
+# ── Performance ──────────────────────────────────────────────
+# Number of PDFs to process simultaneously
 max_workers: 1
+
+# ── AI Verification (hybrid mode only) ──────────────────────
+# Gemini API key for multimodal quality verification
+# Get one at https://aistudio.google.com/apikey
 gemini_api_key: ""
-phone_home: true
+
+# ── Advanced ─────────────────────────────────────────────────
+# CASO API endpoint (don't change unless directed by support)
 caso_api_url: https://caso-comply-api.onrender.com
+
+# Dashboard port
 local_port: 9090
+
+# Send usage telemetry to CASO (required for license validation)
+phone_home: true

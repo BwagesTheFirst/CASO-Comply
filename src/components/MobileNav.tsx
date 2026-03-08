@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from "react";
 
 const NAV_LINKS = [
   { href: "#how-it-works", label: "How It Works" },
-  { href: "#service-levels", label: "Service Levels" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#resources", label: "Resources" },
+  { href: "#enterprise", label: "Enterprise" },
+  { href: "#demo", label: "Demo" },
   { href: "#partners", label: "Partners" },
+  { href: "#pricing", label: "Pricing" },
 ];
 
 export default function MobileNav() {

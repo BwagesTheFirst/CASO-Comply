@@ -95,10 +95,68 @@ const STEPS = [
   },
 ];
 
+const DEPLOYMENT_MODES = [
+  {
+    mode: "Cloud",
+    tier: "Standard",
+    price: "$0.10/page",
+    description: "Upload PDFs to our secure cloud for processing. Fastest setup — no infrastructure required.",
+    dataPolicy: "Full PDFs sent to CASO cloud",
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+      </svg>
+    ),
+    features: [
+      "Zero infrastructure setup",
+      "Automatic updates",
+      "Cloud dashboard & reporting",
+    ],
+    ideal: "Small orgs, public website PDFs",
+  },
+  {
+    mode: "Hybrid",
+    tier: "Professional",
+    price: "$0.20/page",
+    description: "Remediation runs on your servers. Only page images leave your network for AI verification.",
+    dataPolicy: "Only page images sent (no text or metadata)",
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+      </svg>
+    ),
+    features: [
+      "PDFs never leave your network",
+      "AI-powered quality verification",
+      "Local processing + cloud review",
+    ],
+    ideal: "Mid-size, document-sensitive orgs",
+    featured: true,
+  },
+  {
+    mode: "Local",
+    tier: "Enterprise",
+    price: "Custom",
+    description: "Everything runs on-premise. No data leaves your network. Full air-gap support.",
+    dataPolicy: "Nothing leaves your network",
+    icon: (
+      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    ),
+    features: [
+      "Complete air-gap support",
+      "Bring your own AI keys",
+      "Dedicated account manager",
+    ],
+    ideal: "Hospitals, large gov, regulated industries",
+  },
+];
+
 const STATS = [
   { value: "2.5T+", label: "PDFs on the web globally" },
   { value: "90%", label: "are inaccessible" },
-  { value: "$0.10", label: "per page starting cost" },
+  { value: "24/7", label: "automated remediation" },
   { value: "95%+", label: "automated accuracy rate" },
 ];
 
@@ -137,28 +195,28 @@ export default function Home() {
               How It Works
             </a>
             <a
-              href="#service-levels"
+              href="#enterprise"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
-              Service Levels
+              Enterprise
             </a>
             <a
-              href="#pricing"
+              href="#demo"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
-              Pricing
-            </a>
-            <a
-              href="#resources"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
-            >
-              Resources
+              Demo
             </a>
             <a
               href="#partners"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
               Partners
+            </a>
+            <a
+              href="#pricing"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
+            >
+              Pricing
             </a>
             <a
               href="#scan"
@@ -174,7 +232,7 @@ export default function Home() {
       </nav>
 
       <main id="main-content">
-        {/* Hero Section */}
+        {/* Hero Section — Enterprise-first messaging */}
         <section className="relative overflow-hidden px-6 pb-8 pt-16 md:pb-16 md:pt-24">
           {/* Background gradient */}
           <div className="pointer-events-none absolute inset-0" aria-hidden="true">
@@ -199,18 +257,17 @@ export default function Home() {
             {/* Headline */}
             <div className="mx-auto max-w-4xl text-center">
               <h1 className="font-[family-name:var(--font-display)] text-4xl font-900 leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                Your PDFs aren&apos;t accessible.
+                Thousands of inaccessible PDFs.
                 <br />
                 <span className="text-gradient">
-                  We can prove it in 60 seconds.
+                  We fix them all — automatically.
                 </span>
               </h1>
 
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-caso-slate md:text-xl">
-                CASO Comply scans your website, finds every PDF, and shows you
-                exactly what&apos;s non-compliant — with before-and-after proof of
-                automated remediation. Starting at{" "}
-                <strong className="text-caso-white">$0.10/page</strong>.
+                CASO Comply deploys on your infrastructure and remediates every PDF
+                to WCAG 2.1 AA, PDF/UA, and Section 508 compliance — automatically,
+                on your schedule. Start with a free site audit.
               </p>
             </div>
 
@@ -245,92 +302,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Service Levels */}
-        <section id="service-levels" className="px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl">
-            <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
-                Three levels. One goal:{" "}
-                <span className="text-caso-blue">compliance.</span>
-              </h2>
-              <p className="mt-4 text-lg text-caso-slate">
-                Choose the service level that matches your documents&apos; complexity.
-                Mix and match across your library.
-              </p>
-            </div>
-
-            <div id="pricing" className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
-              {SERVICE_LEVELS.map((tier) => (
-                <div
-                  key={tier.level}
-                  className={`service-card relative rounded-2xl border p-8 ${
-                    tier.featured
-                      ? "border-caso-blue bg-caso-navy-light shadow-xl shadow-caso-blue/10"
-                      : "border-caso-border bg-caso-navy-light/50"
-                  }`}
-                >
-                  {tier.featured && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-blue px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="text-sm font-semibold uppercase tracking-wider text-caso-glacier">
-                    {tier.level}
-                  </div>
-                  <div className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
-                    {tier.name}
-                  </div>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="font-[family-name:var(--font-display)] text-4xl font-bold text-caso-white">
-                      {tier.price}
-                    </span>
-                    <span className="text-base text-caso-slate">/page</span>
-                  </div>
-                  <p className="mt-4 text-sm leading-relaxed text-caso-slate">
-                    {tier.description}
-                  </p>
-                  <ul className="mt-6 space-y-3" role="list">
-                    {tier.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-3 text-sm text-caso-slate"
-                      >
-                        <svg
-                          className="mt-0.5 h-4 w-4 shrink-0 text-caso-green"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                          aria-hidden="true"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href="#scan"
-                    className={`mt-8 block rounded-xl px-6 py-3 text-center text-sm font-bold transition-all ${
-                      tier.featured
-                        ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
-                        : "border border-caso-border bg-transparent text-caso-white hover:border-caso-blue hover:bg-caso-navy-light"
-                    }`}
-                  >
-                    Get Started
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* How It Works */}
-        <section id="how-it-works" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
+        <section id="how-it-works" className="border-b border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
@@ -365,8 +338,163 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Before/After Preview Placeholder */}
-        <section aria-label="Remediation preview" className="px-6 py-20 md:py-28">
+        {/* Enterprise Deployment / On-Premise Agent */}
+        <section id="enterprise" className="px-6 py-20 md:py-28">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-2xl text-center">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-caso-teal/30 bg-caso-teal/10 px-4 py-1.5">
+                <svg className="h-4 w-4 text-caso-teal" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
+                </svg>
+                <span className="text-sm font-semibold text-caso-teal">On-Premise Agent</span>
+              </div>
+              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
+                Deploy on your infrastructure.{" "}
+                <span className="text-caso-teal">Your data never leaves.</span>
+              </h2>
+              <p className="mt-4 text-lg text-caso-slate">
+                Install our Docker-based agent on your servers. It scans folders, crawls
+                websites, and remediates PDFs automatically — on your schedule, under your
+                control.
+              </p>
+            </div>
+
+            {/* How the agent works */}
+            <div className="mx-auto mt-12 max-w-3xl">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                {[
+                  { icon: "M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z", label: "Scan folders & sites" },
+                  { icon: "M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z", label: "Deduplicate by hash" },
+                  { icon: "M11.42 15.17l-5.56-5.56a2.002 2.002 0 010-2.83l.28-.28a2 2 0 012.83 0l5.56 5.56m-7.12 7.12l7.12-7.12m0 0l2.83-2.83a2 2 0 000-2.83l-.28-.28a2 2 0 00-2.83 0L10.59 12.3", label: "Remediate automatically" },
+                  { icon: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z", label: "Track & report" },
+                ].map((item) => (
+                  <div key={item.label} className="flex flex-col items-center gap-2 rounded-xl border border-caso-border/50 bg-caso-navy-light/50 p-4 text-center">
+                    <svg className="h-6 w-6 text-caso-teal" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                    </svg>
+                    <span className="text-xs font-medium text-caso-slate">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Deployment mode cards */}
+            <div className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
+              {DEPLOYMENT_MODES.map((mode) => (
+                <div
+                  key={mode.mode}
+                  className={`relative rounded-2xl border p-8 ${
+                    mode.featured
+                      ? "border-caso-teal bg-caso-navy-light shadow-xl shadow-caso-teal/10"
+                      : "border-caso-border bg-caso-navy-light/50"
+                  }`}
+                >
+                  {mode.featured && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-teal px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-navy">
+                      Recommended
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${mode.featured ? "bg-caso-teal/20 text-caso-teal" : "bg-caso-blue/10 text-caso-blue"}`}>
+                      {mode.icon}
+                    </div>
+                    <div>
+                      <div className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
+                        {mode.mode}
+                      </div>
+                      <div className="text-xs font-semibold uppercase tracking-wider text-caso-glacier">
+                        {mode.tier}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
+                      {mode.price}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-caso-slate">
+                    {mode.description}
+                  </p>
+                  <div className="mt-4 rounded-lg border border-caso-border/50 bg-caso-navy/50 px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <svg className="h-3.5 w-3.5 shrink-0 text-caso-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                      </svg>
+                      <span className="text-xs font-medium text-caso-slate">{mode.dataPolicy}</span>
+                    </div>
+                  </div>
+                  <ul className="mt-5 space-y-2.5" role="list">
+                    {mode.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3 text-sm text-caso-slate">
+                        <svg className="mt-0.5 h-4 w-4 shrink-0 text-caso-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 text-xs text-caso-slate/70">
+                    Ideal for: {mode.ideal}
+                  </p>
+                  <a
+                    href="#scan"
+                    className={`mt-6 block rounded-xl px-6 py-3 text-center text-sm font-bold transition-all ${
+                      mode.featured
+                        ? "bg-caso-teal text-caso-navy hover:bg-caso-teal/90 hover:shadow-lg hover:shadow-caso-teal/25"
+                        : "border border-caso-border bg-transparent text-caso-white hover:border-caso-teal hover:bg-caso-navy-light"
+                    }`}
+                  >
+                    {mode.price === "Custom" ? "Contact Sales" : "Get Started"}
+                  </a>
+                </div>
+              ))}
+            </div>
+
+            {/* Dashboard preview */}
+            <div className="mx-auto mt-14 max-w-4xl">
+              <div className="mx-auto mb-6 max-w-2xl text-center">
+                <h3 className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white sm:text-2xl">
+                  Install once. Remediate forever.
+                </h3>
+                <p className="mt-2 text-sm text-caso-slate">
+                  The agent runs on your servers 24/7 — scanning folders, finding new PDFs,
+                  and remediating them automatically. Track everything from the built-in dashboard.
+                </p>
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-caso-border shadow-2xl shadow-caso-teal/5">
+                <Image
+                  src="/agent-dashboard.png"
+                  alt="CASO Comply Agent dashboard showing PDF remediation status, scores, and configuration"
+                  width={1440}
+                  height={800}
+                  className="w-full"
+                />
+              </div>
+              <p className="mt-3 text-center text-sm text-caso-slate">
+                Built-in dashboard at localhost:9090 — monitor every PDF in real time
+              </p>
+            </div>
+
+            {/* Deploy CTA */}
+            <div className="mx-auto mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <Link
+                href="/setup"
+                className="inline-flex items-center gap-2 rounded-xl bg-caso-teal px-8 py-4 text-base font-bold text-caso-navy transition-all hover:bg-caso-teal/90 hover:shadow-lg hover:shadow-caso-teal/25"
+              >
+                View Setup Guide
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+              <span className="text-sm text-caso-slate">
+                One Docker image. One config file. Deploy in minutes.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Before/After Preview */}
+        <section id="demo" aria-label="Remediation preview" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
@@ -484,8 +612,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Social Proof / Testimonials Placeholder */}
-        <section aria-label="Trusted by organizations" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
+        {/* Social Proof / Testimonials */}
+        <section id="partners" aria-label="Trusted by organizations" className="px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
@@ -535,6 +663,90 @@ export default function Home() {
                   </div>
                 </footer>
               </blockquote>
+            </div>
+          </div>
+        </section>
+
+        {/* Service Levels / Pricing — at bottom */}
+        <section id="service-levels" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
+                Per-page pricing for{" "}
+                <span className="text-caso-blue">any volume.</span>
+              </h2>
+              <p className="mt-4 text-lg text-caso-slate">
+                Choose the service level that matches your documents&apos; complexity.
+                Mix and match across your library.
+              </p>
+            </div>
+
+            <div id="pricing" className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
+              {SERVICE_LEVELS.map((tier) => (
+                <div
+                  key={tier.level}
+                  className={`service-card relative rounded-2xl border p-8 ${
+                    tier.featured
+                      ? "border-caso-blue bg-caso-navy-light shadow-xl shadow-caso-blue/10"
+                      : "border-caso-border bg-caso-navy-light/50"
+                  }`}
+                >
+                  {tier.featured && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-blue px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
+                      Most Popular
+                    </div>
+                  )}
+                  <div className="text-sm font-semibold uppercase tracking-wider text-caso-glacier">
+                    {tier.level}
+                  </div>
+                  <div className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
+                    {tier.name}
+                  </div>
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="font-[family-name:var(--font-display)] text-4xl font-bold text-caso-white">
+                      {tier.price}
+                    </span>
+                    <span className="text-base text-caso-slate">/page</span>
+                  </div>
+                  <p className="mt-4 text-sm leading-relaxed text-caso-slate">
+                    {tier.description}
+                  </p>
+                  <ul className="mt-6 space-y-3" role="list">
+                    {tier.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="flex items-start gap-3 text-sm text-caso-slate"
+                      >
+                        <svg
+                          className="mt-0.5 h-4 w-4 shrink-0 text-caso-green"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2.5}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href="#scan"
+                    className={`mt-8 block rounded-xl px-6 py-3 text-center text-sm font-bold transition-all ${
+                      tier.featured
+                        ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                        : "border border-caso-border bg-transparent text-caso-white hover:border-caso-blue hover:bg-caso-navy-light"
+                    }`}
+                  >
+                    Get Started
+                  </a>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -596,9 +808,14 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a href="#service-levels" className="text-sm text-caso-slate hover:text-caso-white">
-                    Service Levels
+                  <a href="#enterprise" className="text-sm text-caso-slate hover:text-caso-white">
+                    Enterprise Agent
                   </a>
+                </li>
+                <li>
+                  <Link href="/setup" className="text-sm text-caso-slate hover:text-caso-white">
+                    Setup Guide
+                  </Link>
                 </li>
                 <li>
                   <a href="#pricing" className="text-sm text-caso-slate hover:text-caso-white">

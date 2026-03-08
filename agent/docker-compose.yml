@@ -1,25 +1,56 @@
-# CASO Comply Agent -- Quick Start
-# Usage:
-#   1. Copy config.example.yaml to config.yaml and edit
-#   2. Run: docker compose up -d
-#   3. Open http://localhost:9090
+# ============================================================
+# CASO Comply Agent — Docker Compose
+# ============================================================
+#
+# Quick Start:
+#   1. Copy config.example.yaml → config.yaml and edit it
+#   2. Update the volume mounts below to point to your PDF folders
+#   3. Run: docker compose up -d
+#   4. Open: http://localhost:9090
+#
+# Logs:    docker compose logs -f
+# Stop:    docker compose down
+# Update:  docker compose pull && docker compose up -d
+# ============================================================
 
 services:
   caso-agent:
-    build: .
+    image: caso/comply-agent:latest
     container_name: caso-comply-agent
     restart: unless-stopped
+
     ports:
-      - "9090:9090"
+      - "9090:9090"       # Dashboard UI
+
     volumes:
+      # Your config file (required)
       - ./config.yaml:/app/config.yaml:ro
-      - agent-data:/data
-      # Mount your PDF directories here:
-      # - /path/to/your/documents:/mnt/documents:ro
+
+      # ── Mount your PDF folders here ──────────────────────
+      # Left side  = path on YOUR server
+      # Right side = path INSIDE the container (use this in config.yaml scan_paths)
+      # :ro        = read-only (agent won't modify originals)
+      #
+      # Examples:
+      - /path/to/your/pdfs:/data/documents:ro
+      # - /shared/public-docs:/data/public:ro
+      # - /var/www/html/files:/data/website-files:ro
+      # - //server/share/pdfs:/data/network-share:ro    # Windows UNC path
+
+      # Output folder for remediated PDFs
+      - /path/to/output:/data/remediated
+
+      # Agent database (tracks what's been processed)
+      - agent-data:/data/db
+
     environment:
-      - CASO_MODE=${CASO_MODE:-hybrid}
-      - CASO_LICENSE_KEY=${CASO_LICENSE_KEY:-}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Override any config.yaml value with environment variables:
+      # - CASO_MODE=hybrid
+      # - CASO_LICENSE_KEY=CASO-XXXX-XXXX-XXXX
+      # - CASO_CRON=0 2 * * *
+      # - GEMINI_API_KEY=your-key-here
+      - TZ=${TZ:-America/Chicago}
 
 volumes:
   agent-data:
+    driver: local

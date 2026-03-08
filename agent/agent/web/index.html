@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASO Comply Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0B1D3A;
+    --navy-light: #132D54;
+    --navy-mid: #1A3A6B;
+    --blue: #2EA3F2;
+    --teal: #14B6D3;
+    --white: #FFFFFF;
+    --slate: #94A3B8;
+    --green: #10B981;
+    --red: #EF4444;
+    --yellow: #F59E0B;
+    --border: #1E3A5F;
+    --glacier: #71A7C2;
+  }
+
+  body {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4 { font-family: 'Raleway', sans-serif; }
+
+  /* Top Bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--navy-light);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .logo span { color: var(--teal); }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--green);
+  }
+
+  .status-badge.offline {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--red);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .status-badge.offline .status-dot {
+    background: var(--red);
+    animation: none;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .mode-pill {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background: rgba(20, 182, 211, 0.15);
+    color: var(--teal);
+    border: 1px solid rgba(20, 182, 211, 0.3);
+  }
+
+  /* Main Content */
+  .main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 32px 48px;
+  }
+
+  /* Stats Cards */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    animation: fadeUp 0.4s ease-out both;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stat-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slate);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .stat-number {
+    font-family: 'Raleway', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .stat-accent-blue { color: var(--blue); }
+  .stat-accent-green { color: var(--green); }
+  .stat-accent-yellow { color: var(--yellow); }
+  .stat-accent-red { color: var(--red); }
+
+  /* Score Row */
+  .score-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .score-card {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    animation: fadeUp 0.4s ease-out 0.25s both;
+  }
+
+  .score-ring {
+    width: 64px;
+    height: 64px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .score-ring svg { transform: rotate(-90deg); }
+
+  .score-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .score-info .stat-label { margin-bottom: 2px; }
+
+  .score-info p {
+    font-size: 14px;
+    color: var(--slate);
+  }
+
+  /* Config + Action row */
+  .config-action-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: start;
+  }
+
+  .config-card {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 24px;
+    animation: fadeUp 0.4s ease-out 0.3s both;
+  }
+
+  .config-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--glacier);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px 24px;
+  }
+
+  .config-item label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--slate);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .config-item span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--white);
+    font-family: 'Source Sans 3', monospace;
+  }
+
+  .action-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: fadeUp 0.4s ease-out 0.3s both;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--teal);
+    color: var(--navy);
+  }
+
+  .btn-primary:hover { background: #17c9e8; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--slate);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--glacier);
+    color: var(--white);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* PDF Table */
+  .table-section {
+    animation: fadeUp 0.4s ease-out 0.35s both;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .table-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--glacier);
+  }
+
+  .table-count {
+    font-size: 13px;
+    color: var(--slate);
+  }
+
+  .table-wrap {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-scroll { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--slate);
+    border-bottom: 1px solid var(--border);
+    background: rgba(11, 29, 58, 0.5);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  thead th:hover { color: var(--glacier); }
+
+  thead th .sort-arrow {
+    display: inline-block;
+    margin-left: 4px;
+    opacity: 0.3;
+    font-size: 10px;
+  }
+
+  thead th.sorted .sort-arrow { opacity: 1; color: var(--teal); }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(30, 58, 95, 0.5);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(26, 58, 107, 0.3); }
+
+  td {
+    padding: 10px 16px;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .file-name {
+    font-weight: 500;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-pill {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: capitalize;
+  }
+
+  .status-completed { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+  .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--yellow); }
+  .status-processing { background: rgba(46, 163, 242, 0.15); color: var(--blue); }
+  .status-failed { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+  .score-cell { font-weight: 600; font-family: 'Raleway', sans-serif; }
+
+  .score-low { color: var(--red); }
+  .score-mid { color: var(--yellow); }
+  .score-high { color: var(--green); }
+
+  .error-cell {
+    color: var(--red);
+    font-size: 13px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--slate);
+  }
+
+  .empty-state svg {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .empty-state h4 {
+    font-size: 16px;
+    color: var(--glacier);
+    margin-bottom: 6px;
+  }
+
+  .empty-state p { font-size: 14px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    color: var(--white);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 200;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+
+  /* Refresh indicator */
+  .refresh-indicator {
+    font-size: 11px;
+    color: var(--slate);
+    opacity: 0.6;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .topbar { padding: 14px 20px; }
+    .main { padding: 20px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .score-row { grid-template-columns: 1fr; }
+    .config-action-row { grid-template-columns: 1fr; }
+    .action-bar { flex-direction: row; }
+  }
+
+  @media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-number { font-size: 28px; }
+    .topbar-left .logo { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">CASO <span>Comply</span> Agent</div>
+  </div>
+  <div class="topbar-right">
+    <span class="refresh-indicator" id="refreshTimer">Next refresh in 10s</span>
+    <div class="status-badge" id="statusBadge">
+      <span class="status-dot"></span>
+      <span id="statusText">Checking...</span>
+    </div>
+    <span class="mode-pill" id="modePill">--</span>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="card">
+      <div class="stat-label">Total PDFs</div>
+      <div class="stat-number stat-accent-blue" id="statTotal">--</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Completed</div>
+      <div class="stat-number stat-accent-green" id="statCompleted">--</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Pending</div>
+      <div class="stat-number stat-accent-yellow" id="statPending">--</div>
+    </div>
+    <div class="card">
+      <div class="stat-label">Failed</div>
+      <div class="stat-number stat-accent-red" id="statFailed">--</div>
+    </div>
+  </div>
+
+  <!-- Score Row -->
+  <div class="score-row">
+    <div class="score-card">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="var(--border)" stroke-width="5"/>
+          <circle cx="32" cy="32" r="28" fill="none" stroke="var(--red)" stroke-width="5"
+            stroke-dasharray="175.93" stroke-dashoffset="175.93" stroke-linecap="round" id="ringBefore"/>
+        </svg>
+        <div class="score-ring-text" id="scoreBefore">--</div>
+      </div>
+      <div class="score-info">
+        <div class="stat-label">Avg Score Before</div>
+        <p>Average accessibility score at intake</p>
+      </div>
+    </div>
+    <div class="score-card">
+      <div class="score-ring">
+        <svg viewBox="0 0 64 64" width="64" height="64">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="var(--border)" stroke-width="5"/>
+          <circle cx="32" cy="32" r="28" fill="none" stroke="var(--green)" stroke-width="5"
+            stroke-dasharray="175.93" stroke-dashoffset="175.93" stroke-linecap="round" id="ringAfter"/>
+        </svg>
+        <div class="score-ring-text" id="scoreAfter">--</div>
+      </div>
+      <div class="score-info">
+        <div class="stat-label">Avg Score After</div>
+        <p>Average accessibility score post-remediation</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config + Actions -->
+  <div class="config-action-row">
+    <div class="config-card">
+      <h3>Configuration</h3>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>Scan Paths</label>
+          <span id="cfgPaths">--</span>
+        </div>
+        <div class="config-item">
+          <label>Cron Schedule</label>
+          <span id="cfgCron">--</span>
+        </div>
+        <div class="config-item">
+          <label>Output Directory</label>
+          <span id="cfgOutput">--</span>
+        </div>
+        <div class="config-item">
+          <label>Mode</label>
+          <span id="cfgMode">--</span>
+        </div>
+        <div class="config-item">
+          <label>File Watch</label>
+          <span id="cfgWatch">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-primary" id="btnScan" onclick="triggerScan()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7-4v4l3 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Trigger Scan
+      </button>
+      <button class="btn btn-secondary" onclick="refreshAll()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17M14.5 8a6.5 6.5 0 0 1-11.48 4.17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 1v3h-3M3 15v-3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- PDF Table -->
+  <div class="table-section">
+    <div class="table-header">
+      <h3>Scanned PDFs</h3>
+      <span class="table-count" id="tableCount"></span>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="path" onclick="sortTable('path')">File <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="status" onclick="sortTable('status')">Status <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="before_score" onclick="sortTable('before_score')">Before <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="after_score" onclick="sortTable('after_score')">After <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="source" onclick="sortTable('source')">Source <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="discovered_at" onclick="sortTable('discovered_at')">Discovered <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="processed_at" onclick="sortTable('processed_at')">Processed <span class="sort-arrow">&#9650;</span></th>
+              <th data-key="error_message" onclick="sortTable('error_message')">Error <span class="sort-arrow">&#9650;</span></th>
+            </tr>
+          </thead>
+          <tbody id="pdfTableBody">
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--slate)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <h4>No PDFs scanned yet</h4>
+        <p>Check your scan_paths configuration or trigger a manual scan.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  var BASE = '';
+  var pdfs = [];
+  var sortKey = 'discovered_at';
+  var sortAsc = false;
+  var countdown = 10;
+  var refreshInterval;
+
+  // --- Sanitize text to prevent XSS ---
+  function esc(str) {
+    if (str == null) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(String(str)));
+    return div.textContent;
+  }
+
+  // --- API Helpers ---
+  function apiFetch(path) {
+    return fetch(BASE + path).then(function(res) {
+      if (!res.ok) throw new Error(res.statusText);
+      return res.json();
+    });
+  }
+
+  // --- Health ---
+  function checkHealth() {
+    return apiFetch('/api/health').then(function(data) {
+      var badge = document.getElementById('statusBadge');
+      document.getElementById('statusText').textContent = 'Online';
+      badge.classList.remove('offline');
+      document.getElementById('modePill').textContent = (data.mode || 'local').toUpperCase();
+    }).catch(function() {
+      var badge = document.getElementById('statusBadge');
+      document.getElementById('statusText').textContent = 'Offline';
+      badge.classList.add('offline');
+    });
+  }
+
+  // --- Stats ---
+  function loadStats() {
+    return apiFetch('/api/stats').then(function(s) {
+      document.getElementById('statTotal').textContent = s.total;
+      document.getElementById('statCompleted').textContent = s.completed;
+      document.getElementById('statPending').textContent = s.pending;
+      document.getElementById('statFailed').textContent = s.failed;
+
+      var before = s.avg_before != null ? Math.round(s.avg_before) : null;
+      var after = s.avg_after != null ? Math.round(s.avg_after) : null;
+      document.getElementById('scoreBefore').textContent = before != null ? before : '--';
+      document.getElementById('scoreAfter').textContent = after != null ? after : '--';
+
+      var circumference = 2 * Math.PI * 28;
+      if (before != null) {
+        document.getElementById('ringBefore').style.strokeDashoffset =
+          circumference - (circumference * before / 100);
+      }
+      if (after != null) {
+        document.getElementById('ringAfter').style.strokeDashoffset =
+          circumference - (circumference * after / 100);
+      }
+    }).catch(function() {});
+  }
+
+  // --- Config ---
+  function loadConfig() {
+    return apiFetch('/api/config').then(function(c) {
+      document.getElementById('cfgPaths').textContent =
+        Array.isArray(c.scan_paths) ? c.scan_paths.join(', ') : '--';
+      document.getElementById('cfgCron').textContent = c.cron || '--';
+      document.getElementById('cfgOutput').textContent = c.output_dir || '--';
+      document.getElementById('cfgMode').textContent = (c.mode || '--').toUpperCase();
+      document.getElementById('cfgWatch').textContent = c.watch ? 'Enabled' : 'Disabled';
+    }).catch(function() {});
+  }
+
+  // --- PDFs ---
+  function scoreClass(score) {
+    if (score == null || score === '') return '';
+    var n = Number(score);
+    if (n >= 80) return 'score-high';
+    if (n >= 50) return 'score-mid';
+    return 'score-low';
+  }
+
+  function basename(path) {
+    return path ? path.split('/').pop() : '--';
+  }
+
+  function formatDate(dt) {
+    if (!dt) return '--';
+    return dt.replace('T', ' ').substring(0, 19);
+  }
+
+  function createCell(text, className, title) {
+    var td = document.createElement('td');
+    if (className) td.className = className;
+    if (title) td.title = title;
+    td.textContent = text;
+    return td;
+  }
+
+  function createStatusCell(status) {
+    var td = document.createElement('td');
+    var span = document.createElement('span');
+    var safeStatus = esc(status || 'unknown');
+    var statusKey = (status || 'pending').toLowerCase();
+    var validStatuses = ['completed', 'pending', 'processing', 'failed'];
+    var pillClass = 'status-pill';
+    if (validStatuses.indexOf(statusKey) !== -1) {
+      pillClass += ' status-' + statusKey;
+    }
+    span.className = pillClass;
+    span.textContent = safeStatus;
+    td.appendChild(span);
+    return td;
+  }
+
+  function renderTable() {
+    var tbody = document.getElementById('pdfTableBody');
+    var empty = document.getElementById('emptyState');
+
+    // Clear existing rows
+    while (tbody.firstChild) {
+      tbody.removeChild(tbody.firstChild);
+    }
+
+    if (!pdfs.length) {
+      empty.style.display = 'block';
+      document.getElementById('tableCount').textContent = '';
+      return;
+    }
+
+    empty.style.display = 'none';
+    document.getElementById('tableCount').textContent = pdfs.length + ' file' + (pdfs.length !== 1 ? 's' : '');
+
+    // Sort
+    var sorted = pdfs.slice().sort(function(a, b) {
+      var va = a[sortKey], vb = b[sortKey];
+      if (va == null) va = '';
+      if (vb == null) vb = '';
+      if (typeof va === 'number' && typeof vb === 'number') {
+        return sortAsc ? va - vb : vb - va;
+      }
+      va = String(va).toLowerCase();
+      vb = String(vb).toLowerCase();
+      return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    });
+
+    // Update sort arrows
+    document.querySelectorAll('thead th').forEach(function(th) {
+      var key = th.dataset.key;
+      if (key === sortKey) {
+        th.classList.add('sorted');
+      } else {
+        th.classList.remove('sorted');
+      }
+      var arrow = th.querySelector('.sort-arrow');
+      if (arrow) {
+        arrow.textContent = (key === sortKey && sortAsc) ? '\u25B2' : '\u25BC';
+      }
+    });
+
+    // Build rows using DOM methods
+    sorted.forEach(function(p) {
+      var tr = document.createElement('tr');
+
+      tr.appendChild(createCell(basename(p.path), 'file-name', p.path || ''));
+      tr.appendChild(createStatusCell(p.status));
+
+      var beforeVal = p.before_score != null ? String(p.before_score) : '--';
+      tr.appendChild(createCell(beforeVal, 'score-cell ' + scoreClass(p.before_score)));
+
+      var afterVal = p.after_score != null ? String(p.after_score) : '--';
+      tr.appendChild(createCell(afterVal, 'score-cell ' + scoreClass(p.after_score)));
+
+      tr.appendChild(createCell(p.source || '--'));
+      tr.appendChild(createCell(formatDate(p.discovered_at)));
+      tr.appendChild(createCell(formatDate(p.processed_at)));
+      tr.appendChild(createCell(p.error_message || '', 'error-cell', p.error_message || ''));
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadPdfs() {
+    return apiFetch('/api/pdfs').then(function(data) {
+      pdfs = data;
+      renderTable();
+    }).catch(function() {});
+  }
+
+  function sortTable(key) {
+    if (sortKey === key) {
+      sortAsc = !sortAsc;
+    } else {
+      sortKey = key;
+      sortAsc = true;
+    }
+    renderTable();
+  }
+
+  // --- Actions ---
+  function triggerScan() {
+    var btn = document.getElementById('btnScan');
+    btn.disabled = true;
+    btn.textContent = 'Scanning...';
+    fetch(BASE + '/api/scan/trigger', { method: 'POST' })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        showToast(data.message || 'Scan triggered', 'success');
+        setTimeout(refreshAll, 1500);
+      })
+      .catch(function() {
+        showToast('Failed to trigger scan', 'error');
+      })
+      .finally(function() {
+        btn.disabled = false;
+        btn.textContent = '';
+        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '16');
+        svg.setAttribute('height', '16');
+        svg.setAttribute('viewBox', '0 0 16 16');
+        svg.setAttribute('fill', 'none');
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7-4v4l3 1.5');
+        path.setAttribute('stroke', 'currentColor');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(path);
+        btn.appendChild(svg);
+        btn.appendChild(document.createTextNode(' Trigger Scan'));
+      });
+  }
+
+  // --- Toast ---
+  function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + (type || '') + ' show';
+    setTimeout(function() { t.classList.remove('show'); }, 3000);
+  }
+
+  // --- Refresh ---
+  function refreshAll() {
+    countdown = 10;
+    return Promise.all([checkHealth(), loadStats(), loadConfig(), loadPdfs()]);
+  }
+
+  function startAutoRefresh() {
+    refreshInterval = setInterval(function() {
+      countdown--;
+      if (countdown <= 0) {
+        refreshAll();
+      }
+      document.getElementById('refreshTimer').textContent = 'Next refresh in ' + countdown + 's';
+    }, 1000);
+  }
+
+  // --- Init ---
+  refreshAll();
+  startAutoRefresh();
+</script>
+
+</body>
+</html>
