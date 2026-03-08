@@ -1,26 +1,142 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* CASO Brand Colors */
+  --color-caso-navy: #0B1D3A;
+  --color-caso-navy-light: #132D54;
+  --color-caso-navy-mid: #1A3A6B;
+  --color-caso-blue: #2EA3F2;
+  --color-caso-blue-bright: #3DB8FF;
+  --color-caso-glacier: #71A7C2;
+  --color-caso-teal: #14B6D3;
+  --color-caso-white: #FFFFFF;
+  --color-caso-slate: #94A3B8;
+  --color-caso-warm: #F59E0B;
+  --color-caso-warm-dark: #D97706;
+  --color-caso-red: #EF4444;
+  --color-caso-red-dark: #DC2626;
+  --color-caso-green: #10B981;
+  --color-caso-surface: #F8FAFC;
+  --color-caso-border: #1E3A5F;
+
+  /* Typography */
+  --font-display: var(--font-raleway), "Century Gothic", sans-serif;
+  --font-body: var(--font-source-sans), "Open Sans", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Base styles */
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrolling with reduced motion respect */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--color-caso-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 100;
+  padding: 12px 24px;
+  background: var(--color-caso-navy);
+  color: var(--color-caso-white);
+  font-weight: 600;
+  border-radius: 0 0 8px 8px;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Countdown animation */
+@keyframes pulse-urgent {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-urgent {
+  animation: pulse-urgent 1.5s ease-in-out infinite;
+}
+
+@keyframes countdown-tick {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.animate-tick {
+  animation: countdown-tick 1s ease-in-out;
+}
+
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-caso-blue) 0%, var(--color-caso-teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover states */
+.service-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(11, 29, 58, 0.15);
+  }
+}
+
+/* Scan input glow effect */
+.scan-input-glow {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.scan-input-glow:focus-within {
+  box-shadow: 0 0 0 4px rgba(46, 163, 242, 0.2), 0 0 20px rgba(46, 163, 242, 0.1);
+  border-color: var(--color-caso-blue);
+}
+
+/* Step connector line */
+.step-connector {
+  position: relative;
+}
+
+.step-connector::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: calc(50% + 28px);
+  width: calc(100% - 56px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-caso-blue) 0%, var(--color-caso-glacier) 100%);
+  opacity: 0.3;
+}
+
+@media (max-width: 767px) {
+  .step-connector::after {
+    display: none;
+  }
+}
+
+/* Selection colors */
+::selection {
+  background: rgba(46, 163, 242, 0.2);
+  color: var(--color-caso-navy);
 }
