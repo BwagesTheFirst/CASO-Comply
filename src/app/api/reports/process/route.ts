@@ -5,7 +5,13 @@ import { sendReportEmail } from "@/lib/sendgrid";
 const CASO_API_URL =
   process.env.NEXT_PUBLIC_CASO_API_URL ||
   "https://caso-comply-api.onrender.com";
-const USER_AGENT = "CASO-Comply-Scanner/1.0";
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+const PDF_DOWNLOAD_HEADERS: Record<string, string> = {
+  "User-Agent": USER_AGENT,
+  Accept: "application/pdf,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+};
 const PDF_DOWNLOAD_TIMEOUT = 15_000;
 const ANALYZE_TIMEOUT = 60_000;
 const MAX_PDFS_PER_REPORT = 15;
@@ -37,7 +43,7 @@ async function downloadPdf(
 ): Promise<{ buffer: ArrayBuffer; filename: string } | null> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT },
+      headers: PDF_DOWNLOAD_HEADERS,
       signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT),
       redirect: "follow",
     });

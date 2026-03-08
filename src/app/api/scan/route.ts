@@ -5,8 +5,23 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const CASO_API_URL =
   process.env.NEXT_PUBLIC_CASO_API_URL ||
   "https://caso-comply-api.onrender.com";
-const USER_AGENT = "CASO-Comply-Scanner/1.0";
-const PAGE_FETCH_TIMEOUT = 8_000;
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+const BROWSER_HEADERS: Record<string, string> = {
+  "User-Agent": USER_AGENT,
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Accept-Encoding": "gzip, deflate, br",
+  "Cache-Control": "no-cache",
+  Pragma: "no-cache",
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Upgrade-Insecure-Requests": "1",
+};
+const PAGE_FETCH_TIMEOUT = 15_000;
 const PDF_DOWNLOAD_TIMEOUT = 15_000;
 const MAX_PAGES = 20;
 const MAX_PDF_URLS_RETURNED = 10;
@@ -52,7 +67,7 @@ function resolveHref(href: string, pageUrl: string): string | null {
 async function fetchPage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT },
+      headers: BROWSER_HEADERS,
       signal: AbortSignal.timeout(PAGE_FETCH_TIMEOUT),
       redirect: "follow",
     });
@@ -97,7 +112,7 @@ async function downloadPdf(
 ): Promise<{ buffer: ArrayBuffer; filename: string } | null> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT },
+      headers: { ...BROWSER_HEADERS, Accept: "application/pdf,*/*;q=0.8" },
       signal: AbortSignal.timeout(PDF_DOWNLOAD_TIMEOUT),
       redirect: "follow",
     });
@@ -218,17 +233,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Fetch root page
-    const rootHtml = await fetchPage(normalizedUrl);
+    // 1. Fetch root page (retry with www. prefix if first attempt fails)
+    let rootHtml = await fetchPage(normalizedUrl);
+    let effectiveUrl = normalizedUrl;
+
+    if (!rootHtml) {
+      // Try adding/removing www.
+      try {
+        const u = new URL(normalizedUrl);
+        if (u.hostname.startsWith("www.")) {
+          u.hostname = u.hostname.slice(4);
+        } else {
+          u.hostname = `www.${u.hostname}`;
+        }
+        effectiveUrl = u.href;
+        rootHtml = await fetchPage(effectiveUrl);
+      } catch {
+        // ignore
+      }
+    }
+
     if (!rootHtml) {
       return NextResponse.json(
-        { error: "Could not fetch the provided URL" },
+        { error: "Could not fetch the provided URL. The site may be blocking automated requests." },
         { status: 422 }
       );
     }
 
     const allPdfUrls = new Set<string>();
-    const { internalLinks, pdfLinks } = extractLinks(rootHtml, normalizedUrl);
+    const { internalLinks, pdfLinks } = extractLinks(rootHtml, effectiveUrl);
     pdfLinks.forEach((u) => allPdfUrls.add(u));
 
     // 2. Follow internal links 1 level deep (up to MAX_PAGES)
