@@ -227,7 +227,7 @@ export default function ScanForm({ variant = "hero" }: ScanFormProps) {
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              <span className="font-semibold">Report requested! We&apos;ll send the full analysis to {email}</span>
+              <span className="font-semibold">We&apos;re analyzing all {result?.pdfCount} PDFs now. Check {email} in a few minutes for your full report!</span>
             </div>
           ) : showEmailForm ? (
             <form onSubmit={handleEmailSubmit} className="flex gap-3">

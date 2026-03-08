@@ -25,29 +25,20 @@ export async function POST(req: NextRequest) {
     try {
       const supabase = createAdminClient();
 
-      // Verify the scan exists
-      const { data: scan, error: scanError } = await supabase
-        .from("scans")
-        .select("id")
-        .eq("id", scanId)
-        .single();
-
-      if (scanError || !scan) {
-        console.error("Scan lookup failed:", scanError?.message);
-        // Still return success — don't leak internal state
-        return NextResponse.json({ success: true });
-      }
-
       // Insert the lead
-      const { error: insertError } = await supabase
+      await supabase
         .from("scan_leads")
         .insert({ scan_id: scanId, email: normalizedEmail });
 
-      if (insertError) {
-        console.error("scan_leads insert error:", insertError.message);
-      }
+      // Mark scan for report generation
+      await supabase
+        .from("scans")
+        .update({
+          report_status: "pending",
+          report_email: normalizedEmail,
+        })
+        .eq("id", scanId);
     } catch (dbError) {
-      // Supabase may not be configured — gracefully degrade
       console.error("Supabase unavailable:", dbError);
     }
 
