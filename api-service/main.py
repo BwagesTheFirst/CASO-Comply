@@ -51,6 +51,7 @@ app.add_middleware(
         "http://localhost:3099",
         "https://caso-comply.vercel.app",
     ],
+    allow_origin_regex=r"https://.*\.render\.com|https://caso-comply.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -81,12 +82,19 @@ def _save_upload(upload: UploadFile) -> tuple[str, Path]:
 # ---------------------------------------------------------------------------
 
 
+@app.get("/health")
+async def health():
+    """Health check endpoint for Render and uptime monitors."""
+    return {"status": "ok"}
+
+
 @app.get("/")
 async def root():
     return {
         "service": "CASO Comply API",
         "version": "0.1.0",
         "endpoints": [
+            "GET  /health",
             "POST /api/analyze",
             "POST /api/remediate",
             "GET  /api/download/{file_id}",

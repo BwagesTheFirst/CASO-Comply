@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PdfUpload from "@/components/PdfUpload";
+import PdfViewer from "@/components/PdfViewer";
 import ScoreCard from "@/components/ScoreCard";
 import ScreenReaderSim from "@/components/ScreenReaderSim";
 
@@ -141,6 +142,7 @@ export default function DemoPage() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<RemediateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -538,6 +540,19 @@ export default function DemoPage() {
                   </svg>
                   Download Remediated PDF
                 </button>
+                {result.tag_assignments && result.tag_assignments.length > 0 && (
+                  <button
+                    onClick={() => setShowPdfViewer(true)}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-caso-blue/50 bg-caso-blue/10 px-8 py-4 text-base font-bold text-caso-blue transition-all hover:border-caso-blue hover:bg-caso-blue/20 hover:shadow-lg hover:shadow-caso-blue/15 sm:w-auto"
+                    aria-label="View tagged PDF with tag inspector"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                    </svg>
+                    View Tagged PDF
+                  </button>
+                )}
                 <button
                   onClick={handleReset}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-caso-border bg-transparent px-8 py-4 text-base font-bold text-caso-white transition-all hover:border-caso-blue hover:bg-caso-navy-light sm:w-auto"
@@ -572,6 +587,22 @@ export default function DemoPage() {
           )}
         </div>
       </main>
+
+      {/* PDF Viewer Modal */}
+      {showPdfViewer && result && (
+        <PdfViewer
+          downloadUrl={
+            result.download_url.startsWith("http")
+              ? result.download_url
+              : `${API_BASE}${result.download_url}`
+          }
+          tagAssignments={result.tag_assignments}
+          title={
+            result.tag_assignments.find((t) => t.type === "H1")?.text || "Remediated PDF"
+          }
+          onClose={() => setShowPdfViewer(false)}
+        />
+      )}
     </div>
   );
 }
