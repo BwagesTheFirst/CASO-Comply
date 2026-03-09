@@ -58,10 +58,12 @@ export default async function DashboardOverview() {
     .limit(5);
 
   const plan = tenant?.subscription_plans;
-  const totalPages = usage?.total_pages ?? 0;
-  const pagesIncluded = usage?.pages_included ?? 0;
-  const pagesRemaining = usage?.pages_remaining ?? 0;
-  const overagePages = usage?.overage_pages ?? 0;
+  // RPC may return array or single object
+  const usageRow = Array.isArray(usage) ? usage[0] : usage;
+  const totalPages = usageRow?.total_pages ?? 0;
+  const pagesIncluded = usageRow?.pages_included ?? plan?.pages_included ?? 0;
+  const pagesRemaining = usageRow?.pages_remaining ?? pagesIncluded;
+  const overagePages = usageRow?.overage_pages ?? 0;
   const usagePercent = pagesIncluded > 0 ? Math.min((totalPages / pagesIncluded) * 100, 100) : 0;
 
   // Trial banner
@@ -158,7 +160,7 @@ export default async function DashboardOverview() {
           {plan && (
             <>
               <p className="text-caso-blue text-lg font-semibold">
-                ${(plan.price_cents / 100).toFixed(2)}
+                ${(plan.monthly_price_cents / 100).toFixed(0)}
                 <span className="text-caso-slate text-sm font-normal">/mo</span>
               </p>
               <p className="text-xs text-caso-slate mt-2">

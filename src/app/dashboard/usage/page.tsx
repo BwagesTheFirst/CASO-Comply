@@ -42,12 +42,13 @@ export default async function UsagePage() {
     .lte("created_at", periodEnd.toISOString())
     .order("created_at", { ascending: false });
 
-  const totalPages = usage?.total_pages ?? 0;
-  const pagesIncluded = usage?.pages_included ?? 0;
-  const pagesRemaining = usage?.pages_remaining ?? 0;
-  const overagePages = usage?.overage_pages ?? 0;
-  const totalAnalyses = usage?.total_analyses ?? 0;
-  const totalRemediations = usage?.total_remediations ?? 0;
+  const usageRow = Array.isArray(usage) ? usage[0] : usage;
+  const totalPages = usageRow?.total_pages ?? 0;
+  const pagesIncluded = usageRow?.pages_included ?? 0;
+  const pagesRemaining = usageRow?.pages_remaining ?? 0;
+  const overagePages = usageRow?.overage_pages ?? 0;
+  const totalAnalyses = usageRow?.total_analyses ?? 0;
+  const totalRemediations = usageRow?.total_remediations ?? 0;
   const usagePercent =
     pagesIncluded > 0 ? (totalPages / pagesIncluded) * 100 : 0;
 

@@ -38,9 +38,10 @@ export default async function BillingPage() {
     p_tenant_id: tenantId,
   });
 
-  const overagePages = usage?.overage_pages ?? 0;
-  const overageCost = plan?.overage_price_cents
-    ? ((overagePages * plan.overage_price_cents) / 100).toFixed(2)
+  const usageRow = Array.isArray(usage) ? usage[0] : usage;
+  const overagePages = usageRow?.overage_pages ?? 0;
+  const overageCost = plan?.overage_rate_cents
+    ? ((overagePages * plan.overage_rate_cents) / 100).toFixed(2)
     : "0.00";
 
   return (
@@ -62,7 +63,7 @@ export default async function BillingPage() {
             {plan && (
               <>
                 <p className="text-caso-blue text-lg font-semibold mt-1">
-                  ${(plan.price_cents / 100).toFixed(2)}
+                  ${(plan.monthly_price_cents / 100).toFixed(2)}
                   <span className="text-caso-slate text-sm font-normal">
                     /month
                   </span>
@@ -71,9 +72,9 @@ export default async function BillingPage() {
                   <li>
                     {plan.pages_included?.toLocaleString()} pages included
                   </li>
-                  {plan.overage_price_cents && (
+                  {plan.overage_rate_cents && (
                     <li>
-                      ${(plan.overage_price_cents / 100).toFixed(2)}/page
+                      ${(plan.overage_rate_cents / 100).toFixed(2)}/page
                       overage
                     </li>
                   )}
@@ -99,7 +100,7 @@ export default async function BillingPage() {
           <div>
             <p className="text-xs text-caso-slate mb-1">Base Cost</p>
             <p className="text-xl font-bold text-caso-white">
-              ${plan ? (plan.price_cents / 100).toFixed(2) : "0.00"}
+              ${plan ? (plan.monthly_price_cents / 100).toFixed(2) : "0.00"}
             </p>
           </div>
           <div>
