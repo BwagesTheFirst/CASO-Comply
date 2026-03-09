@@ -457,9 +457,9 @@ async def remediate_pptx_async(
                 break
         prs.core_properties.title = first_title or "Untitled Presentation"
 
-    # Add slide titles before reading order fix (so title is first in order)
-    if not verify:
-        _add_missing_titles(prs)
+    # Always add missing titles BEFORE reading order fix so they're
+    # positioned correctly in the spTree (title first in reading order)
+    _add_missing_titles(prs)
 
     # Fix reading order on all slides (title first, then top-to-bottom)
     for slide in prs.slides:
@@ -508,16 +508,29 @@ async def remediate_pptx_async(
             "verification_score": verification_result.get("verification_score", 0.0),
         }
 
-        # Apply slide title suggestions
-        title_suggestions = {}
+        # Update existing titles with AI suggestions (don't add new shapes)
         for slide_fix in verification_result.get("slides", []):
             slide_num = slide_fix.get("slide_number", 0)
-            suggested_title = slide_fix.get("suggested_title", "")
-            if suggested_title:
-                title_suggestions[slide_num] = suggested_title
-
-        if title_suggestions:
-            _add_missing_titles(prs, title_suggestions)
+            suggested = slide_fix.get("suggested_title", "")
+            if not suggested or slide_num < 1 or slide_num > len(prs.slides):
+                continue
+            slide = prs.slides[slide_num - 1]
+            # Update placeholder title if it exists and is empty/generic
+            if slide.shapes.title:
+                current = slide.shapes.title.text.strip()
+                if not current or current.startswith("Slide "):
+                    slide.shapes.title.text = suggested
+            else:
+                # Find our remediation textbox at origin and update its text
+                for shape in slide.shapes:
+                    if (shape.shape_type == 17
+                            and shape.left == 0 and shape.top == 0
+                            and shape.has_text_frame):
+                        shape.text_frame.text = suggested
+                        for para in shape.text_frame.paragraphs:
+                            for run in para.runs:
+                                run.font.size = Pt(1)
+                        break
 
         # Apply alt texts per slide
         for alt_entry in verification_result.get("alt_texts", []):
