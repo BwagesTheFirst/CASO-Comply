@@ -198,6 +198,27 @@ export default async function AdminPage() {
             </svg>
             Manage Users
           </Link>
+          <Link
+            href="/dashboard/admin/usage"
+            className="flex items-center gap-3 rounded-lg bg-white/5 border border-caso-border px-4 py-3 text-sm font-medium text-caso-slate hover:text-caso-white hover:bg-white/10 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+            </svg>
+            Usage Tracking
+          </Link>
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ output_dir: /data/remediated
 #   suffix    → report_remediated.pdf (keeps original intact)
 #   overwrite → replaces the original file
 #   directory → saves all output to output_dir with same filename
-output_mode: suffix
+output_mode: directory
 
 # ── Schedule ─────────────────────────────────────────────────
 # Standard cron format: minute hour day month weekday

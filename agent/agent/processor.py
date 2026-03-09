@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import platform
 import shutil
 from pathlib import Path
 
@@ -17,6 +18,43 @@ class Processor:
     def __init__(self, config: AgentConfig, db: Database):
         self.config = config
         self.db = db
+
+    async def _report_usage(self, filename: str, page_count: int) -> None:
+        """Report usage to the CASO cloud API (fire-and-forget).
+
+        Only runs when phone_home is enabled and a license key is configured.
+        Failures are logged as warnings and never block processing.
+        """
+        if not self.config.phone_home:
+            return
+        if not self.config.license_key:
+            logger.debug("No license key configured — skipping usage report")
+            return
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                resp = await client.post(
+                    f"{self.config.caso_api_url}/api/license/usage",
+                    json={
+                        "pages_processed": page_count,
+                        "pdfs_completed": 1,
+                        "hostname": platform.node(),
+                    },
+                    headers={
+                        "Authorization": f"Bearer {self.config.license_key}",
+                    },
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    logger.info(
+                        "Usage reported for %s (%d pages). Pages remaining: %s",
+                        filename, page_count, data.get("pages_remaining", "unknown"),
+                    )
+                else:
+                    logger.warning(
+                        "Usage report returned %d: %s", resp.status_code, resp.text,
+                    )
+        except Exception:
+            logger.warning("Failed to report usage for %s — will continue", filename)
 
     async def process_one(self, pdf_path: str) -> dict:
         """Process a single PDF. Returns {status, before_score, after_score, error}."""
@@ -47,6 +85,7 @@ class Processor:
 
         before_score = result["before"]["score"]["score"]
         after_score = result["after"]["score"]["score"]
+        page_count = result["before"]["structure"].get("page_count", 0)
 
         if self.config.output_mode == "overwrite":
             shutil.copy2(output_path, pdf_path)
@@ -57,6 +96,8 @@ class Processor:
             before_score=before_score,
             after_score=after_score,
         )
+
+        await self._report_usage(Path(pdf_path).name, page_count)
 
         return {
             "status": "completed",
