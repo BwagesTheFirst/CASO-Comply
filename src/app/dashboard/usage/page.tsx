@@ -36,19 +36,24 @@ export default async function UsagePage() {
 
   const { data: dailyUsage } = await admin
     .from("usage_records")
-    .select("created_at, action, pages")
+    .select("created_at, action, pages_consumed")
     .eq("tenant_id", tenantId)
     .gte("created_at", periodStart.toISOString())
     .lte("created_at", periodEnd.toISOString())
     .order("created_at", { ascending: false });
 
-  const usageRow = Array.isArray(usage) ? usage[0] : usage;
-  const totalPages = usageRow?.total_pages ?? 0;
-  const pagesIncluded = usageRow?.pages_included ?? 0;
-  const pagesRemaining = usageRow?.pages_remaining ?? 0;
-  const overagePages = usageRow?.overage_pages ?? 0;
-  const totalAnalyses = usageRow?.total_analyses ?? 0;
-  const totalRemediations = usageRow?.total_remediations ?? 0;
+  // RPC returns one row per (billing_period_start, action) — aggregate them
+  const usageRows = Array.isArray(usage) ? usage : usage ? [usage] : [];
+  const totalPages = usageRows.reduce((sum: number, r: { total_pages?: number }) => sum + (r.total_pages ?? 0), 0);
+  const pagesIncluded = usageRows[0]?.pages_included ?? 0;
+  const pagesRemaining = Math.max(0, pagesIncluded - totalPages);
+  const overagePages = Math.max(0, totalPages - pagesIncluded);
+  const totalAnalyses = usageRows
+    .filter((r: { action?: string }) => r.action === "analyze")
+    .reduce((sum: number, r: { record_count?: number }) => sum + (r.record_count ?? 0), 0);
+  const totalRemediations = usageRows
+    .filter((r: { action?: string }) => r.action === "remediate")
+    .reduce((sum: number, r: { record_count?: number }) => sum + (r.record_count ?? 0), 0);
   const usagePercent =
     pagesIncluded > 0 ? (totalPages / pagesIncluded) * 100 : 0;
 
@@ -81,7 +86,7 @@ export default async function UsagePage() {
       if (record.action === "analyze") existing.analyze++;
       else if (record.action === "remediate") existing.remediate++;
       else if (record.action === "scan") existing.scan++;
-      existing.pages += record.pages ?? 0;
+      existing.pages += record.pages_consumed ?? 0;
       dayMap.set(dateKey, existing);
     }
   }

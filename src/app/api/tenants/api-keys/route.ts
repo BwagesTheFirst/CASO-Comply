@@ -34,7 +34,7 @@ export async function GET() {
   const admin = createAdminClient();
   const { data: keys, error } = await admin
     .from("api_keys")
-    .select("id, name, prefix, is_active, created_at, last_used_at")
+    .select("id, name, key_prefix, is_active, created_at, last_used_at")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
@@ -74,11 +74,11 @@ export async function POST(request: NextRequest) {
     .insert({
       tenant_id: tenantId,
       name,
-      prefix,
+      key_prefix: prefix,
       key_hash: keyHash,
       is_active: true,
     })
-    .select("id, name, prefix, created_at")
+    .select("id, name, key_prefix, created_at")
     .single();
 
   if (error) {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     id: newKey.id,
     name: newKey.name,
-    prefix: newKey.prefix,
+    key_prefix: newKey.key_prefix,
     rawKey,
     created_at: newKey.created_at,
   });

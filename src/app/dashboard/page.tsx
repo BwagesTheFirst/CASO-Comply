@@ -58,12 +58,12 @@ export default async function DashboardOverview() {
     .limit(5);
 
   const plan = tenant?.subscription_plans;
-  // RPC may return array or single object
-  const usageRow = Array.isArray(usage) ? usage[0] : usage;
-  const totalPages = usageRow?.total_pages ?? 0;
-  const pagesIncluded = usageRow?.pages_included ?? plan?.pages_included ?? 0;
-  const pagesRemaining = usageRow?.pages_remaining ?? pagesIncluded;
-  const overagePages = usageRow?.overage_pages ?? 0;
+  // RPC returns one row per (billing_period_start, action) — aggregate
+  const usageRows = Array.isArray(usage) ? usage : usage ? [usage] : [];
+  const totalPages = usageRows.reduce((sum: number, r: { total_pages?: number }) => sum + (r.total_pages ?? 0), 0);
+  const pagesIncluded = usageRows[0]?.pages_included ?? plan?.pages_included ?? 0;
+  const pagesRemaining = Math.max(0, pagesIncluded - totalPages);
+  const overagePages = Math.max(0, totalPages - pagesIncluded);
   const usagePercent = pagesIncluded > 0 ? Math.min((totalPages / pagesIncluded) * 100, 100) : 0;
 
   // Trial banner

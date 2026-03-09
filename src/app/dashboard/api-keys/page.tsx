@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 interface ApiKey {
   id: string;
   name: string;
-  prefix: string;
+  key_prefix: string;
   is_active: boolean;
   created_at: string;
   last_used_at: string | null;
@@ -239,7 +239,7 @@ export default function ApiKeysPage() {
                     </td>
                     <td className="px-6 py-3">
                       <code className="text-caso-slate font-mono text-xs">
-                        {key.prefix}...
+                        {key.key_prefix}...
                       </code>
                     </td>
                     <td className="px-6 py-3 text-caso-slate">

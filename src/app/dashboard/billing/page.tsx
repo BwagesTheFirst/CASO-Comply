@@ -38,8 +38,10 @@ export default async function BillingPage() {
     p_tenant_id: tenantId,
   });
 
-  const usageRow = Array.isArray(usage) ? usage[0] : usage;
-  const overagePages = usageRow?.overage_pages ?? 0;
+  const usageRows = Array.isArray(usage) ? usage : usage ? [usage] : [];
+  const totalPages = usageRows.reduce((sum: number, r: { total_pages?: number }) => sum + (r.total_pages ?? 0), 0);
+  const pagesIncluded = usageRows[0]?.pages_included ?? plan?.pages_included ?? 0;
+  const overagePages = Math.max(0, totalPages - pagesIncluded);
   const overageCost = plan?.overage_rate_cents
     ? ((overagePages * plan.overage_rate_cents) / 100).toFixed(2)
     : "0.00";
