@@ -9,11 +9,18 @@ interface ActionBreakdown {
   count: number;
 }
 
+interface TenantTierData {
+  pages: number;
+  revenue_cents: number;
+}
+
 interface TenantBreakdown {
   tenant_id: string;
   name: string;
   pages_this_month: number;
   pages_all_time: number;
+  revenue_cents_this_month: number;
+  tiers: Record<string, TenantTierData>;
 }
 
 interface RecentRecord {
@@ -22,6 +29,8 @@ interface RecentRecord {
   action: string;
   pages_consumed: number;
   document_filename: string | null;
+  remediation_type: string | null;
+  cost_cents: number | null;
   tenant_name: string;
 }
 
@@ -299,10 +308,19 @@ export default function AdminUsagePage() {
                     Tenant
                   </th>
                   <th className="px-6 py-3 text-caso-slate font-medium text-right">
-                    Pages This Month
+                    Standard
                   </th>
                   <th className="px-6 py-3 text-caso-slate font-medium text-right">
-                    Pages All Time
+                    AI Verified
+                  </th>
+                  <th className="px-6 py-3 text-caso-slate font-medium text-right">
+                    Human Review
+                  </th>
+                  <th className="px-6 py-3 text-caso-slate font-medium text-right">
+                    Total Pages
+                  </th>
+                  <th className="px-6 py-3 text-caso-slate font-medium text-right">
+                    Revenue
                   </th>
                 </tr>
               </thead>
@@ -313,13 +331,25 @@ export default function AdminUsagePage() {
                     className="border-b border-caso-border/50 hover:bg-white/[0.02] transition-colors"
                   >
                     <td className="px-6 py-3 text-caso-white font-medium">
-                      {t.name}
+                      <div>{t.name}</div>
+                      <div className="text-xs text-caso-slate font-normal">
+                        {t.pages_all_time.toLocaleString()} pages all time
+                      </div>
                     </td>
-                    <td className="px-6 py-3 text-caso-blue text-right font-medium">
+                    <td className="px-6 py-3 text-caso-blue text-right">
+                      {(t.tiers?.standard?.pages ?? 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3 text-caso-green text-right">
+                      {(t.tiers?.ai_verified?.pages ?? 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3 text-purple-400 text-right">
+                      {(t.tiers?.human_review?.pages ?? 0).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3 text-caso-white text-right font-medium">
                       {t.pages_this_month.toLocaleString()}
                     </td>
-                    <td className="px-6 py-3 text-caso-slate text-right">
-                      {t.pages_all_time.toLocaleString()}
+                    <td className="px-6 py-3 text-caso-green text-right font-bold">
+                      ${(t.revenue_cents_this_month / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                 ))}
@@ -354,8 +384,14 @@ export default function AdminUsagePage() {
                   <th className="px-6 py-3 text-caso-slate font-medium">
                     Action
                   </th>
+                  <th className="px-6 py-3 text-caso-slate font-medium">
+                    Tier
+                  </th>
                   <th className="px-6 py-3 text-caso-slate font-medium text-right">
                     Pages
+                  </th>
+                  <th className="px-6 py-3 text-caso-slate font-medium text-right">
+                    Cost
                   </th>
                   <th className="px-6 py-3 text-caso-slate font-medium">
                     Filename
@@ -381,8 +417,26 @@ export default function AdminUsagePage() {
                         {r.action}
                       </span>
                     </td>
+                    <td className="px-6 py-3">
+                      {r.remediation_type ? (
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          r.remediation_type === "ai_verified"
+                            ? "bg-caso-green/10 text-caso-green"
+                            : r.remediation_type === "human_review"
+                              ? "bg-purple-400/10 text-purple-400"
+                              : "bg-caso-blue/10 text-caso-blue"
+                        }`}>
+                          {r.remediation_type === "ai_verified" ? "AI" : r.remediation_type === "human_review" ? "Human" : "Std"}
+                        </span>
+                      ) : (
+                        <span className="text-caso-slate/50">--</span>
+                      )}
+                    </td>
                     <td className="px-6 py-3 text-caso-blue text-right font-medium">
                       {r.pages_consumed.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-3 text-caso-green text-right font-medium">
+                      {r.cost_cents ? `$${(r.cost_cents / 100).toFixed(2)}` : "--"}
                     </td>
                     <td className="px-6 py-3 text-caso-slate truncate max-w-[200px]">
                       {r.document_filename ?? "--"}

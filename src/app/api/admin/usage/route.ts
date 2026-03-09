@@ -46,17 +46,17 @@ export async function GET() {
       .select("action, pages_consumed")
       .gte("created_at", `${monthStart}T00:00:00.000Z`),
 
-    // Tenant breakdown: get usage with tenant info
+    // Tenant breakdown: get usage with tenant info + tier details
     admin
       .from("usage_records")
-      .select("tenant_id, pages_consumed, created_at, tenants(name)")
+      .select("tenant_id, pages_consumed, created_at, remediation_type, cost_cents, tenants(name)")
       .order("created_at", { ascending: false }),
 
     // Recent activity: last 50 records
     admin
       .from("usage_records")
       .select(
-        "id, created_at, action, pages_consumed, document_filename, tenant_id, tenants(name)"
+        "id, created_at, action, pages_consumed, document_filename, remediation_type, cost_cents, tenant_id, tenants(name)"
       )
       .order("created_at", { ascending: false })
       .limit(50),
@@ -109,16 +109,28 @@ export async function GET() {
     count: data.count,
   }));
 
-  // Tenant breakdown
+  // Tenant breakdown with per-tier usage
   interface TenantUsageRow {
     tenant_id: string;
     pages_consumed: number;
     created_at: string;
+    remediation_type: string | null;
+    cost_cents: number | null;
     tenants: { name: string } | { name: string }[] | null;
+  }
+  interface TenantTierData {
+    pages: number;
+    revenue_cents: number;
   }
   const tenantMap: Record<
     string,
-    { name: string; pages_this_month: number; pages_all_time: number }
+    {
+      name: string;
+      pages_this_month: number;
+      pages_all_time: number;
+      revenue_cents_this_month: number;
+      tiers: Record<string, TenantTierData>;
+    }
   > = {};
   for (const r of (tenantBreakdownRes.data ?? []) as TenantUsageRow[]) {
     const tenantId = r.tenant_id;
@@ -136,17 +148,32 @@ export async function GET() {
         name: tenantName,
         pages_this_month: 0,
         pages_all_time: 0,
+        revenue_cents_this_month: 0,
+        tiers: {},
       };
     }
     tenantMap[tenantId].pages_all_time += r.pages_consumed || 0;
-    if (r.created_at >= `${monthStart}T00:00:00.000Z`) {
+    const isThisMonth = r.created_at >= `${monthStart}T00:00:00.000Z`;
+    if (isThisMonth) {
       tenantMap[tenantId].pages_this_month += r.pages_consumed || 0;
+      tenantMap[tenantId].revenue_cents_this_month += r.cost_cents || 0;
+      // Per-tier breakdown (this month only)
+      const tier = r.remediation_type || "none";
+      if (!tenantMap[tenantId].tiers[tier]) {
+        tenantMap[tenantId].tiers[tier] = { pages: 0, revenue_cents: 0 };
+      }
+      tenantMap[tenantId].tiers[tier].pages += r.pages_consumed || 0;
+      tenantMap[tenantId].tiers[tier].revenue_cents += r.cost_cents || 0;
     }
   }
   const tenantBreakdown = Object.entries(tenantMap)
     .map(([tenant_id, data]) => ({
       tenant_id,
-      ...data,
+      name: data.name,
+      pages_this_month: data.pages_this_month,
+      pages_all_time: data.pages_all_time,
+      revenue_cents_this_month: data.revenue_cents_this_month,
+      tiers: data.tiers,
     }))
     .sort((a, b) => b.pages_this_month - a.pages_this_month);
 
@@ -157,6 +184,8 @@ export async function GET() {
     action: string;
     pages_consumed: number;
     document_filename: string | null;
+    remediation_type: string | null;
+    cost_cents: number | null;
     tenant_id: string;
     tenants: { name: string } | { name: string }[] | null;
   }
@@ -176,6 +205,8 @@ export async function GET() {
         action: r.action,
         pages_consumed: r.pages_consumed,
         document_filename: r.document_filename,
+        remediation_type: r.remediation_type,
+        cost_cents: r.cost_cents,
         tenant_name: tenantName,
       };
     }
