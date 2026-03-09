@@ -4,10 +4,13 @@
 
 FROM python:3.12-slim
 
-# System deps for PDF processing
+# System deps for PDF and Office processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libmupdf-dev \
+    libreoffice-writer-nogui \
+    libreoffice-calc-nogui \
+    libreoffice-impress-nogui \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -23,6 +26,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy all application code
 COPY agent/ ./agent/
 COPY remediation.py .
+COPY remediation_docx.py .
+COPY remediation_xlsx.py .
+COPY remediation_pptx.py .
 COPY gemini_verify.py .
 COPY entrypoint.sh .
 COPY config.example.yaml ./config.yaml

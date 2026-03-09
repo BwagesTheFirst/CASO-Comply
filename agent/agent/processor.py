@@ -101,26 +101,24 @@ class Processor:
             logger.warning("Failed to submit %s for review — will retry next cycle", Path(pdf_path).name)
             return False
 
-    async def process_one(self, pdf_path: str) -> dict:
-        """Process a single PDF. Returns {status, before_score, after_score, error}."""
+    async def process_one(self, file_path: str, format: str = "pdf") -> dict:
+        """Process a single document. Returns {status, before_score, after_score, error}."""
         try:
             if self.config.mode == "cloud":
-                return await self._process_cloud(pdf_path)
+                return await self._process_cloud(file_path)
             else:
-                return await self._process_local(pdf_path)
+                return await self._process_local(file_path, format)
         except Exception as e:
-            logger.exception("Failed to process %s", pdf_path)
+            logger.exception("Failed to process %s", file_path)
             error_msg = str(e)
             await self.db.update_result(
-                path=pdf_path, status="failed", error_message=error_msg,
+                path=file_path, status="failed", error_message=error_msg,
             )
             return {"status": "failed", "error": error_msg}
 
-    async def _process_local(self, pdf_path: str) -> dict:
+    async def _process_local(self, file_path: str, format: str = "pdf") -> dict:
         """Process locally (hybrid or local mode)."""
-        from remediation import remediate_pdf_async
-
-        output_path = self._output_path(pdf_path)
+        output_path = self._output_path(file_path)
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
         # Determine AI verification based on plan tier
@@ -130,13 +128,25 @@ class Processor:
         if not verify:
             logger.info("Plan '%s' — standard remediation (no AI)", plan_name)
 
-        result = await remediate_pdf_async(
-            pdf_path, output_path, verify=verify,
-        )
+        # Route to format-specific remediation
+        if format == "pdf":
+            from remediation import remediate_pdf_async
+            result = await remediate_pdf_async(file_path, output_path, verify=verify)
+        elif format == "docx":
+            from remediation_docx import remediate_docx_async
+            result = await remediate_docx_async(file_path, output_path, verify=verify)
+        elif format == "xlsx":
+            from remediation_xlsx import remediate_xlsx_async
+            result = await remediate_xlsx_async(file_path, output_path, verify=verify)
+        elif format == "pptx":
+            from remediation_pptx import remediate_pptx_async
+            result = await remediate_pptx_async(file_path, output_path, verify=verify)
+        else:
+            raise ValueError(f"Unsupported format: {format}")
 
         before_score = result["before"]["score"]["score"]
         after_score = result["after"]["score"]["score"]
-        page_count = result["before"]["structure"].get("page_count", 0)
+        page_count = result["before"].get("page_count", 0)
 
         # Determine remediation type based on plan and score
         remediation_type = "ai_verified" if verify else "standard"
@@ -145,42 +155,40 @@ class Processor:
         # Get threshold from license (default 70)
         threshold = self.license_client.review_score_threshold if self.license_client else 70
 
-        # Human Review plan: submit files scoring below threshold for human review
+        # Human Review plan: submit files scoring below threshold
         if plan_name == "Human Review" and after_score < threshold:
             remediation_type = "human_review"
             needs_review = True
             logger.warning(
-                "PDF %s flagged for human review: after_score=%d (below %d, plan: %s)",
-                Path(pdf_path).name, after_score, threshold, plan_name,
+                "%s %s flagged for human review: after_score=%d (below %d)",
+                format.upper(), Path(file_path).name, after_score, threshold,
             )
         elif after_score < threshold:
             logger.warning(
-                "PDF %s has low score after remediation: after_score=%d (plan: %s)",
-                Path(pdf_path).name, after_score, plan_name,
+                "%s %s has low score after remediation: after_score=%d",
+                format.upper(), Path(file_path).name, after_score,
             )
 
         if self.config.output_mode == "overwrite":
-            shutil.copy2(output_path, pdf_path)
+            shutil.copy2(output_path, file_path)
 
         await self.db.update_result(
-            path=pdf_path,
+            path=file_path,
             status="completed",
             before_score=before_score,
             after_score=after_score,
             page_count=page_count,
         )
 
-        await self._report_usage(Path(pdf_path).name, page_count, remediation_type)
+        await self._report_usage(Path(file_path).name, page_count, remediation_type)
 
         # Submit for human review if flagged
         if needs_review:
             submitted = await self._submit_for_review(
-                pdf_path, output_path, after_score, page_count,
+                file_path, output_path, after_score, page_count,
             )
             if submitted:
-                await self.db.update_result(
-                    path=pdf_path, status="review_pending",
-                )
+                await self.db.update_result(path=file_path, status="review_pending")
 
         return {
             "status": "completed",
@@ -232,8 +240,8 @@ class Processor:
                 "after_score": after_score,
             }
 
-    def _output_path(self, pdf_path: str) -> str:
-        p = Path(pdf_path)
+    def _output_path(self, file_path: str) -> str:
+        p = Path(file_path)
         if self.config.output_mode == "directory":
             return str(Path(self.config.output_dir) / p.name)
         elif self.config.output_mode == "overwrite":

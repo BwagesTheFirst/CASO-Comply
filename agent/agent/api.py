@@ -290,25 +290,25 @@ def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
                         continue  # skip entries that resolve outside jail
 
                     if entry.is_dir():
-                        # Count PDFs and total files (immediate children only)
-                        pdf_count = 0
+                        # Count supported documents and total files (immediate children only)
+                        doc_count = 0
                         total_files = 0
                         try:
                             with os.scandir(entry_real) as sub_it:
                                 for sub_entry in sub_it:
                                     if sub_entry.is_file():
                                         total_files += 1
-                                        if sub_entry.name.lower().endswith(".pdf"):
-                                            pdf_count += 1
+                                        if any(sub_entry.name.lower().endswith(ext) for ext in (".pdf", ".docx", ".xlsx", ".pptx")):
+                                            doc_count += 1
                         except PermissionError:
                             pass
                         entries.append({
                             "name": entry.name,
                             "type": "directory",
-                            "pdf_count": pdf_count,
+                            "doc_count": doc_count,
                             "total_files": total_files,
                         })
-                    elif entry.is_file() and entry.name.lower().endswith(".pdf"):
+                    elif entry.is_file() and any(entry.name.lower().endswith(ext) for ext in (".pdf", ".docx", ".xlsx", ".pptx")):
                         try:
                             size_kb = round(entry.stat().st_size / 1024)
                         except OSError:
