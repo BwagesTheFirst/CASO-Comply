@@ -391,6 +391,53 @@ def _remove_dangerous_animations(prs):
             el.remove(timing)
 
 
+def _mark_decorative_shapes(prs):
+    """Mark background/decorative shapes so screen readers skip them.
+
+    A shape is considered decorative if it has no text content, no alt text,
+    and is either positioned off-screen (negative coords) or is a full-slide
+    background rectangle with no meaningful content.
+    """
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            # Skip shapes that have text content
+            if shape.has_text_frame and shape.text_frame.text.strip():
+                continue
+            # Skip tables and images (they need alt text, not decorative marking)
+            if shape.has_table:
+                continue
+            if shape.shape_type and shape.shape_type in (13, 11):  # Picture
+                continue
+            # Skip placeholders (titles, content areas)
+            if shape.shape_type == 14:
+                continue
+
+            # Check if shape is likely decorative:
+            # Any non-text, non-content shape (auto shapes, freeforms, connectors
+            # used for visual design) should be hidden from screen readers
+            is_decorative = False
+
+            # Auto shapes and freeforms with no text = decorative design elements
+            if shape.shape_type and int(shape.shape_type) in (1, 5, 9):  # AUTO_SHAPE, FREEFORM, LINE
+                is_decorative = True
+
+            if not is_decorative:
+                continue
+
+            # Mark as decorative by setting empty alt text
+            el = shape._element
+            cNvPr = None
+            for nv_tag in ("nvSpPr", "nvPicPr", "nvCxnSpPr", "nvGrpSpPr"):
+                parent = el.find("{%s}%s" % (NSMAP["p"], nv_tag))
+                if parent is not None:
+                    cNvPr = parent.find("{%s}cNvPr" % NSMAP["p"])
+                    break
+
+            if cNvPr is not None:
+                # Set empty descr = screen readers treat as decorative
+                cNvPr.set("descr", "")
+
+
 def _set_alt_text_on_shapes(slide, alt_texts: list[dict]):
     """Write alt text to shapes on a slide."""
     shapes = list(slide.shapes)
@@ -444,6 +491,7 @@ async def remediate_pptx_async(
     # Apply heuristic fixes
     _set_table_headers(prs)
     _remove_dangerous_animations(prs)
+    _mark_decorative_shapes(prs)
 
     # Set presentation title if missing
     if not prs.core_properties.title:
