@@ -123,21 +123,127 @@ export default async function BillingPage() {
         )}
       </div>
 
-      {/* Payment Method placeholder */}
+      {/* Invoices */}
+      <InvoicesSection tenantId={tenantId} />
+
+      {/* Payment Info */}
       <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
         <h2 className="text-sm font-medium text-caso-slate mb-4">
-          Payment Method
+          Payment Information
         </h2>
         <p className="text-caso-slate text-sm">
-          Payment management will be available via Stripe integration.
+          Invoices are issued with Net 30/60 payment terms. Please reference your PO number when submitting payment.
+          Contact your account manager or email billing@casocomply.com for questions.
         </p>
-        <button
-          disabled
-          className="mt-4 rounded-lg border border-caso-border px-4 py-2 text-sm text-caso-slate/50 cursor-not-allowed"
-        >
-          Update Payment Method (Coming Soon)
-        </button>
       </div>
+    </div>
+  );
+}
+
+async function InvoicesSection({ tenantId }: { tenantId: string }) {
+  const admin = createAdminClient();
+
+  const { data: invoices } = await admin
+    .from("invoices")
+    .select("id, invoice_number, billing_period_start, billing_period_end, total_cents, status, due_date")
+    .eq("tenant_id", tenantId)
+    .neq("status", "draft")
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  function statusBadgeClass(status: string): string {
+    switch (status) {
+      case "sent":
+        return "bg-caso-blue/10 text-caso-blue";
+      case "paid":
+        return "bg-caso-green/10 text-caso-green";
+      case "overdue":
+        return "bg-caso-red/10 text-caso-red";
+      case "cancelled":
+        return "bg-caso-slate/10 text-caso-slate";
+      default:
+        return "bg-caso-slate/10 text-caso-slate";
+    }
+  }
+
+  function formatPeriodShort(start: string, end: string): string {
+    const s = new Date(start + "T00:00:00");
+    const e = new Date(end + "T00:00:00");
+    const months = [
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+    if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
+      return `${months[s.getMonth()]} ${s.getFullYear()}`;
+    }
+    return `${months[s.getMonth()]} - ${months[e.getMonth()]} ${e.getFullYear()}`;
+  }
+
+  return (
+    <div className="rounded-xl bg-caso-navy-light border border-caso-border overflow-hidden">
+      <div className="px-6 py-4 border-b border-caso-border">
+        <h2 className="text-sm font-medium text-caso-slate">
+          Invoices
+        </h2>
+      </div>
+      {invoices && invoices.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-caso-border text-left">
+                <th className="px-6 py-3 text-caso-slate font-medium">Invoice #</th>
+                <th className="px-6 py-3 text-caso-slate font-medium">Period</th>
+                <th className="px-6 py-3 text-caso-slate font-medium text-right">Total</th>
+                <th className="px-6 py-3 text-caso-slate font-medium">Status</th>
+                <th className="px-6 py-3 text-caso-slate font-medium">Due Date</th>
+                <th className="px-6 py-3 text-caso-slate font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoices.map((inv) => (
+                <tr
+                  key={inv.id}
+                  className="border-b border-caso-border/50 hover:bg-white/[0.02] transition-colors"
+                >
+                  <td className="px-6 py-3 text-caso-white font-medium font-mono text-xs">
+                    {inv.invoice_number}
+                  </td>
+                  <td className="px-6 py-3 text-caso-slate">
+                    {formatPeriodShort(inv.billing_period_start, inv.billing_period_end)}
+                  </td>
+                  <td className="px-6 py-3 text-caso-white text-right font-medium">
+                    ${(inv.total_cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-6 py-3">
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass(inv.status)}`}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-caso-slate">
+                    {inv.due_date
+                      ? new Date(inv.due_date + "T00:00:00").toLocaleDateString()
+                      : "-"}
+                  </td>
+                  <td className="px-6 py-3">
+                    <Link
+                      href={`/dashboard/billing/invoices/${inv.id}`}
+                      className="text-caso-blue hover:text-caso-blue-bright text-sm font-medium transition-colors"
+                    >
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="px-6 py-8 text-center text-caso-slate text-sm">
+          No invoices yet.
+        </div>
+      )}
     </div>
   );
 }
