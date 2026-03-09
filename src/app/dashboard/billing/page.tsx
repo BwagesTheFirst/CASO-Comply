@@ -63,25 +63,11 @@ export default async function BillingPage() {
               {plan?.name ?? "No Plan"}
             </p>
             {plan && (
-              <>
-                <p className="text-caso-blue text-lg font-semibold mt-1">
-                  ${(plan.monthly_price_cents / 100).toFixed(2)}
-                  <span className="text-caso-slate text-sm font-normal">
-                    /month
-                  </span>
-                </p>
-                <ul className="mt-3 space-y-1 text-sm text-caso-slate">
-                  <li>
-                    {plan.pages_included?.toLocaleString()} pages included
-                  </li>
-                  {plan.overage_rate_cents && (
-                    <li>
-                      ${(plan.overage_rate_cents / 100).toFixed(2)}/page
-                      overage
-                    </li>
-                  )}
-                </ul>
-              </>
+              <ul className="mt-3 space-y-1 text-sm text-caso-slate">
+                <li>
+                  {plan.pages_included?.toLocaleString()} pages included/month
+                </li>
+              </ul>
             )}
           </div>
           <Link
@@ -100,25 +86,21 @@ export default async function BillingPage() {
         </h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-caso-slate mb-1">Base Cost</p>
-            <p className="text-xl font-bold text-caso-white">
-              ${plan ? (plan.monthly_price_cents / 100).toFixed(2) : "0.00"}
+            <p className="text-xs text-caso-slate mb-1">Pages Used</p>
+            <p className="text-xl font-bold text-caso-blue">
+              {totalPages.toLocaleString()}
             </p>
           </div>
           <div>
-            <p className="text-xs text-caso-slate mb-1">Overage Cost</p>
-            <p
-              className={`text-xl font-bold ${
-                overagePages > 0 ? "text-caso-red" : "text-caso-white"
-              }`}
-            >
-              ${overageCost}
+            <p className="text-xs text-caso-slate mb-1">Pages Included</p>
+            <p className="text-xl font-bold text-caso-white">
+              {pagesIncluded.toLocaleString()}
             </p>
           </div>
         </div>
         {overagePages > 0 && (
           <p className="text-caso-red/70 text-xs mt-3">
-            {overagePages.toLocaleString()} overage pages this period
+            {overagePages.toLocaleString()} pages over plan limit this period
           </p>
         )}
       </div>

@@ -81,9 +81,16 @@ export async function GET(
     totalPages += record.pages_consumed || 0;
   }
 
+  // Fetch all available plans from DB
+  const { data: allPlans } = await admin
+    .from("subscription_plans")
+    .select("id, name, monthly_price_cents, pages_included")
+    .order("monthly_price_cents", { ascending: true });
+
   return NextResponse.json({
     tenant,
     members: enrichedMembers,
+    plans: allPlans ?? [],
     usage_summary: {
       total_pages: totalPages,
       by_action: usageByAction,

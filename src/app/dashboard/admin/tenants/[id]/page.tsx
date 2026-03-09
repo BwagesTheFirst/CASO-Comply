@@ -49,11 +49,7 @@ interface Tenant {
   recent_scans: Scan[];
 }
 
-const KNOWN_PLANS: Plan[] = [
-  { id: "starter", name: "Starter", monthly_price_cents: 4900, pages_included: 500 },
-  { id: "professional", name: "Professional", monthly_price_cents: 14900, pages_included: 2500 },
-  { id: "enterprise", name: "Enterprise", monthly_price_cents: 49900, pages_included: 15000 },
-];
+// Plans are fetched from the database, no hardcoded values
 
 const STATUS_OPTIONS = ["active", "trial", "suspended", "cancelled"];
 
@@ -94,7 +90,7 @@ export default function AdminTenantDetailPage() {
   const tenantId = params.id as string;
 
   const [tenant, setTenant] = useState<Tenant | null>(null);
-  const [plans, setPlans] = useState<Plan[]>(KNOWN_PLANS);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -306,8 +302,7 @@ export default function AdminTenantDetailPage() {
                 <option value="">No Plan</option>
                 {plans.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} ($
-                    {(p.monthly_price_cents / 100).toFixed(0)}/mo)
+                    {p.name} — {p.pages_included.toLocaleString()} pages/mo
                   </option>
                 ))}
               </select>
