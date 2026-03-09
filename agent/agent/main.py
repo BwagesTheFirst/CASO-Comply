@@ -26,7 +26,8 @@ async def run_scan_cycle(config, db: Database, processor: Processor):
     logger.info("Starting scan cycle")
 
     for scan_path in config.scan_paths:
-        found = scan_folder(scan_path)
+        # Run sync I/O in a thread to avoid blocking the event loop
+        found = await asyncio.to_thread(scan_folder, scan_path)
         for item in found:
             if await db.needs_processing(item["path"], item["sha256"]):
                 await db.upsert_pdf(
@@ -79,6 +80,7 @@ async def main():
         args=[config, db, processor],
         id="scan_cycle",
         max_instances=1,
+        misfire_grace_time=300,
     )
     scheduler.start()
 

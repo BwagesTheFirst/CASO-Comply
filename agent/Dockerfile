@@ -1,12 +1,13 @@
 # CASO Comply Docker Agent
-# Lightweight client-side agent that crawls websites for documents,
-# sends them to the CASO API for analysis, and serves a local dashboard.
+# On-premise PDF accessibility remediation with folder watching,
+# cron scheduling, and a local dashboard on port 9090.
 
 FROM python:3.12-slim
 
-# Minimal system deps
+# System deps for PDF processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    libmupdf-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -19,14 +20,23 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY agent.py .
+# Copy all application code
+COPY agent/ ./agent/
+COPY remediation.py .
+COPY gemini_verify.py .
+COPY entrypoint.sh .
+COPY config.example.yaml ./config.yaml
+# Keep legacy crawler available
+COPY agent.py ./agent_crawler.py
 
-# Create data directory for SQLite
-RUN mkdir -p /app/data && chown -R caso:caso /app /app/data
+# Create data directories
+RUN mkdir -p /app/data /data/input /data/remediated /data/output && \
+    chown -R caso:caso /app /data
+
+RUN chmod +x /app/entrypoint.sh
 
 USER caso
 
 EXPOSE 9090
 
-CMD ["python", "agent.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]

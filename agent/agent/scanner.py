@@ -25,6 +25,9 @@ def scan_folder(folder_path: str) -> list[dict]:
     for pdf_file in sorted(root.rglob("*.pdf")):
         if not pdf_file.is_file():
             continue
+        # Skip remediated output files to avoid recursive re-processing
+        if "_remediated" in pdf_file.stem:
+            continue
         try:
             results.append({
                 "path": str(pdf_file),
