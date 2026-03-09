@@ -8,6 +8,11 @@ const publicPaths = [
   "/signup",
   "/pricing",
   "/demo",
+  "/competitors",
+  "/setup",
+  "/accessibility",
+  "/privacy",
+  "/terms",
   "/auth/callback",
 ];
 
