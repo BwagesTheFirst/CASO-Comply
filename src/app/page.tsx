@@ -3,6 +3,7 @@ import Link from "next/link";
 import CountdownTimer from "@/components/CountdownTimer";
 import ScanForm from "@/components/ScanForm";
 import MobileNav from "@/components/MobileNav";
+import WorkflowAnimation from "@/components/WorkflowAnimation";
 
 const SERVICE_LEVELS = [
   {
@@ -24,7 +25,7 @@ const SERVICE_LEVELS = [
     name: "AI Verified",
     price: "$0.35",
     description:
-      "Gemini AI verifies heading hierarchy, reading order, and generates alt text. Higher accuracy for complex documents.",
+      "AI verifies heading hierarchy, reading order, and generates alt text. Higher accuracy for complex documents.",
     features: [
       "Everything in Standard",
       "AI-generated alt text for images",
@@ -52,48 +53,6 @@ const SERVICE_LEVELS = [
   },
 ];
 
-const STEPS = [
-  {
-    step: "1",
-    title: "Scan",
-    description: "Enter your URL. We crawl your entire site and identify every document — PDFs, Word files, and spreadsheets.",
-    icon: (
-      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-      </svg>
-    ),
-  },
-  {
-    step: "2",
-    title: "Score",
-    description: "AI evaluates each document against WCAG 2.1 AA, PDF/UA, and Section 508.",
-    icon: (
-      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-      </svg>
-    ),
-  },
-  {
-    step: "3",
-    title: "Remediate",
-    description: "We fix sample documents automatically and show you side-by-side before and after.",
-    icon: (
-      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17l-5.56-5.56a2.002 2.002 0 010-2.83l.28-.28a2 2 0 012.83 0l5.56 5.56m-7.12 7.12l7.12-7.12m0 0l2.83-2.83a2 2 0 000-2.83l-.28-.28a2 2 0 00-2.83 0L10.59 12.3" />
-      </svg>
-    ),
-  },
-  {
-    step: "4",
-    title: "Report",
-    description: "Receive a full audit report with costs, timelines, and a remediation roadmap.",
-    icon: (
-      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-      </svg>
-    ),
-  },
-];
 
 const DEPLOYMENT_MODES = [
   {
@@ -302,38 +261,20 @@ export default function Home() {
           </div>
         </section>
 
-        {/* How It Works */}
+        {/* How It Works — Animated Workflow */}
         <section id="how-it-works" className="border-b border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
-                How CASO Comply works
+                How It Works
               </h2>
               <p className="mt-4 text-lg text-caso-slate">
-                From scan to compliant — in four simple steps.
+                Install the agent. Watch your documents become compliant.
               </p>
             </div>
 
-            <div className="mt-14 grid gap-8 md:grid-cols-4">
-              {STEPS.map((item, index) => (
-                <div
-                  key={item.step}
-                  className={`relative text-center ${index < STEPS.length - 1 ? "step-connector" : ""}`}
-                >
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-caso-blue/10 text-caso-blue">
-                    {item.icon}
-                  </div>
-                  <div className="mt-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-caso-navy-light text-xs font-bold text-caso-glacier">
-                    {item.step}
-                  </div>
-                  <h3 className="mt-3 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-caso-slate">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
+            <div className="mt-14">
+              <WorkflowAnimation />
             </div>
           </div>
         </section>
