@@ -102,7 +102,8 @@ export default async function AgentSetupPage() {
         <p className="text-caso-slate text-sm leading-relaxed">
           Install the CASO Comply agent on your infrastructure to automatically
           scan and remediate documents. The agent runs as a Docker container,
-          watches configured directories for new PDFs, and processes them on a
+          watches configured directories for PDFs, Word documents, Excel
+          spreadsheets, and PowerPoint presentations, then processes them on a
           schedule or on demand.
         </p>
       </div>

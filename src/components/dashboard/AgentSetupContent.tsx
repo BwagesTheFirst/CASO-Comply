@@ -74,7 +74,7 @@ const tiers = [
     price: "$0.35/page",
     tagColor: "bg-caso-green/10 text-caso-green",
     description:
-      "Gemini AI verifies heading hierarchy, reading order, and generates alt text. Higher accuracy for complex documents.",
+      "AI verifies heading hierarchy, reading order, and generates alt text. Higher accuracy for complex documents.",
   },
   {
     name: "Human Review",
@@ -337,7 +337,7 @@ export default function AgentSetupContent() {
                 </p>
                 <p className="text-caso-slate text-xs">
                   Ensure your input directory is mounted correctly and contains
-                  PDF files. Check that <code className="text-caso-green font-mono">CASO_SCAN_PATHS</code>{" "}
+                  supported files (.pdf, .docx, .xlsx, .pptx). Check that <code className="text-caso-green font-mono">CASO_SCAN_PATHS</code>{" "}
                   matches your volume mount.
                 </p>
               </div>
