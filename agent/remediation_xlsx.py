@@ -65,6 +65,9 @@ def analyze_xlsx(file_path: str) -> dict:
     # Check language
     has_lang = _has_workbook_language(wb)
 
+    # Check for color-only data (cells with fill but no text)
+    color_only_cells = _count_color_only_cells(wb)
+
     # Compute score
     score = _compute_xlsx_score(
         table_header_coverage=table_header_coverage,
@@ -75,6 +78,7 @@ def analyze_xlsx(file_path: str) -> dict:
         has_title=has_title,
         total_images=total_images,
         total_tables=total_tables,
+        color_only_cells=color_only_cells,
     )
 
     wb.close()
@@ -87,6 +91,7 @@ def analyze_xlsx(file_path: str) -> dict:
         "images": {"total": total_images, "with_alt": images_with_alt},
         "has_title": has_title,
         "has_lang": has_lang,
+        "color_only_cells": color_only_cells,
         "page_count": len(wb.sheetnames),
     }
 
@@ -94,6 +99,20 @@ def analyze_xlsx(file_path: str) -> dict:
 def _has_workbook_language(wb) -> bool:
     """Check if workbook has a language property set."""
     return bool(wb.properties.language) if hasattr(wb.properties, 'language') else False
+
+
+def _count_color_only_cells(wb) -> int:
+    """Count cells that use fill color but have no text value (color-only info)."""
+    count = 0
+    NO_FILL = "00000000"
+    for ws in wb.worksheets:
+        for row in ws.iter_rows(min_row=1, max_row=min(ws.max_row or 0, 200)):
+            for cell in row:
+                if cell.fill and cell.fill.fgColor and cell.fill.fgColor.rgb:
+                    rgb = str(cell.fill.fgColor.rgb)
+                    if rgb != NO_FILL and rgb != "00000000" and not cell.value:
+                        count += 1
+    return count
 
 
 def _compute_xlsx_score(
@@ -105,6 +124,7 @@ def _compute_xlsx_score(
     has_title: bool,
     total_images: int,
     total_tables: int,
+    color_only_cells: int = 0,
 ) -> dict:
     """Compute 0-100 accessibility score for Excel workbook."""
     checks = {
@@ -139,9 +159,9 @@ def _compute_xlsx_score(
             "description": "Workbook title set",
         },
         "no_color_only": {
-            "passed": True,  # Placeholder — requires AI verification
+            "passed": color_only_cells == 0,
             "weight": 10,
-            "description": "No color-only information (not yet checked)",
+            "description": "No color-only information" if color_only_cells == 0 else f"{color_only_cells} cells use color without text",
         },
     }
 
@@ -208,6 +228,10 @@ async def remediate_xlsx_async(
     # Set title if missing
     if not wb.properties.title:
         wb.properties.title = wb.sheetnames[0] if wb.sheetnames else "Untitled Workbook"
+
+    # Set language if missing
+    if not wb.properties.language:
+        wb.properties.language = "en-US"
 
     # Gemini AI verification
     verification_info = None
