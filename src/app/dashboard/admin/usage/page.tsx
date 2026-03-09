@@ -156,10 +156,20 @@ export default function AdminUsagePage() {
     tier_breakdown,
   } = data!;
 
+  // Compute AI usage and avg cost per page from tier breakdown
+  const totalRevenueCents = tier_breakdown.reduce((sum, t) => sum + t.revenue_cents, 0);
+  const aiTier = tier_breakdown.find((t) => t.remediation_type === "ai_verified");
+  const totalAiRevenueCents = aiTier?.revenue_cents ?? 0;
+  const totalAiPages = aiTier?.pages ?? 0;
+  const avgCostPerPage = pages_this_month > 0 ? totalRevenueCents / pages_this_month : 0;
+
   const topStats = [
     { label: "Pages Today", value: pages_today.toLocaleString(), color: "text-caso-green" },
     { label: "Pages This Month", value: pages_this_month.toLocaleString(), color: "text-caso-blue" },
     { label: "Pages All Time", value: pages_all_time.toLocaleString(), color: "text-caso-warm" },
+    { label: "Avg Cost / Page", value: `$${(avgCostPerPage / 100).toFixed(2)}`, color: "text-caso-white" },
+    { label: "AI Verified Revenue", value: `$${(totalAiRevenueCents / 100).toFixed(2)}`, color: "text-caso-green", sub: `${totalAiPages.toLocaleString()} pages` },
+    { label: "Total Revenue", value: `$${(totalRevenueCents / 100).toFixed(2)}`, color: "text-caso-green" },
   ];
 
   // Ensure all five actions appear even if no records exist
@@ -186,16 +196,19 @@ export default function AdminUsagePage() {
       </div>
 
       {/* Top Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {topStats.map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl bg-caso-navy-light border border-caso-border p-6"
+            className="rounded-xl bg-caso-navy-light border border-caso-border p-5"
           >
-            <h2 className="text-sm font-medium text-caso-slate mb-2">
+            <h2 className="text-xs font-medium text-caso-slate mb-2">
               {stat.label}
             </h2>
-            <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+            <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+            {"sub" in stat && stat.sub && (
+              <p className="text-xs text-caso-slate mt-1">{stat.sub}</p>
+            )}
           </div>
         ))}
       </div>
@@ -320,12 +333,17 @@ export default function AdminUsagePage() {
                     Total Pages
                   </th>
                   <th className="px-6 py-3 text-caso-slate font-medium text-right">
+                    Avg/Page
+                  </th>
+                  <th className="px-6 py-3 text-caso-slate font-medium text-right">
                     Revenue
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {tenant_breakdown.map((t) => (
+                {tenant_breakdown.map((t) => {
+                  const tenantAvg = t.pages_this_month > 0 ? t.revenue_cents_this_month / t.pages_this_month : 0;
+                  return (
                   <tr
                     key={t.tenant_id}
                     className="border-b border-caso-border/50 hover:bg-white/[0.02] transition-colors"
@@ -348,11 +366,15 @@ export default function AdminUsagePage() {
                     <td className="px-6 py-3 text-caso-white text-right font-medium">
                       {t.pages_this_month.toLocaleString()}
                     </td>
+                    <td className="px-6 py-3 text-caso-slate text-right">
+                      ${(tenantAvg / 100).toFixed(2)}
+                    </td>
                     <td className="px-6 py-3 text-caso-green text-right font-bold">
                       ${(t.revenue_cents_this_month / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
