@@ -25,6 +25,7 @@ class AgentConfig:
     phone_home: bool = True
     caso_api_url: str = "https://caso-comply-api.onrender.com"
     local_port: int = 9090
+    admin_password: str = "caso-admin"
 
     def __post_init__(self):
         if self.mode not in VALID_MODES:
@@ -54,6 +55,7 @@ def load_config(config_path: str = "/app/config.yaml") -> AgentConfig:
         "CASO_PHONE_HOME": "phone_home",
         "CASO_API_URL": "caso_api_url",
         "CASO_LOCAL_PORT": "local_port",
+        "CASO_ADMIN_PASSWORD": "admin_password",
     }
 
     for env_key, cfg_key in env_map.items():

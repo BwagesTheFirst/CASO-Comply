@@ -16,6 +16,14 @@ CREATE TABLE IF NOT EXISTS pdfs (
     processed_at TIMESTAMP,
     error_message TEXT
 );
+
+CREATE TABLE IF NOT EXISTS audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    action TEXT NOT NULL,
+    details TEXT,
+    ip_address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 class Database:
@@ -80,6 +88,20 @@ class Database:
         cursor = await self._db.execute(
             "SELECT * FROM pdfs ORDER BY discovered_at DESC LIMIT ? OFFSET ?",
             (limit, offset),
+        )
+        return [dict(row) for row in await cursor.fetchall()]
+
+    async def add_audit_log(self, action: str, details: str = "", ip_address: str = ""):
+        await self._db.execute(
+            "INSERT INTO audit_log (action, details, ip_address) VALUES (?, ?, ?)",
+            (action, details, ip_address),
+        )
+        await self._db.commit()
+
+    async def get_audit_log(self, limit: int = 50) -> list[dict]:
+        cursor = await self._db.execute(
+            "SELECT * FROM audit_log ORDER BY created_at DESC LIMIT ?",
+            (limit,),
         )
         return [dict(row) for row in await cursor.fetchall()]
 

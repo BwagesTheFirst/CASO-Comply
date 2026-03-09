@@ -70,9 +70,9 @@ async def main():
         sys.exit(1)
 
     processor = Processor(config=config, db=db)
-    app = create_app(config, db)
 
     scheduler = AsyncIOScheduler()
+    app = create_app(config, db, scheduler=scheduler)
     scheduler.add_job(
         run_scan_cycle,
         "cron",

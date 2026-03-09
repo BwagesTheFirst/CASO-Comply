@@ -116,6 +116,60 @@
     border: 1px solid rgba(20, 182, 211, 0.3);
   }
 
+  .auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--green);
+  }
+
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--slate);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-icon:hover {
+    border-color: var(--glacier);
+    color: var(--white);
+  }
+
+  .btn-icon.authenticated {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .btn-sm {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--slate);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-sm:hover {
+    border-color: var(--glacier);
+    color: var(--white);
+  }
+
   /* Main Content */
   .main {
     max-width: 1280px;
@@ -315,6 +369,7 @@
   /* PDF Table */
   .table-section {
     animation: fadeUp 0.4s ease-out 0.35s both;
+    margin-bottom: 24px;
   }
 
   .table-header {
@@ -476,6 +531,224 @@
     opacity: 0.6;
   }
 
+  /* Modal Overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal {
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+    animation: fadeUp 0.3s ease-out;
+  }
+
+  .modal h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--glacier);
+    margin-bottom: 8px;
+  }
+
+  .modal p {
+    font-size: 14px;
+    color: var(--slate);
+    margin-bottom: 20px;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+  }
+
+  .modal-input:focus {
+    border-color: var(--teal);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .modal-error {
+    color: var(--red);
+    font-size: 13px;
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  /* Config Editor Form */
+  .config-form { display: none; }
+
+  .config-form.active { display: block; }
+
+  .config-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .config-form-grid .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-group label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--slate);
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: var(--teal);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  .form-group select {
+    cursor: pointer;
+  }
+
+  .form-group select option {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  /* Toggle Switch */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 4px;
+  }
+
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 12px;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--white);
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+  }
+
+  .toggle input:checked + .toggle-slider {
+    background: var(--teal);
+  }
+
+  .toggle input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+  }
+
+  .toggle-label {
+    font-size: 14px;
+    color: var(--slate);
+  }
+
+  .config-form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Audit Log Section */
+  .audit-section {
+    display: none;
+    animation: fadeUp 0.4s ease-out both;
+  }
+
+  .audit-section.active { display: block; }
+
+  .audit-action {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: lowercase;
+  }
+
+  .audit-config_updated { background: rgba(46, 163, 242, 0.15); color: var(--blue); }
+  .audit-scan_triggered { background: rgba(20, 182, 211, 0.15); color: var(--teal); }
+  .audit-login_success { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+  .audit-login_failed { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
   /* Responsive */
   @media (max-width: 900px) {
     .topbar { padding: 14px 20px; }
@@ -484,6 +757,7 @@
     .score-row { grid-template-columns: 1fr; }
     .config-action-row { grid-template-columns: 1fr; }
     .action-bar { flex-direction: row; }
+    .config-form-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 600px) {
@@ -494,6 +768,20 @@
 </style>
 </head>
 <body>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>Admin Authentication</h3>
+    <p>Enter the admin password to access configuration editing and audit logs.</p>
+    <div class="modal-error" id="loginError">Invalid password. Please try again.</div>
+    <input type="password" class="modal-input" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+      <button class="btn btn-primary" id="loginSubmitBtn" onclick="submitLogin()">Authenticate</button>
+    </div>
+  </div>
+</div>
 
 <!-- Top Bar -->
 <header class="topbar">
@@ -507,6 +795,14 @@
       <span id="statusText">Checking...</span>
     </div>
     <span class="mode-pill" id="modePill">--</span>
+    <span class="auth-badge" id="authBadge" style="display:none;">Authenticated</span>
+    <button class="btn-icon" id="authToggleBtn" onclick="handleAuthToggle()" title="Authenticate">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" id="lockBody"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" id="lockShackle"/>
+      </svg>
+    </button>
+    <button class="btn-sm" id="logoutBtn" style="display:none;" onclick="doLogout()">Logout</button>
   </div>
 </header>
 
@@ -569,7 +865,9 @@
   <div class="config-action-row">
     <div class="config-card">
       <h3>Configuration</h3>
-      <div class="config-grid">
+
+      <!-- Read-only view -->
+      <div class="config-grid" id="configReadOnly">
         <div class="config-item">
           <label>Scan Paths</label>
           <span id="cfgPaths">--</span>
@@ -583,12 +881,60 @@
           <span id="cfgOutput">--</span>
         </div>
         <div class="config-item">
-          <label>Mode</label>
-          <span id="cfgMode">--</span>
+          <label>Output Mode</label>
+          <span id="cfgOutputMode">--</span>
+        </div>
+        <div class="config-item">
+          <label>Max Workers</label>
+          <span id="cfgMaxWorkers">--</span>
         </div>
         <div class="config-item">
           <label>File Watch</label>
           <span id="cfgWatch">--</span>
+        </div>
+      </div>
+
+      <!-- Editable form (shown when authenticated) -->
+      <div class="config-form" id="configForm">
+        <div class="config-form-grid">
+          <div class="form-group full-width">
+            <label for="editScanPaths">Scan Paths (one per line)</label>
+            <textarea id="editScanPaths" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editCron">Cron Schedule</label>
+            <input type="text" id="editCron" placeholder="0 * * * *">
+          </div>
+          <div class="form-group">
+            <label for="editOutputDir">Output Directory</label>
+            <input type="text" id="editOutputDir" placeholder="/data/remediated">
+          </div>
+          <div class="form-group">
+            <label for="editOutputMode">Output Mode</label>
+            <select id="editOutputMode">
+              <option value="suffix">suffix</option>
+              <option value="overwrite">overwrite</option>
+              <option value="directory">directory</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editMaxWorkers">Max Workers</label>
+            <input type="number" id="editMaxWorkers" min="1" max="32" value="1">
+          </div>
+          <div class="form-group">
+            <label>File Watch</label>
+            <div class="toggle-wrap">
+              <label class="toggle">
+                <input type="checkbox" id="editWatch">
+                <span class="toggle-slider"></span>
+              </label>
+              <span class="toggle-label" id="watchLabel">Disabled</span>
+            </div>
+          </div>
+        </div>
+        <div class="config-form-actions">
+          <button class="btn btn-secondary" onclick="cancelConfigEdit()">Cancel</button>
+          <button class="btn btn-primary" id="saveConfigBtn" onclick="saveConfig()">Save Configuration</button>
         </div>
       </div>
     </div>
@@ -600,6 +946,14 @@
       <button class="btn btn-secondary" onclick="refreshAll()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1.5 8a6.5 6.5 0 0 1 11.48-4.17M14.5 8a6.5 6.5 0 0 1-11.48 4.17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 1v3h-3M3 15v-3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Refresh
+      </button>
+      <button class="btn btn-secondary" id="btnEditConfig" onclick="handleEditConfig()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Edit Configuration
+      </button>
+      <button class="btn btn-secondary" id="btnAuditLog" onclick="handleAuditLog()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 3h12M2 8h12M2 13h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Audit Log
       </button>
     </div>
   </div>
@@ -642,6 +996,36 @@
     </div>
   </div>
 
+  <!-- Audit Log Section -->
+  <div class="audit-section" id="auditSection">
+    <div class="table-section">
+      <div class="table-header">
+        <h3>Audit Log</h3>
+        <span class="table-count" id="auditCount"></span>
+      </div>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Action</th>
+                <th>Details</th>
+                <th>IP Address</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="auditEmpty" style="display:none;">
+          <h4>No audit entries yet</h4>
+          <p>Actions will be logged here once they occur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- Toast -->
@@ -654,6 +1038,114 @@
   var sortAsc = false;
   var countdown = 10;
   var refreshInterval;
+  var authToken = sessionStorage.getItem('caso_auth_token') || null;
+  var pendingAction = null; // 'editConfig' or 'auditLog'
+
+  // --- Auth State ---
+  function isAuthenticated() {
+    return authToken !== null;
+  }
+
+  function updateAuthUI() {
+    var badge = document.getElementById('authBadge');
+    var logoutBtn = document.getElementById('logoutBtn');
+    var toggleBtn = document.getElementById('authToggleBtn');
+
+    if (isAuthenticated()) {
+      badge.style.display = 'inline-flex';
+      logoutBtn.style.display = 'inline-block';
+      toggleBtn.classList.add('authenticated');
+      toggleBtn.title = 'Authenticated';
+      // Update lock icon to unlocked
+      document.getElementById('lockShackle').setAttribute('d', 'M7 11V7a5 5 0 0 1 9.9-1');
+    } else {
+      badge.style.display = 'none';
+      logoutBtn.style.display = 'none';
+      toggleBtn.classList.remove('authenticated');
+      toggleBtn.title = 'Authenticate';
+      document.getElementById('lockShackle').setAttribute('d', 'M7 11V7a5 5 0 0 1 10 0v4');
+      // Hide auth-only sections
+      document.getElementById('configForm').classList.remove('active');
+      document.getElementById('configReadOnly').style.display = '';
+      document.getElementById('auditSection').classList.remove('active');
+    }
+  }
+
+  function showLoginModal(afterAction) {
+    pendingAction = afterAction || null;
+    document.getElementById('loginModal').classList.add('active');
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').style.display = 'none';
+    setTimeout(function() {
+      document.getElementById('loginPassword').focus();
+    }, 100);
+  }
+
+  function closeLoginModal() {
+    document.getElementById('loginModal').classList.remove('active');
+    pendingAction = null;
+  }
+
+  function submitLogin() {
+    var password = document.getElementById('loginPassword').value;
+    if (!password) return;
+
+    var btn = document.getElementById('loginSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Authenticating...';
+
+    fetch(BASE + '/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password })
+    })
+    .then(function(res) {
+      if (!res.ok) throw new Error('Invalid password');
+      return res.json();
+    })
+    .then(function(data) {
+      authToken = data.token;
+      sessionStorage.setItem('caso_auth_token', authToken);
+      closeLoginModal();
+      updateAuthUI();
+      showToast('Authentication successful', 'success');
+
+      // Execute pending action
+      if (pendingAction === 'editConfig') {
+        showConfigEditor();
+      } else if (pendingAction === 'auditLog') {
+        showAuditLog();
+      }
+      pendingAction = null;
+    })
+    .catch(function() {
+      document.getElementById('loginError').style.display = 'block';
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.textContent = 'Authenticate';
+    });
+  }
+
+  function doLogout() {
+    authToken = null;
+    sessionStorage.removeItem('caso_auth_token');
+    updateAuthUI();
+    showToast('Logged out', 'success');
+  }
+
+  function handleAuthToggle() {
+    if (isAuthenticated()) {
+      doLogout();
+    } else {
+      showLoginModal();
+    }
+  }
+
+  // Enter key submits login
+  document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitLogin();
+  });
 
   // --- Sanitize text to prevent XSS ---
   function esc(str) {
@@ -667,6 +1159,26 @@
   function apiFetch(path) {
     return fetch(BASE + path).then(function(res) {
       if (!res.ok) throw new Error(res.statusText);
+      return res.json();
+    });
+  }
+
+  function authFetch(path, options) {
+    options = options || {};
+    options.headers = options.headers || {};
+    if (authToken) {
+      options.headers['Authorization'] = 'Bearer ' + authToken;
+    }
+    return fetch(BASE + path, options).then(function(res) {
+      if (res.status === 401) {
+        // Token expired
+        authToken = null;
+        sessionStorage.removeItem('caso_auth_token');
+        updateAuthUI();
+        showToast('Session expired. Please log in again.', 'error');
+        throw new Error('Unauthorized');
+      }
+      if (!res.ok) throw res;
       return res.json();
     });
   }
@@ -711,15 +1223,182 @@
   }
 
   // --- Config ---
+  var currentConfig = {};
+
   function loadConfig() {
     return apiFetch('/api/config').then(function(c) {
+      currentConfig = c;
       document.getElementById('cfgPaths').textContent =
         Array.isArray(c.scan_paths) ? c.scan_paths.join(', ') : '--';
       document.getElementById('cfgCron').textContent = c.cron || '--';
       document.getElementById('cfgOutput').textContent = c.output_dir || '--';
-      document.getElementById('cfgMode').textContent = (c.mode || '--').toUpperCase();
+      document.getElementById('cfgOutputMode').textContent = (c.output_mode || '--').toUpperCase();
+      document.getElementById('cfgMaxWorkers').textContent = c.max_workers || '--';
       document.getElementById('cfgWatch').textContent = c.watch ? 'Enabled' : 'Disabled';
     }).catch(function() {});
+  }
+
+  // --- Config Editor ---
+  function handleEditConfig() {
+    if (!isAuthenticated()) {
+      showLoginModal('editConfig');
+      return;
+    }
+    showConfigEditor();
+  }
+
+  function showConfigEditor() {
+    // Populate form with current config
+    document.getElementById('editScanPaths').value =
+      Array.isArray(currentConfig.scan_paths) ? currentConfig.scan_paths.join('\n') : '';
+    document.getElementById('editCron').value = currentConfig.cron || '';
+    document.getElementById('editOutputDir').value = currentConfig.output_dir || '';
+    document.getElementById('editOutputMode').value = currentConfig.output_mode || 'suffix';
+    document.getElementById('editMaxWorkers').value = currentConfig.max_workers || 1;
+    var watchCheckbox = document.getElementById('editWatch');
+    watchCheckbox.checked = currentConfig.watch || false;
+    document.getElementById('watchLabel').textContent = watchCheckbox.checked ? 'Enabled' : 'Disabled';
+
+    document.getElementById('configReadOnly').style.display = 'none';
+    document.getElementById('configForm').classList.add('active');
+  }
+
+  function cancelConfigEdit() {
+    document.getElementById('configForm').classList.remove('active');
+    document.getElementById('configReadOnly').style.display = '';
+  }
+
+  // Toggle label update
+  document.getElementById('editWatch').addEventListener('change', function() {
+    document.getElementById('watchLabel').textContent = this.checked ? 'Enabled' : 'Disabled';
+  });
+
+  function saveConfig() {
+    if (!isAuthenticated()) return;
+
+    var scanPathsRaw = document.getElementById('editScanPaths').value.trim();
+    var scanPaths = scanPathsRaw ? scanPathsRaw.split('\n').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+    var cron = document.getElementById('editCron').value.trim();
+    var outputDir = document.getElementById('editOutputDir').value.trim();
+    var outputMode = document.getElementById('editOutputMode').value;
+    var maxWorkers = parseInt(document.getElementById('editMaxWorkers').value, 10);
+    var watch = document.getElementById('editWatch').checked;
+
+    // Basic cron validation
+    if (cron && cron.split(/\s+/).length !== 5) {
+      showToast('Invalid cron format. Must be 5 space-separated fields.', 'error');
+      return;
+    }
+
+    var payload = {
+      scan_paths: scanPaths,
+      cron: cron || undefined,
+      output_dir: outputDir || undefined,
+      output_mode: outputMode,
+      max_workers: maxWorkers || undefined,
+      watch: watch
+    };
+
+    var btn = document.getElementById('saveConfigBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    authFetch('/api/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(data) {
+      showToast(data.message || 'Configuration saved', 'success');
+      cancelConfigEdit();
+      loadConfig();
+    })
+    .catch(function(err) {
+      if (err && typeof err.json === 'function') {
+        err.json().then(function(body) {
+          showToast(body.detail || 'Failed to save configuration', 'error');
+        });
+      } else {
+        showToast('Failed to save configuration', 'error');
+      }
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.textContent = 'Save Configuration';
+    });
+  }
+
+  // --- Audit Log ---
+  function handleAuditLog() {
+    if (!isAuthenticated()) {
+      showLoginModal('auditLog');
+      return;
+    }
+    showAuditLog();
+  }
+
+  function showAuditLog() {
+    var section = document.getElementById('auditSection');
+    if (section.classList.contains('active')) {
+      section.classList.remove('active');
+      return;
+    }
+    section.classList.add('active');
+    loadAuditLog();
+  }
+
+  function loadAuditLog() {
+    if (!isAuthenticated()) return;
+
+    authFetch('/api/audit-log')
+    .then(function(entries) {
+      var tbody = document.getElementById('auditTableBody');
+      var empty = document.getElementById('auditEmpty');
+
+      while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+      }
+
+      if (!entries || !entries.length) {
+        empty.style.display = 'block';
+        document.getElementById('auditCount').textContent = '';
+        return;
+      }
+
+      empty.style.display = 'none';
+      document.getElementById('auditCount').textContent = entries.length + ' entr' + (entries.length !== 1 ? 'ies' : 'y');
+
+      entries.forEach(function(entry) {
+        var tr = document.createElement('tr');
+
+        var tdTime = document.createElement('td');
+        tdTime.textContent = formatDate(entry.created_at);
+        tr.appendChild(tdTime);
+
+        var tdAction = document.createElement('td');
+        var actionSpan = document.createElement('span');
+        var actionKey = (entry.action || '').toLowerCase();
+        actionSpan.className = 'audit-action audit-' + actionKey;
+        actionSpan.textContent = entry.action || '--';
+        tdAction.appendChild(actionSpan);
+        tr.appendChild(tdAction);
+
+        var tdDetails = document.createElement('td');
+        tdDetails.textContent = entry.details || '--';
+        tdDetails.style.maxWidth = '300px';
+        tdDetails.style.overflow = 'hidden';
+        tdDetails.style.textOverflow = 'ellipsis';
+        tdDetails.title = entry.details || '';
+        tr.appendChild(tdDetails);
+
+        var tdIp = document.createElement('td');
+        tdIp.textContent = entry.ip_address || '--';
+        tr.appendChild(tdIp);
+
+        tbody.appendChild(tr);
+      });
+    })
+    .catch(function() {});
   }
 
   // --- PDFs ---
@@ -798,6 +1477,7 @@
     // Update sort arrows
     document.querySelectorAll('thead th').forEach(function(th) {
       var key = th.dataset.key;
+      if (!key) return;
       if (key === sortKey) {
         th.classList.add('sorted');
       } else {
@@ -893,7 +1573,12 @@
   // --- Refresh ---
   function refreshAll() {
     countdown = 10;
-    return Promise.all([checkHealth(), loadStats(), loadConfig(), loadPdfs()]);
+    var promises = [checkHealth(), loadStats(), loadConfig(), loadPdfs()];
+    // Refresh audit log if visible
+    if (document.getElementById('auditSection').classList.contains('active') && isAuthenticated()) {
+      promises.push(loadAuditLog());
+    }
+    return Promise.all(promises);
   }
 
   function startAutoRefresh() {
@@ -907,6 +1592,7 @@
   }
 
   // --- Init ---
+  updateAuthUI();
   refreshAll();
   startAutoRefresh();
 </script>
