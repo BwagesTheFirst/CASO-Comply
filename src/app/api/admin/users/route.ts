@@ -69,11 +69,16 @@ export async function GET(request: NextRequest) {
     created_at: u.created_at,
     last_sign_in_at: u.last_sign_in_at,
     is_super_admin: u.user_metadata?.is_super_admin === true,
-    memberships: membershipMap.get(u.id) ?? [],
+    memberships: (membershipMap.get(u.id) ?? []).map((m) => ({
+      tenant_id: m.tenant_id,
+      tenant_name: m.tenant?.name ?? "Unknown",
+      role: m.role,
+    })),
   }));
 
   return NextResponse.json({
     users,
+    total: authUsers.length,
     page,
     limit,
   });

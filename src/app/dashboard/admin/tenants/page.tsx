@@ -9,9 +9,9 @@ interface Tenant {
   slug: string;
   status: string;
   created_at: string;
-  plan: { name: string } | null;
+  plan_name: string | null;
   member_count: number;
-  pages_used: number;
+  total_pages_consumed: number;
 }
 
 const STATUS_OPTIONS = ["all", "active", "trial", "suspended", "cancelled"];
@@ -172,7 +172,7 @@ export default function AdminTenantsPage() {
                         {tenant.name}
                       </td>
                       <td className="px-6 py-3 text-caso-slate">
-                        {tenant.plan?.name ?? "No Plan"}
+                        {tenant.plan_name ?? "No Plan"}
                       </td>
                       <td className="px-6 py-3">
                         <span
@@ -185,7 +185,7 @@ export default function AdminTenantsPage() {
                         {tenant.member_count ?? 0}
                       </td>
                       <td className="px-6 py-3 text-caso-slate">
-                        {(tenant.pages_used ?? 0).toLocaleString()}
+                        {(tenant.total_pages_consumed ?? 0).toLocaleString()}
                       </td>
                       <td className="px-6 py-3 text-caso-slate">
                         {new Date(tenant.created_at).toLocaleDateString()}
