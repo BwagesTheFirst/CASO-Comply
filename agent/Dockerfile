@@ -27,6 +27,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY agent/ ./agent/
 COPY remediation.py .
 COPY remediation_docx.py .
+COPY remediation_xlsx.py .
 COPY gemini_verify.py .
 COPY entrypoint.sh .
 COPY config.example.yaml ./config.yaml
