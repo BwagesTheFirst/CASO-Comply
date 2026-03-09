@@ -6,43 +6,43 @@ import MobileNav from "@/components/MobileNav";
 
 const SERVICE_LEVELS = [
   {
-    level: "Level 1",
+    level: "Standard",
     name: "Standard",
-    price: "$0.10",
+    price: "$0.25",
     description:
-      "Automated tagging, metadata, and structure for straightforward documents. Ideal for high-volume, text-heavy PDFs.",
+      "Automated remediation with font-size heuristic tagging. Fast, reliable, and cost-effective for bulk processing.",
     features: [
       "Auto-tag structure (headings, lists, paragraphs)",
       "Metadata cleanup & language tagging",
       "Logical reading order correction",
-      "veraPDF + PAC 2024 validation",
-      "Batch processing via API",
+      "Before & after scoring",
+      "Batch processing via API or Docker agent",
     ],
   },
   {
-    level: "Level 2",
-    name: "Enhanced",
-    price: "$0.20",
+    level: "AI Verified",
+    name: "AI Verified",
+    price: "$0.35",
     description:
-      "AI-powered alt text, complex table handling, and quality review. For documents with images, charts, and data tables.",
+      "Gemini AI verifies heading hierarchy, reading order, and generates alt text. Higher accuracy for complex documents.",
     features: [
       "Everything in Standard",
       "AI-generated alt text for images",
+      "AI-verified heading hierarchy",
+      "AI-verified reading order",
       "Complex table header association",
-      "Form field labeling",
-      "Automated quality review pass",
       "Remediation log & audit artifacts",
     ],
     featured: true,
   },
   {
-    level: "Level 3",
-    name: "Full Remediation",
-    price: "$0.50",
+    level: "Human Review",
+    name: "Human Review",
+    price: "$4.00",
     description:
-      "Human-in-the-loop review for mission-critical and legal documents. Compliance certificate included.",
+      "AI-verified remediation plus expert human review for files scoring below 60. Full compliance certification.",
     features: [
-      "Everything in Enhanced",
+      "Everything in AI Verified",
       "Human expert review & correction",
       "VPAT/compliance certificate",
       "Priority processing (24-hr SLA)",
@@ -97,11 +97,9 @@ const STEPS = [
 
 const DEPLOYMENT_MODES = [
   {
-    mode: "Cloud",
-    tier: "Standard",
-    price: "$0.10/page",
+    mode: "Cloud API",
     description: "Upload documents to our secure cloud for processing. Fastest setup — no infrastructure required.",
-    dataPolicy: "Full PDFs sent to CASO cloud",
+    dataPolicy: "Full PDFs sent to CASO cloud (AES-256 encrypted)",
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
@@ -115,38 +113,34 @@ const DEPLOYMENT_MODES = [
     ideal: "Small orgs, public website PDFs",
   },
   {
-    mode: "Hybrid",
-    tier: "Professional",
-    price: "$0.20/page",
-    description: "Remediation runs on your servers. Only page images leave your network for AI verification.",
-    dataPolicy: "Only page images sent (no text or metadata)",
+    mode: "Docker Agent",
+    description: "Run the agent on your infrastructure. Scans folders, processes on a schedule, reports back to the dashboard.",
+    dataPolicy: "Documents processed locally on your servers",
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7" />
       </svg>
     ),
     features: [
       "Documents never leave your network",
-      "AI-powered quality verification",
-      "Local processing + cloud review",
+      "Scheduled scans & batch processing",
+      "Local dashboard at localhost:9090",
     ],
     ideal: "Mid-size, document-sensitive orgs",
     featured: true,
   },
   {
-    mode: "Local",
-    tier: "Enterprise",
-    price: "Custom",
-    description: "Everything runs on-premise. No data leaves your network. Full air-gap support.",
-    dataPolicy: "Nothing leaves your network",
+    mode: "Enterprise",
+    description: "Custom deployment with dedicated support, SLAs, and compliance certification for regulated industries.",
+    dataPolicy: "Fully configurable data handling",
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21" />
       </svg>
     ),
     features: [
-      "Complete air-gap support",
-      "Bring your own AI keys",
+      "Dedicated account manager",
+      "Custom SLAs & reporting",
       "Dedicated account manager",
     ],
     ideal: "Hospitals, large gov, regulated industries",
@@ -408,17 +402,9 @@ export default function Home() {
                       <div className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
                         {mode.mode}
                       </div>
-                      <div className="text-xs font-semibold uppercase tracking-wider text-caso-glacier">
-                        {mode.tier}
-                      </div>
                     </div>
                   </div>
-                  <div className="mt-4 flex items-baseline gap-1">
-                    <span className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
-                      {mode.price}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-caso-slate">
+                  <p className="mt-4 text-sm leading-relaxed text-caso-slate">
                     {mode.description}
                   </p>
                   <div className="mt-4 rounded-lg border border-caso-border/50 bg-caso-navy/50 px-3 py-2">
@@ -450,7 +436,7 @@ export default function Home() {
                         : "border border-caso-border bg-transparent text-caso-white hover:border-caso-teal hover:bg-caso-navy-light"
                     }`}
                   >
-                    {mode.price === "Custom" ? "Contact Sales" : "Get Started"}
+                    {mode.mode === "Enterprise" ? "Contact Sales" : "Get Started"}
                   </a>
                 </div>
               ))}
@@ -673,8 +659,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Service Levels / Pricing — at bottom */}
-        <section id="service-levels" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
+        {/* Pricing — at bottom */}
+        <section id="pricing" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
@@ -687,7 +673,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div id="pricing" className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
+            <div className="mt-14 grid gap-6 md:grid-cols-3 md:gap-8">
               {SERVICE_LEVELS.map((tier) => (
                 <div
                   key={tier.level}

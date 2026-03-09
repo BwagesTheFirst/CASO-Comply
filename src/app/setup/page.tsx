@@ -71,7 +71,7 @@ export default function SetupPage() {
               How It Works
             </a>
             <a
-              href="/#service-levels"
+              href="/#pricing"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
               Service Levels
@@ -865,7 +865,7 @@ services:
                 </li>
                 <li>
                   <a
-                    href="/#service-levels"
+                    href="/#pricing"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Service Levels
