@@ -151,11 +151,19 @@ def _table_has_header(table) -> bool:
 
 
 def _has_document_language(doc) -> bool:
-    """Check if document language is set."""
+    """Check if document language is set (in body text or style defaults)."""
+    # Check body text
     body = doc.element.body
     for lang in body.iter("{%s}lang" % NSMAP["w"]):
         if lang.get("{%s}val" % NSMAP["w"]):
             return True
+    # Check style defaults (where _set_document_language writes it)
+    styles_element = doc.styles.element
+    docDefaults = styles_element.find(f"{{{NSMAP['w']}}}docDefaults")
+    if docDefaults is not None:
+        for lang in docDefaults.iter("{%s}lang" % NSMAP["w"]):
+            if lang.get("{%s}val" % NSMAP["w"]):
+                return True
     return False
 
 

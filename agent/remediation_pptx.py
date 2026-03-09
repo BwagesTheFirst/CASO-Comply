@@ -49,16 +49,12 @@ def analyze_pptx(file_path: str) -> dict:
 
     reading_order_coverage = (total_slides - len(reading_order_issues)) / max(total_slides, 1)
 
-    # Check images for alt text
+    # Check images for alt text (only actual pictures, not textboxes)
     total_images = 0
     images_with_alt = 0
     for slide in prs.slides:
         for shape in slide.shapes:
             if shape.shape_type and shape.shape_type in (13, 17):  # Picture, Linked Picture
-                total_images += 1
-                if _shape_has_alt_text(shape):
-                    images_with_alt += 1
-            elif hasattr(shape, "image"):
                 total_images += 1
                 if _shape_has_alt_text(shape):
                     images_with_alt += 1
@@ -430,11 +426,7 @@ async def remediate_pptx_async(
     _set_table_headers(prs)
     _remove_dangerous_animations(prs)
 
-    # Fix reading order on all slides
-    for slide in prs.slides:
-        _fix_reading_order(slide)
-
-    # Set title if missing
+    # Set presentation title if missing
     if not prs.core_properties.title:
         first_title = None
         for slide in prs.slides:
@@ -442,6 +434,14 @@ async def remediate_pptx_async(
                 first_title = slide.shapes.title.text[:256]
                 break
         prs.core_properties.title = first_title or "Untitled Presentation"
+
+    # Add slide titles before reading order fix (so title is first in order)
+    if not verify:
+        _add_missing_titles(prs)
+
+    # Fix reading order on all slides (title first, then top-to-bottom)
+    for slide in prs.slides:
+        _fix_reading_order(slide)
 
     # Gemini AI verification
     verification_info = None
@@ -502,10 +502,6 @@ async def remediate_pptx_async(
             slide_num = alt_entry.get("slide", 0)
             if 1 <= slide_num <= len(prs.slides):
                 _set_alt_text_on_shapes(prs.slides[slide_num - 1], [alt_entry])
-
-    else:
-        # Without AI, add generic titles
-        _add_missing_titles(prs)
 
     # Save remediated presentation
     prs.save(output_path)
