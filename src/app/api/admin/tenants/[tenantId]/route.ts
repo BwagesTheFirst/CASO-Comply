@@ -81,11 +81,12 @@ export async function GET(
     totalPages += record.pages_consumed || 0;
   }
 
-  // Fetch all available plans from DB
+  // Fetch active plans from DB
   const { data: allPlans } = await admin
     .from("subscription_plans")
-    .select("id, name, monthly_price_cents, pages_included")
-    .order("monthly_price_cents", { ascending: true });
+    .select("id, name, standard_rate_cents, ai_verified_rate_cents, human_review_rate_cents")
+    .eq("is_active", true)
+    .order("standard_rate_cents", { ascending: true });
 
   return NextResponse.json({
     tenant,

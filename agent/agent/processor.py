@@ -84,18 +84,12 @@ class Processor:
         output_path = self._output_path(pdf_path)
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        # Only enable AI verification if mode is hybrid AND plan includes verify
-        verify = False
-        if self.config.mode == "hybrid":
-            plan_features = self.license_client.features if self.license_client else {}
-            if plan_features.get("verify", False):
-                verify = True
-            else:
-                logger.warning(
-                    "Hybrid mode requested but plan '%s' does not include AI verification — "
-                    "falling back to standard remediation",
-                    self.license_client.plan_name if self.license_client else "unknown",
-                )
+        # Determine AI verification based on plan tier
+        plan_name = self.license_client.plan_name if self.license_client else "Standard"
+        verify = plan_name in ("AI Verified", "Human Review")
+
+        if not verify:
+            logger.info("Plan '%s' — standard remediation (no AI)", plan_name)
 
         result = await remediate_pdf_async(
             pdf_path, output_path, verify=verify,
@@ -105,13 +99,22 @@ class Processor:
         after_score = result["after"]["score"]["score"]
         page_count = result["before"]["structure"].get("page_count", 0)
 
-        # Determine remediation type and review flags
+        # Determine remediation type based on plan and score
         remediation_type = "ai_verified" if verify else "standard"
-        needs_review = after_score < 50
-        if needs_review:
+        needs_review = False
+
+        # Human Review plan: flag files scoring below 60 for human review
+        if plan_name == "Human Review" and after_score < 60:
+            remediation_type = "human_review"
+            needs_review = True
             logger.warning(
-                "PDF %s needs human review: after_score=%d (below threshold of 50)",
-                Path(pdf_path).name, after_score,
+                "PDF %s flagged for human review: after_score=%d (below 60, plan: %s)",
+                Path(pdf_path).name, after_score, plan_name,
+            )
+        elif after_score < 60:
+            logger.warning(
+                "PDF %s has low score after remediation: after_score=%d (plan: %s)",
+                Path(pdf_path).name, after_score, plan_name,
             )
 
         if self.config.output_mode == "overwrite":

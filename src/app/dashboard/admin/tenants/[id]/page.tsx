@@ -30,8 +30,9 @@ interface Scan {
 interface Plan {
   id: string;
   name: string;
-  monthly_price_cents: number;
-  pages_included: number;
+  standard_rate_cents: number;
+  ai_verified_rate_cents: number;
+  human_review_rate_cents: number;
 }
 
 interface Tenant {
@@ -302,7 +303,7 @@ export default function AdminTenantDetailPage() {
                 <option value="">No Plan</option>
                 {plans.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name} — {p.pages_included.toLocaleString()} pages/mo
+                    {p.name}
                   </option>
                 ))}
               </select>

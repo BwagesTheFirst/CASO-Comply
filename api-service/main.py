@@ -215,8 +215,7 @@ async def license_validate(body: LicenseValidateRequest):
         "valid": True,
         "org": tenant_info["org_name"],
         "plan": tenant_info["plan_name"],
-        "pages_included": tenant_info["pages_included"],
-        "pages_remaining": tenant_info["pages_remaining"],
+        "pages_used": tenant_info["pages_used"],
         "features": tenant_info.get("features", {}),
     }
 
