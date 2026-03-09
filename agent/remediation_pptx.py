@@ -168,11 +168,13 @@ def _has_reading_order_issue(slide) -> bool:
             if title_idx is not None and title_idx > 0:
                 return True
 
-    positioned = [(s.top or 0, s.left or 0, s) for s in shapes if hasattr(s, 'top') and s.top is not None]
-    if len(positioned) < 2:
+    # Check non-placeholder shapes for reading order (top-to-bottom)
+    # Exclude placeholders since their position is inherited from layout
+    non_ph = [s for s in shapes if s.shape_type != 14 and hasattr(s, 'top') and s.top is not None]
+    if len(non_ph) < 2:
         return False
 
-    tops = [p[0] for p in positioned]
+    tops = [s.top or 0 for s in non_ph]
     sorted_tops = sorted(tops)
     return tops != sorted_tops
 
@@ -328,10 +330,16 @@ def _fix_reading_order(slide):
             nvPr = nvSpPr.find("{%s}nvPr" % NSMAP["p"])
             if nvPr is not None:
                 ph = nvPr.find("{%s}ph" % NSMAP["p"])
-                if ph is not None and ph.get("type") == "title":
-                    return (-1, 0)
-                if ph is not None and ph.get("idx") == "0":
-                    return (-1, 0)
+                if ph is not None:
+                    ph_type = ph.get("type", "")
+                    # Title and center title go first
+                    if ph_type in ("title", "ctrTitle"):
+                        return (-2, 0)
+                    # Subtitle goes second
+                    if ph_type in ("subTitle", "body"):
+                        return (-1, 0)
+                    if ph.get("idx") == "0":
+                        return (-2, 0)
 
         spPr = el.find(".//{%s}spPr" % NSMAP["a"])
         if spPr is not None:
