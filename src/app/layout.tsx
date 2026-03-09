@@ -17,11 +17,16 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "CASO Comply — AI-Powered PDF Accessibility Remediation",
+  title: "CASO Comply — AI-Powered Document Accessibility Remediation",
   description:
-    "Automated PDF accessibility compliance for government, education, and enterprise. WCAG 2.1 AA, PDF/UA, Section 508, ADA Title II compliant remediation starting at $0.10/page.",
+    "Automated document accessibility compliance for government, education, and enterprise. Remediate PDFs, Word documents, and Excel spreadsheets to WCAG 2.1 AA, PDF/UA, and Section 508 standards — starting at $0.10/page.",
   keywords: [
     "PDF accessibility remediation",
+    "document accessibility remediation",
+    "Word accessibility",
+    "Excel accessibility",
+    "DOCX remediation",
+    "XLSX remediation",
     "WCAG 2.1 compliance",
     "ADA Title II",
     "Section 508",
@@ -33,9 +38,9 @@ export const metadata: Metadata = {
     "Accessibility on Demand",
   ],
   openGraph: {
-    title: "CASO Comply — AI-Powered PDF Accessibility Remediation",
+    title: "CASO Comply — AI-Powered Document Accessibility Remediation",
     description:
-      "Scan your website. Find every inaccessible PDF. Remediate automatically. Starting at $0.10/page.",
+      "Scan your website. Find every inaccessible document. Remediate PDFs, Word docs, and spreadsheets automatically. Starting at $0.10/page.",
     type: "website",
     siteName: "CASO Comply",
   },

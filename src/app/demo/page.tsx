@@ -418,7 +418,7 @@ function DemoPage() {
           {/* Header */}
           <div className="mb-12 text-center">
             <h1 className="font-[family-name:var(--font-display)] text-3xl font-900 tracking-tight sm:text-4xl md:text-5xl">
-              PDF Accessibility{" "}
+              Document Accessibility{" "}
               <span className="text-gradient">Live Demo</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-caso-slate">
@@ -483,7 +483,7 @@ function DemoPage() {
                   <p className="text-sm text-caso-slate">
                     {state === "uploading" && "Securely transferring your document"}
                     {state === "analyzing" && "Checking tags, structure, alt text, reading order, and more"}
-                    {state === "remediating" && "Applying AI-powered fixes to your PDF"}
+                    {state === "remediating" && "Applying AI-powered fixes to your document"}
                   </p>
                 </div>
 
@@ -562,7 +562,7 @@ function DemoPage() {
                       Hear the Difference
                     </h3>
                     <p className="mt-1 text-sm text-caso-slate">
-                      Listen to how a screen reader interprets your PDF — before and after remediation
+                      Listen to how a screen reader interprets your document — before and after remediation
                     </p>
                   </div>
                   <div className="grid gap-6 md:grid-cols-2">
@@ -594,7 +594,7 @@ function DemoPage() {
                       </span>
                     </h3>
                     <p className="mt-1 text-sm text-caso-slate">
-                      From grade {result.before.grade} to grade {result.after.grade} — your PDF is now
+                      From grade {result.before.grade} to grade {result.after.grade} — your document is now
                       {result.after.grade === "A"
                         ? " fully compliant."
                         : " significantly more accessible."}
@@ -766,17 +766,17 @@ function DemoPage() {
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
                   </svg>
-                  Try Another PDF
+                  Try Another Document
                 </button>
               </div>
 
               {/* CTA — Email Capture */}
               <div className="mt-14 rounded-2xl border border-caso-border bg-gradient-to-b from-caso-navy-light to-caso-navy p-8 text-center md:p-10">
                 <h3 className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
-                  Ready to remediate your entire PDF library?
+                  Ready to remediate your entire document library?
                 </h3>
                 <p className="mx-auto mt-3 max-w-lg text-sm text-caso-slate">
-                  Get a free full-site audit — we&apos;ll scan every PDF on your website,
+                  Get a free full-site audit — we&apos;ll scan every document on your website,
                   score them for accessibility, and send you a detailed compliance report.
                 </p>
 

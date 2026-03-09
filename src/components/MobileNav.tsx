@@ -7,7 +7,8 @@ const NAV_LINKS = [
   { href: "#enterprise", label: "Enterprise" },
   { href: "#demo", label: "Demo" },
   { href: "#partners", label: "Partners" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/login", label: "Login" },
 ];
 
 export default function MobileNav() {
@@ -131,11 +132,11 @@ export default function MobileNav() {
               </ul>
               <div className="mt-8 border-t border-caso-border pt-8">
                 <a
-                  href="#scan"
+                  href="/signup"
                   onClick={() => setIsOpen(false)}
                   className="block rounded-xl bg-caso-blue px-6 py-4 text-center font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-colors hover:bg-caso-blue-bright"
                 >
-                  Free Site Audit
+                  Sign Up
                 </a>
               </div>
             </nav>

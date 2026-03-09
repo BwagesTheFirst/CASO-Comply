@@ -56,7 +56,7 @@ const STEPS = [
   {
     step: "1",
     title: "Scan",
-    description: "Enter your URL. We crawl your entire site and identify every PDF document.",
+    description: "Enter your URL. We crawl your entire site and identify every document — PDFs, Word files, and spreadsheets.",
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -76,7 +76,7 @@ const STEPS = [
   {
     step: "3",
     title: "Remediate",
-    description: "We fix sample PDFs automatically and show you side-by-side before and after.",
+    description: "We fix sample documents automatically and show you side-by-side before and after.",
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17l-5.56-5.56a2.002 2.002 0 010-2.83l.28-.28a2 2 0 012.83 0l5.56 5.56m-7.12 7.12l7.12-7.12m0 0l2.83-2.83a2 2 0 000-2.83l-.28-.28a2 2 0 00-2.83 0L10.59 12.3" />
@@ -100,7 +100,7 @@ const DEPLOYMENT_MODES = [
     mode: "Cloud",
     tier: "Standard",
     price: "$0.10/page",
-    description: "Upload PDFs to our secure cloud for processing. Fastest setup — no infrastructure required.",
+    description: "Upload documents to our secure cloud for processing. Fastest setup — no infrastructure required.",
     dataPolicy: "Full PDFs sent to CASO cloud",
     icon: (
       <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -126,7 +126,7 @@ const DEPLOYMENT_MODES = [
       </svg>
     ),
     features: [
-      "PDFs never leave your network",
+      "Documents never leave your network",
       "AI-powered quality verification",
       "Local processing + cloud review",
     ],
@@ -154,7 +154,7 @@ const DEPLOYMENT_MODES = [
 ];
 
 const STATS = [
-  { value: "2.5T+", label: "PDFs on the web globally" },
+  { value: "2.5T+", label: "documents on the web globally" },
   { value: "90%", label: "are inaccessible" },
   { value: "24/7", label: "automated remediation" },
   { value: "95%+", label: "automated accuracy rate" },
@@ -212,18 +212,24 @@ export default function Home() {
             >
               Partners
             </a>
-            <a
-              href="#pricing"
+            <Link
+              href="/pricing"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
               Pricing
-            </a>
-            <a
-              href="#scan"
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
+            >
+              Login
+            </Link>
+            <Link
+              href="/signup"
               className="ml-4 rounded-xl bg-caso-blue px-5 py-2.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
             >
-              Free Site Audit
-            </a>
+              Sign Up
+            </Link>
           </div>
 
           {/* Mobile Nav */}
@@ -257,17 +263,17 @@ export default function Home() {
             {/* Headline */}
             <div className="mx-auto max-w-4xl text-center">
               <h1 className="font-[family-name:var(--font-display)] text-4xl font-900 leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                Thousands of inaccessible PDFs.
+                PDFs. Word docs. Spreadsheets.
                 <br />
                 <span className="text-gradient">
-                  We fix them all — automatically.
+                  All made accessible — automatically.
                 </span>
               </h1>
 
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-caso-slate md:text-xl">
-                CASO Comply deploys on your infrastructure and remediates every PDF
-                to WCAG 2.1 AA, PDF/UA, and Section 508 compliance — automatically,
-                on your schedule. Start with a free site audit.
+                CASO Comply deploys on your infrastructure and remediates every document
+                to WCAG 2.1 AA, PDF/UA, and Section 508 compliance — PDFs, Word files,
+                and Excel spreadsheets, automatically on your schedule.
               </p>
             </div>
 
@@ -354,7 +360,7 @@ export default function Home() {
               </h2>
               <p className="mt-4 text-lg text-caso-slate">
                 Install our Docker-based agent on your servers. It scans folders, crawls
-                websites, and remediates PDFs automatically — on your schedule, under your
+                websites, and remediates documents automatically — on your schedule, under your
                 control.
               </p>
             </div>
@@ -457,21 +463,21 @@ export default function Home() {
                   Install once. Remediate forever.
                 </h3>
                 <p className="mt-2 text-sm text-caso-slate">
-                  The agent runs on your servers 24/7 — scanning folders, finding new PDFs,
+                  The agent runs on your servers 24/7 — scanning folders, finding new documents,
                   and remediating them automatically. Track everything from the built-in dashboard.
                 </p>
               </div>
               <div className="overflow-hidden rounded-2xl border border-caso-border shadow-2xl shadow-caso-teal/5">
                 <Image
                   src="/agent-dashboard.png"
-                  alt="CASO Comply Agent dashboard showing PDF remediation status, scores, and configuration"
+                  alt="CASO Comply Agent dashboard showing document remediation status, scores, and configuration"
                   width={1440}
                   height={800}
                   className="w-full"
                 />
               </div>
               <p className="mt-3 text-center text-sm text-caso-slate">
-                Built-in dashboard at localhost:9090 — monitor every PDF in real time
+                Built-in dashboard at localhost:9090 — monitor every document in real time
               </p>
             </div>
 
@@ -501,8 +507,8 @@ export default function Home() {
                 See the difference
               </h2>
               <p className="mt-4 text-lg text-caso-slate">
-                Watch a non-compliant PDF transform into a fully accessible,
-                tagged document — in real time.
+                Watch a non-compliant document transform into a fully accessible,
+                tagged file — in real time.
               </p>
             </div>
 
@@ -605,7 +611,7 @@ export default function Home() {
                   </svg>
                 </Link>
                 <p className="mt-3 text-sm text-caso-slate">
-                  Upload your own PDF and see the results in real time
+                  Upload your own document and see the results in real time
                 </p>
               </div>
             </div>
@@ -758,7 +764,7 @@ export default function Home() {
               Get your free accessibility report
             </h2>
             <p className="mt-4 text-lg text-caso-slate">
-              See every inaccessible PDF on your site, with remediation cost
+              See every inaccessible document on your site, with remediation cost
               estimates and a compliance roadmap. No credit card required.
             </p>
             <div className="mt-10">
@@ -782,7 +788,7 @@ export default function Home() {
                 className="h-8 w-auto"
               />
               <p className="mt-3 text-sm leading-relaxed text-caso-slate">
-                AI-powered PDF accessibility remediation by{" "}
+                AI-powered document accessibility remediation by{" "}
                 <a
                   href="https://caso.com"
                   className="text-caso-glacier underline decoration-caso-glacier/30 underline-offset-2 hover:text-caso-blue hover:decoration-caso-blue/50"
@@ -818,9 +824,9 @@ export default function Home() {
                   </Link>
                 </li>
                 <li>
-                  <a href="#pricing" className="text-sm text-caso-slate hover:text-caso-white">
+                  <Link href="/pricing" className="text-sm text-caso-slate hover:text-caso-white">
                     Pricing
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#scan" className="text-sm text-caso-slate hover:text-caso-white">
