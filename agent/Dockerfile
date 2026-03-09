@@ -4,10 +4,13 @@
 
 FROM python:3.12-slim
 
-# System deps for PDF processing
+# System deps for PDF and Office processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libmupdf-dev \
+    libreoffice-writer-nogui \
+    libreoffice-calc-nogui \
+    libreoffice-impress-nogui \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
