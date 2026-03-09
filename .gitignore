@@ -48,3 +48,6 @@ api-service/output/
 *.pyc
 .env*.local
 agent/.venv/
+
+# worktrees
+.worktrees/

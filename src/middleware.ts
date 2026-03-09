@@ -9,6 +9,7 @@ const publicPaths = [
   "/pricing",
   "/demo",
   "/competitors",
+  "/security",
   "/setup",
   "/accessibility",
   "/privacy",

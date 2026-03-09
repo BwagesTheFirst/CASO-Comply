@@ -32,7 +32,7 @@ const PLANS = [
     price: "$0.35",
     period: "/page",
     description:
-      "Everything in Standard plus Gemini AI verification for heading hierarchy, reading order, and alt text.",
+      "Everything in Standard plus AI verification for heading hierarchy, reading order, and alt text.",
     features: [
       "Everything in Standard",
       "AI-verified tag accuracy",
