@@ -69,7 +69,7 @@ async def main():
         logger.error("License validation failed. Exiting.")
         sys.exit(1)
 
-    processor = Processor(config=config, db=db)
+    processor = Processor(config=config, db=db, license_client=license_client)
 
     scheduler = AsyncIOScheduler()
     app = create_app(config, db, scheduler=scheduler)

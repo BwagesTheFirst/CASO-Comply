@@ -10,16 +10,20 @@ import httpx
 
 from agent.config import AgentConfig
 from agent.db import Database
+from agent.license import LicenseClient
 
 logger = logging.getLogger(__name__)
 
 
 class Processor:
-    def __init__(self, config: AgentConfig, db: Database):
+    def __init__(self, config: AgentConfig, db: Database, license_client: LicenseClient | None = None):
         self.config = config
         self.db = db
+        self.license_client = license_client
 
-    async def _report_usage(self, filename: str, page_count: int) -> None:
+    async def _report_usage(
+        self, filename: str, page_count: int, remediation_type: str | None = None,
+    ) -> None:
         """Report usage to the CASO cloud API (fire-and-forget).
 
         Always attempts to report — page counting is billing, not telemetry.
@@ -29,15 +33,18 @@ class Processor:
             logger.debug("No license key configured — skipping usage report")
             return
         try:
+            payload: dict = {
+                "pages_processed": page_count,
+                "pdfs_completed": 1,
+                "hostname": platform.node(),
+                "filename": filename,
+            }
+            if remediation_type is not None:
+                payload["remediation_type"] = remediation_type
             async with httpx.AsyncClient(timeout=15) as client:
                 resp = await client.post(
                     f"{self.config.caso_api_url}/api/license/usage",
-                    json={
-                        "pages_processed": page_count,
-                        "pdfs_completed": 1,
-                        "hostname": platform.node(),
-                        "filename": filename,
-                    },
+                    json=payload,
                     headers={
                         "Authorization": f"Bearer {self.config.license_key}",
                     },
@@ -77,7 +84,19 @@ class Processor:
         output_path = self._output_path(pdf_path)
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        verify = self.config.mode == "hybrid"
+        # Only enable AI verification if mode is hybrid AND plan includes verify
+        verify = False
+        if self.config.mode == "hybrid":
+            plan_features = self.license_client.features if self.license_client else {}
+            if plan_features.get("verify", False):
+                verify = True
+            else:
+                logger.warning(
+                    "Hybrid mode requested but plan '%s' does not include AI verification — "
+                    "falling back to standard remediation",
+                    self.license_client.plan_name if self.license_client else "unknown",
+                )
+
         result = await remediate_pdf_async(
             pdf_path, output_path, verify=verify,
         )
@@ -85,6 +104,15 @@ class Processor:
         before_score = result["before"]["score"]["score"]
         after_score = result["after"]["score"]["score"]
         page_count = result["before"]["structure"].get("page_count", 0)
+
+        # Determine remediation type and review flags
+        remediation_type = "ai_verified" if verify else "standard"
+        needs_review = after_score < 50
+        if needs_review:
+            logger.warning(
+                "PDF %s needs human review: after_score=%d (below threshold of 50)",
+                Path(pdf_path).name, after_score,
+            )
 
         if self.config.output_mode == "overwrite":
             shutil.copy2(output_path, pdf_path)
@@ -97,12 +125,14 @@ class Processor:
             page_count=page_count,
         )
 
-        await self._report_usage(Path(pdf_path).name, page_count)
+        await self._report_usage(Path(pdf_path).name, page_count, remediation_type)
 
         return {
             "status": "completed",
             "before_score": before_score,
             "after_score": after_score,
+            "remediation_type": remediation_type,
+            "needs_review": needs_review,
         }
 
     async def _process_cloud(self, pdf_path: str) -> dict:

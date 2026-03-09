@@ -13,6 +13,17 @@ class LicenseClient:
         self.api_url = api_url
         self.license_key = license_key
         self.enabled = enabled
+        self._data: dict = {}
+
+    @property
+    def features(self) -> dict:
+        """Return the plan features dict from the last validation response."""
+        return self._data.get("features", {})
+
+    @property
+    def plan_name(self) -> str:
+        """Return the plan name from the last validation response."""
+        return self._data.get("plan", "unknown")
 
     async def validate(self) -> bool:
         if not self.enabled:
@@ -25,7 +36,13 @@ class LicenseClient:
                 )
                 if resp.status_code == 200:
                     data = resp.json()
-                    logger.info("License valid for org: %s", data.get("org", "unknown"))
+                    self._data = data
+                    logger.info(
+                        "License valid for org: %s (plan: %s, features: %s)",
+                        data.get("org", "unknown"),
+                        data.get("plan", "unknown"),
+                        data.get("features", {}),
+                    )
                     return data.get("valid", False)
                 else:
                     logger.warning("License validation failed: %d", resp.status_code)

@@ -25,6 +25,12 @@ interface RecentRecord {
   tenant_name: string;
 }
 
+interface TierBreakdown {
+  remediation_type: string;
+  pages: number;
+  revenue_cents: number;
+}
+
 interface UsageData {
   pages_today: number;
   pages_this_month: number;
@@ -32,6 +38,7 @@ interface UsageData {
   action_breakdown: ActionBreakdown[];
   tenant_breakdown: TenantBreakdown[];
   recent_activity: RecentRecord[];
+  tier_breakdown: TierBreakdown[];
 }
 
 const ACTION_LABELS: Record<string, { label: string; color: string }> = {
@@ -137,6 +144,7 @@ export default function AdminUsagePage() {
     action_breakdown,
     tenant_breakdown,
     recent_activity,
+    tier_breakdown,
   } = data!;
 
   const topStats = [
@@ -215,6 +223,60 @@ export default function AdminUsagePage() {
             );
           })}
         </div>
+      </div>
+
+      {/* Revenue by Tier */}
+      <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-caso-white mb-4">
+          Revenue by Tier
+          <span className="text-sm font-normal text-caso-slate ml-2">
+            (this month)
+          </span>
+        </h2>
+        {(() => {
+          const TIER_META: Record<string, { label: string; rate: string; rateCents: number; color: string }> = {
+            standard: { label: "Standard", rate: "$0.25", rateCents: 25, color: "text-caso-blue" },
+            ai_verified: { label: "AI Verified", rate: "$0.35", rateCents: 35, color: "text-caso-green" },
+            human_review: { label: "Human Review", rate: "$4.00", rateCents: 400, color: "text-purple-400" },
+          };
+          const tierMap = new Map((tier_breakdown ?? []).map((t) => [t.remediation_type, t]));
+          const allTiers = ["standard", "ai_verified", "human_review"];
+          const rows = allTiers.map((key) => {
+            const meta = TIER_META[key];
+            const data = tierMap.get(key);
+            const pages = data?.pages ?? 0;
+            const revenueCents = data?.revenue_cents ?? pages * meta.rateCents;
+            return { key, ...meta, pages, revenueDollars: revenueCents / 100 };
+          });
+          const totalRevenue = rows.reduce((sum, r) => sum + r.revenueDollars, 0);
+
+          return (
+            <div className="space-y-3">
+              {rows.map((r) => (
+                <div
+                  key={r.key}
+                  className="flex items-center justify-between rounded-lg bg-caso-navy border border-caso-border px-4 py-3"
+                >
+                  <div>
+                    <span className={`font-medium ${r.color}`}>{r.label}</span>
+                    <span className="text-caso-slate text-sm ml-2">
+                      {r.pages.toLocaleString()} pages x {r.rate}
+                    </span>
+                  </div>
+                  <span className="text-caso-white font-bold">
+                    ${r.revenueDollars.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between rounded-lg bg-caso-navy border border-caso-green/30 px-4 py-3">
+                <span className="font-medium text-caso-white">Total Estimated Revenue</span>
+                <span className="text-caso-green font-bold text-lg">
+                  ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Per-Tenant Usage */}

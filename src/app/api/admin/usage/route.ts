@@ -23,6 +23,7 @@ export async function GET() {
     actionBreakdownRes,
     tenantBreakdownRes,
     recentActivityRes,
+    tierBreakdownRes,
   ] = await Promise.all([
     // Pages today
     admin
@@ -59,6 +60,13 @@ export async function GET() {
       )
       .order("created_at", { ascending: false })
       .limit(50),
+
+    // Tier breakdown this month (remediation_type + cost)
+    admin
+      .from("usage_records")
+      .select("remediation_type, pages_consumed, cost_cents")
+      .gte("created_at", `${monthStart}T00:00:00.000Z`)
+      .not("remediation_type", "is", null),
   ]);
 
   // Pages today
@@ -173,6 +181,29 @@ export async function GET() {
     }
   );
 
+  // Tier breakdown (remediation type revenue)
+  interface TierRow {
+    remediation_type: string;
+    pages_consumed: number;
+    cost_cents: number | null;
+  }
+  const tierMap: Record<string, { pages: number; revenue_cents: number }> = {};
+  for (const r of (tierBreakdownRes.data ?? []) as TierRow[]) {
+    const tier = r.remediation_type;
+    if (!tierMap[tier]) {
+      tierMap[tier] = { pages: 0, revenue_cents: 0 };
+    }
+    tierMap[tier].pages += r.pages_consumed || 0;
+    tierMap[tier].revenue_cents += r.cost_cents || 0;
+  }
+  const tierBreakdown = Object.entries(tierMap).map(
+    ([remediation_type, data]) => ({
+      remediation_type,
+      pages: data.pages,
+      revenue_cents: data.revenue_cents,
+    })
+  );
+
   return NextResponse.json({
     pages_today: pagesToday,
     pages_this_month: pagesThisMonth,
@@ -180,5 +211,6 @@ export async function GET() {
     action_breakdown: actionBreakdown,
     tenant_breakdown: tenantBreakdown,
     recent_activity: recentActivity,
+    tier_breakdown: tierBreakdown,
   });
 }
