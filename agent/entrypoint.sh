@@ -7,7 +7,7 @@ if [ -f /app/config.yaml ]; then
 fi
 
 # Create data directories
-mkdir -p /data/remediated
+mkdir -p /data/documents /data/output /data/remediated
 
 echo "Starting CASO Comply Agent..."
 exec python -m agent.main "$@"

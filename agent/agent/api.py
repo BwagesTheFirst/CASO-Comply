@@ -1,18 +1,21 @@
 # agent/agent/api.py
 from __future__ import annotations
 
+import os
 import secrets
 import time
 from pathlib import Path
 
 import yaml
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from agent.config import AgentConfig, VALID_OUTPUT_MODES
 from agent.db import Database
+
+BROWSE_ROOT = "/data"
 
 # In-memory token store: token -> expiry timestamp
 _active_tokens: dict[str, float] = {}
@@ -249,6 +252,88 @@ def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
     ):
         _require_auth(authorization)
         return await db.get_audit_log(limit=limit)
+
+    # --- Browse endpoint (protected) ---
+
+    @app.get("/api/browse")
+    async def browse_directory(
+        path: str = Query(default=BROWSE_ROOT),
+        authorization: str | None = Header(default=None),
+    ):
+        _require_auth(authorization)
+
+        # Resolve the requested path and enforce jail to BROWSE_ROOT
+        try:
+            resolved = os.path.realpath(path)
+        except (ValueError, OSError):
+            raise HTTPException(status_code=403, detail="Invalid path")
+
+        real_root = os.path.realpath(BROWSE_ROOT)
+
+        # Must be exactly the root or a subdirectory of it
+        if resolved != real_root and not resolved.startswith(real_root + os.sep):
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied: path is outside the allowed directory",
+            )
+
+        if not os.path.isdir(resolved):
+            raise HTTPException(status_code=404, detail="Directory not found")
+
+        entries = []
+        try:
+            with os.scandir(resolved) as it:
+                for entry in sorted(it, key=lambda e: (not e.is_dir(), e.name.lower())):
+                    # Resolve each entry to prevent symlink escape
+                    entry_real = os.path.realpath(entry.path)
+                    if not entry_real.startswith(real_root + os.sep) and entry_real != real_root:
+                        continue  # skip entries that resolve outside jail
+
+                    if entry.is_dir():
+                        # Count PDFs and total files (immediate children only)
+                        pdf_count = 0
+                        total_files = 0
+                        try:
+                            with os.scandir(entry_real) as sub_it:
+                                for sub_entry in sub_it:
+                                    if sub_entry.is_file():
+                                        total_files += 1
+                                        if sub_entry.name.lower().endswith(".pdf"):
+                                            pdf_count += 1
+                        except PermissionError:
+                            pass
+                        entries.append({
+                            "name": entry.name,
+                            "type": "directory",
+                            "pdf_count": pdf_count,
+                            "total_files": total_files,
+                        })
+                    elif entry.is_file() and entry.name.lower().endswith(".pdf"):
+                        try:
+                            size_kb = round(entry.stat().st_size / 1024)
+                        except OSError:
+                            size_kb = 0
+                        entries.append({
+                            "name": entry.name,
+                            "type": "file",
+                            "size_kb": size_kb,
+                        })
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Permission denied")
+
+        # Compute parent path (clamped to root)
+        parent = os.path.dirname(resolved)
+        if not parent.startswith(real_root) or parent == resolved:
+            parent = None
+        else:
+            # Return the original logical path's parent for the UI
+            parent = os.path.dirname(path.rstrip("/")) or BROWSE_ROOT
+
+        return {
+            "path": path.rstrip("/") or BROWSE_ROOT,
+            "entries": entries,
+            "parent": parent,
+        }
 
     # --- Static files (must be last) ---
     web_dir = Path(__file__).parent / "web"

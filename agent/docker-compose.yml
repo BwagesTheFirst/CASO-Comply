@@ -1,14 +1,33 @@
+# CASO Comply Agent — On-Premise Document Remediation
+#
+# SETUP:
+#   1. Edit the volume mounts below to point at your document folders
+#   2. Set your admin password
+#   3. Run: docker-compose up -d
+#   4. Open http://localhost:9090 to access the dashboard
+#
+version: "3.8"
 services:
   caso-agent:
-    build: .
+    image: caso/comply-agent:latest
     environment:
-      - CASO_API_KEY=${CASO_API_KEY}
-      - TARGET_DOMAINS=${TARGET_DOMAINS:-example.gov}
-      - SCAN_SCHEDULE=${SCAN_SCHEDULE:-0 2 * * *}
-      - DASHBOARD_PORT=9090
+      # Admin password for the web dashboard
+      - CASO_ADMIN_PASSWORD=changeme
+      # Processing mode: local (on-premise), hybrid (local + AI verify), cloud (API)
+      - CASO_MODE=local
+      # Disable phone-home telemetry (set to true to enable usage reporting)
+      - CASO_PHONE_HOME=false
+      # Scan schedule (default: every hour)
+      - CASO_CRON=0 * * * *
     ports:
       - "9090:9090"
     volumes:
+      # Mount your document folders here. The agent will scan for PDFs inside /data/documents.
+      # Example: /mnt/city-share/documents:/data/documents
+      - ./documents:/data/documents
+      # Where remediated (fixed) PDFs will be saved
+      - ./remediated:/data/output
+      # Persistent data (scan history, settings)
       - caso-data:/app/data
     restart: unless-stopped
 

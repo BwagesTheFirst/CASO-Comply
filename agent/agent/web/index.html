@@ -749,6 +749,224 @@
   .audit-login_success { background: rgba(16, 185, 129, 0.15); color: var(--green); }
   .audit-login_failed { background: rgba(239, 68, 68, 0.15); color: var(--red); }
 
+  /* Folder Browser */
+  .folder-browser {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--navy);
+    overflow: hidden;
+  }
+
+  .folder-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--navy-light);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 13px;
+    scrollbar-width: thin;
+  }
+
+  .folder-breadcrumb::-webkit-scrollbar { height: 4px; }
+  .folder-breadcrumb::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .breadcrumb-seg {
+    color: var(--teal);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+
+  .breadcrumb-seg:hover { background: rgba(20, 182, 211, 0.15); }
+  .breadcrumb-seg.current { color: var(--white); cursor: default; }
+  .breadcrumb-seg.current:hover { background: none; }
+
+  .breadcrumb-sep { color: var(--slate); font-size: 11px; user-select: none; }
+
+  .folder-list {
+    max-height: 260px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .folder-list::-webkit-scrollbar { width: 6px; }
+  .folder-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .folder-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(30, 58, 95, 0.5);
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 14px;
+  }
+
+  .folder-item:last-child { border-bottom: none; }
+  .folder-item:hover { background: rgba(20, 182, 211, 0.06); }
+
+  .folder-item-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+    color: var(--teal);
+  }
+
+  .folder-item-icon.pdf-icon { color: var(--red); font-size: 15px; }
+
+  .folder-item-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .folder-item-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(20, 182, 211, 0.12);
+    color: var(--teal);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .folder-item-size {
+    font-size: 12px;
+    color: var(--slate);
+    flex-shrink: 0;
+  }
+
+  .folder-item-check {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    padding: 0;
+  }
+
+  .folder-item-check:hover { border-color: var(--teal); }
+
+  .folder-item-check.checked {
+    background: var(--teal);
+    border-color: var(--teal);
+  }
+
+  .folder-item-check.checked::after {
+    content: '\2713';
+    color: var(--white);
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+  }
+
+  .folder-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: var(--slate);
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .folder-loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .folder-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--slate);
+    font-size: 13px;
+  }
+
+  .scan-path-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .scan-path-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    background: rgba(20, 182, 211, 0.15);
+    color: var(--teal);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .scan-path-chip-remove {
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+    border: none;
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .scan-path-chip-remove:hover { opacity: 1; }
+
+  .folder-add-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--navy-light);
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--slate);
+  }
+
+  .folder-add-btn {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--teal);
+    background: rgba(20, 182, 211, 0.1);
+    color: var(--teal);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+
+  .folder-add-btn:hover { background: rgba(20, 182, 211, 0.2); }
+
   /* Responsive */
   @media (max-width: 900px) {
     .topbar { padding: 14px 20px; }
@@ -898,8 +1116,18 @@
       <div class="config-form" id="configForm">
         <div class="config-form-grid">
           <div class="form-group full-width">
-            <label for="editScanPaths">Scan Paths (one per line)</label>
-            <textarea id="editScanPaths" rows="3"></textarea>
+            <label>Scan Paths</label>
+            <div class="folder-browser" id="folderBrowser">
+              <div class="folder-breadcrumb" id="folderBreadcrumb"></div>
+              <div class="folder-list" id="folderList">
+                <div class="folder-loading"><div class="folder-loading-spinner"></div> Loading...</div>
+              </div>
+              <div class="folder-add-bar" id="folderAddBar" style="display:none;">
+                <span id="folderAddPath"></span>
+                <button class="folder-add-btn" id="folderAddBtn" onclick="addCurrentFolderToScan()">+ Add this folder</button>
+              </div>
+            </div>
+            <div class="scan-path-chips" id="scanPathChips"></div>
           </div>
           <div class="form-group">
             <label for="editCron">Cron Schedule</label>
@@ -1247,10 +1475,13 @@
     showConfigEditor();
   }
 
+  // --- Folder Browser State ---
+  var selectedScanPaths = [];
+  var currentBrowsePath = '/data';
+  var folderBrowserCache = {};
+
   function showConfigEditor() {
     // Populate form with current config
-    document.getElementById('editScanPaths').value =
-      Array.isArray(currentConfig.scan_paths) ? currentConfig.scan_paths.join('\n') : '';
     document.getElementById('editCron').value = currentConfig.cron || '';
     document.getElementById('editOutputDir').value = currentConfig.output_dir || '';
     document.getElementById('editOutputMode').value = currentConfig.output_mode || 'suffix';
@@ -1259,8 +1490,177 @@
     watchCheckbox.checked = currentConfig.watch || false;
     document.getElementById('watchLabel').textContent = watchCheckbox.checked ? 'Enabled' : 'Disabled';
 
+    // Init folder browser
+    selectedScanPaths = Array.isArray(currentConfig.scan_paths) ? currentConfig.scan_paths.slice() : [];
+    currentBrowsePath = '/data';
+    folderBrowserCache = {};
+    renderScanPathChips();
+    browseTo('/data');
+
     document.getElementById('configReadOnly').style.display = 'none';
     document.getElementById('configForm').classList.add('active');
+  }
+
+  function browseTo(path) {
+    currentBrowsePath = path;
+    renderBreadcrumb(path);
+    var listEl = document.getElementById('folderList');
+    listEl.innerHTML = '<div class="folder-loading"><div class="folder-loading-spinner"></div> Loading...</div>';
+
+    // Check cache
+    if (folderBrowserCache[path]) {
+      renderFolderEntries(folderBrowserCache[path]);
+      return;
+    }
+
+    authFetch('/api/browse?path=' + encodeURIComponent(path))
+      .then(function(data) {
+        folderBrowserCache[path] = data;
+        if (currentBrowsePath === path) {
+          renderFolderEntries(data);
+        }
+      })
+      .catch(function(err) {
+        listEl.innerHTML = '<div class="folder-empty">Failed to load directory</div>';
+      });
+  }
+
+  function renderBreadcrumb(path) {
+    var el = document.getElementById('folderBreadcrumb');
+    var parts = path.replace(/^\//, '').split('/');
+    var html = '';
+    var accumulated = '';
+    for (var i = 0; i < parts.length; i++) {
+      accumulated += '/' + parts[i];
+      var isLast = i === parts.length - 1;
+      if (i > 0) html += '<span class="breadcrumb-sep">/</span>';
+      if (isLast) {
+        html += '<button class="breadcrumb-seg current">' + escapeHtml(parts[i]) + '</button>';
+      } else {
+        html += '<button class="breadcrumb-seg" onclick="browseTo(\'' + escapeAttr(accumulated) + '\')">' + escapeHtml(parts[i]) + '</button>';
+      }
+    }
+    el.innerHTML = html;
+  }
+
+  function renderFolderEntries(data) {
+    var listEl = document.getElementById('folderList');
+    var entries = data.entries || [];
+    var dirs = entries.filter(function(e) { return e.type === 'directory'; });
+    var files = entries.filter(function(e) { return e.type === 'file'; });
+
+    if (dirs.length === 0 && files.length === 0) {
+      listEl.innerHTML = '<div class="folder-empty">Empty directory</div>';
+      updateAddBar();
+      return;
+    }
+
+    var html = '';
+
+    // Directories
+    for (var i = 0; i < dirs.length; i++) {
+      var d = dirs[i];
+      var fullPath = currentBrowsePath + '/' + d.name;
+      var isSelected = selectedScanPaths.indexOf(fullPath) !== -1;
+      html += '<div class="folder-item">';
+      html += '<button class="folder-item-check' + (isSelected ? ' checked' : '') + '" onclick="event.stopPropagation(); toggleScanPath(\'' + escapeAttr(fullPath) + '\', this)" title="' + (isSelected ? 'Remove from' : 'Add to') + ' scan paths"></button>';
+      html += '<span class="folder-item-icon" onclick="browseTo(\'' + escapeAttr(fullPath) + '\')">&#128193;</span>';
+      html += '<span class="folder-item-name" onclick="browseTo(\'' + escapeAttr(fullPath) + '\')">' + escapeHtml(d.name) + '</span>';
+      if (d.pdf_count > 0) {
+        html += '<span class="folder-item-badge">' + d.pdf_count + ' PDF' + (d.pdf_count !== 1 ? 's' : '') + '</span>';
+      }
+      html += '</div>';
+    }
+
+    // PDF files
+    for (var j = 0; j < files.length; j++) {
+      var f = files[j];
+      html += '<div class="folder-item" style="cursor:default;">';
+      html += '<span style="width:20px;"></span>';
+      html += '<span class="folder-item-icon pdf-icon">&#128196;</span>';
+      html += '<span class="folder-item-name">' + escapeHtml(f.name) + '</span>';
+      html += '<span class="folder-item-size">' + f.size_kb + ' KB</span>';
+      html += '</div>';
+    }
+
+    listEl.innerHTML = html;
+    updateAddBar();
+  }
+
+  function updateAddBar() {
+    var bar = document.getElementById('folderAddBar');
+    var isSelected = selectedScanPaths.indexOf(currentBrowsePath) !== -1;
+    var isRoot = currentBrowsePath === '/data';
+    if (!isRoot && !isSelected) {
+      bar.style.display = 'flex';
+      document.getElementById('folderAddPath').textContent = currentBrowsePath;
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+
+  function addCurrentFolderToScan() {
+    if (selectedScanPaths.indexOf(currentBrowsePath) === -1) {
+      selectedScanPaths.push(currentBrowsePath);
+      renderScanPathChips();
+      updateAddBar();
+      // Re-render folder list to update checkboxes
+      if (folderBrowserCache[currentBrowsePath]) {
+        renderFolderEntries(folderBrowserCache[currentBrowsePath]);
+      }
+    }
+  }
+
+  function toggleScanPath(path, btnEl) {
+    var idx = selectedScanPaths.indexOf(path);
+    if (idx !== -1) {
+      selectedScanPaths.splice(idx, 1);
+      if (btnEl) btnEl.classList.remove('checked');
+    } else {
+      selectedScanPaths.push(path);
+      if (btnEl) btnEl.classList.add('checked');
+    }
+    renderScanPathChips();
+    updateAddBar();
+  }
+
+  function removeScanPath(path) {
+    var idx = selectedScanPaths.indexOf(path);
+    if (idx !== -1) {
+      selectedScanPaths.splice(idx, 1);
+      renderScanPathChips();
+      // Re-render current folder list to update checkboxes
+      if (folderBrowserCache[currentBrowsePath]) {
+        renderFolderEntries(folderBrowserCache[currentBrowsePath]);
+      }
+      updateAddBar();
+    }
+  }
+
+  function renderScanPathChips() {
+    var el = document.getElementById('scanPathChips');
+    if (selectedScanPaths.length === 0) {
+      el.innerHTML = '<span style="color:var(--slate); font-size:12px;">No folders selected for scanning</span>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < selectedScanPaths.length; i++) {
+      var p = selectedScanPaths[i];
+      html += '<span class="scan-path-chip">' + escapeHtml(p);
+      html += ' <button class="scan-path-chip-remove" onclick="removeScanPath(\'' + escapeAttr(p) + '\')" title="Remove">&times;</button>';
+      html += '</span>';
+    }
+    el.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(s));
+    return div.innerHTML;
+  }
+
+  function escapeAttr(s) {
+    return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
   }
 
   function cancelConfigEdit() {
@@ -1276,8 +1676,7 @@
   function saveConfig() {
     if (!isAuthenticated()) return;
 
-    var scanPathsRaw = document.getElementById('editScanPaths').value.trim();
-    var scanPaths = scanPathsRaw ? scanPathsRaw.split('\n').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+    var scanPaths = selectedScanPaths.slice();
     var cron = document.getElementById('editCron').value.trim();
     var outputDir = document.getElementById('editOutputDir').value.trim();
     var outputMode = document.getElementById('editOutputMode').value;
