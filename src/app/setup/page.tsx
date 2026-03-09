@@ -220,9 +220,9 @@ export default function SetupPage() {
                   </svg>
                   <span className="text-caso-slate">
                     <strong className="text-caso-white">
-                      Optional: Gemini API key
+                      A CASO API key
                     </strong>{" "}
-                    for AI verification (hybrid mode)
+                    from your dashboard (determines your pricing tier)
                   </span>
                 </li>
               </ul>
@@ -275,42 +275,35 @@ export default function SetupPage() {
                 </h3>
               </div>
               <p className="ml-14 mt-2 text-caso-slate">
-                Save this as <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">config.yaml</code> in your working directory.
+                Save this as <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">docker-compose.yml</code> in your working directory.
               </p>
-              <TerminalBlock title="config.yaml">
+              <TerminalBlock title="docker-compose.yml">
                 <pre className="whitespace-pre leading-relaxed">
-{`# Processing mode: cloud | hybrid | local
-# cloud   — PDFs sent to CASO cloud ($0.10/page)
-# hybrid  — Local processing + AI verification ($0.20/page)
-# local   — Everything on-premise (Enterprise license)
-mode: hybrid
-
-# Your CASO license key
-license_key: "CASO-XXXX-XXXX-XXXX"
-
-# Folders to scan for PDFs (add as many as needed)
-scan_paths:
-  - /data/documents
-  - /data/shared-drive
-
-# Websites to crawl for PDFs
-website_urls:
-  - https://your-website.gov
-
-# Where to save remediated PDFs
-output_dir: /data/remediated
-
-# Output mode: suffix (file_remediated.pdf) | overwrite | directory
-output_mode: suffix
-
-# Scan schedule (cron format) - default: every hour
-# Examples: "0 2 * * *" = 2am daily, "0 */4 * * *" = every 4 hours
-cron: "0 2 * * *"
-
-# Gemini API key (required for hybrid mode AI verification)
-gemini_api_key: ""`}
+{`version: "3.8"
+services:
+  caso-agent:
+    image: caso/comply-agent:latest
+    environment:
+      - CASO_LICENSE_KEY=YOUR_API_KEY_HERE
+      - CASO_SCAN_PATHS=/data/input
+      - CASO_OUTPUT_DIR=/data/remediated
+      - CASO_CRON=0 2 * * *
+    volumes:
+      - ./documents:/data/input
+      - ./remediated:/data/remediated
+      - ./agent-data:/data
+    ports:
+      - "9090:9090"
+    restart: unless-stopped`}
                 </pre>
               </TerminalBlock>
+              <p className="ml-14 mt-3 text-sm text-caso-slate">
+                Replace{" "}
+                <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-warm">
+                  YOUR_API_KEY_HERE
+                </code>{" "}
+                with your full API key. Your pricing tier (Standard, AI Verified, or Human Review) is determined by your plan — the agent reads it automatically.
+              </p>
             </div>
 
             {/* Step 3 */}
@@ -325,14 +318,7 @@ gemini_api_key: ""`}
               </div>
               <TerminalBlock>
                 <pre className="whitespace-pre leading-relaxed">
-{`$ docker run -d \\
-    --name caso-comply \\
-    --restart unless-stopped \\
-    -v /your/pdf/folder:/data/documents:ro \\
-    -v /your/output/folder:/data/remediated \\
-    -v ./config.yaml:/app/config.yaml:ro \\
-    -p 9090:9090 \\
-    caso/comply-agent:latest`}
+{`$ docker compose up -d`}
                 </pre>
               </TerminalBlock>
               <p className="ml-14 mt-4 text-caso-slate">
@@ -377,16 +363,20 @@ gemini_api_key: ""`}
 {`version: "3.8"
 
 services:
-  caso-comply:
+  caso-agent:
     image: caso/comply-agent:latest
-    container_name: caso-comply
     restart: unless-stopped
+    environment:
+      - CASO_LICENSE_KEY=YOUR_API_KEY_HERE
+      - CASO_SCAN_PATHS=/data/input
+      - CASO_OUTPUT_DIR=/data/remediated
+      - CASO_CRON=0 2 * * *
     ports:
       - "9090:9090"
     volumes:
-      - /your/pdf/folder:/data/documents:ro
-      - /your/output/folder:/data/remediated
-      - ./config.yaml:/app/config.yaml:ro`}
+      - ./documents:/data/input
+      - ./remediated:/data/remediated
+      - ./agent-data:/data`}
               </pre>
             </TerminalBlock>
             <TerminalBlock>
@@ -397,26 +387,26 @@ services:
           </div>
         </section>
 
-        {/* Processing Modes */}
+        {/* Pricing Tiers */}
         <section
-          aria-labelledby="modes-heading"
+          aria-labelledby="tiers-heading"
           className="border-t border-caso-border/50 bg-caso-navy-light/30 px-6 py-16 md:py-24"
         >
           <div className="mx-auto max-w-5xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2
-                id="modes-heading"
+                id="tiers-heading"
                 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl"
               >
-                Processing Modes
+                Pricing Tiers
               </h2>
               <p className="mt-4 text-lg text-caso-slate">
-                Choose the mode that matches your security requirements.
+                Simple per-page pricing. Your plan determines how the agent processes your documents.
               </p>
             </div>
 
             <div className="mt-12 grid gap-8 md:grid-cols-3">
-              {/* Cloud */}
+              {/* Standard */}
               <div className="rounded-2xl border border-caso-border/50 bg-caso-navy p-8">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-caso-blue/10 text-caso-blue">
@@ -431,60 +421,51 @@ services:
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
                       />
                     </svg>
                   </div>
                   <div>
                     <h3 className="font-[family-name:var(--font-display)] text-lg font-bold">
-                      Cloud
+                      Standard
                     </h3>
-                    <p className="text-sm text-caso-glacier">$0.10/page</p>
+                    <p className="text-sm text-caso-glacier">$0.25/page</p>
                   </div>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-caso-slate">
-                  Upload PDFs to our secure cloud for processing. Fastest setup
-                  with no infrastructure required. PDFs are encrypted in transit
-                  and at rest, processed, then deleted within 24 hours.
+                  Automated remediation with font-size heuristic tagging. Fast,
+                  reliable, and cost-effective for bulk processing.
                 </p>
-                <div className="mt-4 rounded-lg bg-caso-navy-light/50 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-caso-glacier">
-                    Data flow
-                  </p>
-                  <p className="mt-1 text-sm text-caso-slate">
-                    Full PDFs sent to CASO cloud (AES-256 encrypted)
-                  </p>
-                </div>
                 <ul className="mt-4 space-y-2" role="list">
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Zero infrastructure setup
+                    Structure tree tagging
                   </li>
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Automatic updates
+                    Heading hierarchy detection
                   </li>
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Cloud dashboard &amp; reporting
+                    Before &amp; after scoring
                   </li>
                 </ul>
                 <p className="mt-4 text-xs text-caso-slate">
-                  <strong className="text-caso-white">Ideal for:</strong> Small
-                  orgs, public website PDFs
+                  <strong className="text-caso-white">Ideal for:</strong> Bulk
+                  processing, simple documents
                 </p>
               </div>
 
-              {/* Hybrid */}
+              {/* AI Verified */}
               <div className="rounded-2xl border-2 border-caso-blue bg-caso-navy p-8 shadow-lg shadow-caso-blue/10">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-caso-blue/10 text-caso-blue">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-caso-green/10 text-caso-green">
                     <svg
                       className="h-6 w-6"
                       viewBox="0 0 24 24"
@@ -496,60 +477,52 @@ services:
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
                       />
                     </svg>
                   </div>
                   <div>
                     <h3 className="font-[family-name:var(--font-display)] text-lg font-bold">
-                      Hybrid
+                      AI Verified
                     </h3>
-                    <p className="text-sm text-caso-glacier">$0.20/page</p>
+                    <p className="text-sm text-caso-glacier">$0.35/page</p>
                   </div>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-caso-slate">
-                  Remediation runs locally on your servers. Only rendered page
-                  images (no text, no metadata) are sent to Gemini for AI
-                  verification. Your source PDFs never leave your network.
+                  Gemini AI verifies heading hierarchy, reading order, and
+                  generates alt text for images. Higher accuracy for complex
+                  documents with mixed layouts.
                 </p>
-                <div className="mt-4 rounded-lg bg-caso-navy-light/50 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-caso-glacier">
-                    Data flow
-                  </p>
-                  <p className="mt-1 text-sm text-caso-slate">
-                    Only page images sent (no text or metadata extracted)
-                  </p>
-                </div>
                 <ul className="mt-4 space-y-2" role="list">
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    PDFs never leave your network
+                    Everything in Standard
                   </li>
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    AI-powered quality verification
+                    AI-generated alt text for images
                   </li>
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Local processing + cloud review
+                    AI-verified reading order
                   </li>
                 </ul>
                 <p className="mt-4 text-xs text-caso-slate">
                   <strong className="text-caso-white">Ideal for:</strong>{" "}
-                  Mid-size, document-sensitive orgs
+                  Complex documents, image-heavy PDFs
                 </p>
               </div>
 
-              {/* Local */}
+              {/* Human Review */}
               <div className="rounded-2xl border border-caso-border/50 bg-caso-navy p-8">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-caso-blue/10 text-caso-blue">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-400/10 text-purple-400">
                     <svg
                       className="h-6 w-6"
                       viewBox="0 0 24 24"
@@ -561,55 +534,45 @@ services:
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                       />
                     </svg>
                   </div>
                   <div>
                     <h3 className="font-[family-name:var(--font-display)] text-lg font-bold">
-                      Local
+                      Human Review
                     </h3>
-                    <p className="text-sm text-caso-glacier">
-                      Enterprise pricing
-                    </p>
+                    <p className="text-sm text-caso-glacier">$4.00/page</p>
                   </div>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-caso-slate">
-                  Everything runs on-premise. No data leaves your network. Full
-                  air-gap support with bring-your-own AI keys. Includes
-                  dedicated account manager and custom SLAs.
+                  AI-verified remediation plus expert human review for files
+                  scoring below 60. Full compliance certification for
+                  mission-critical documents.
                 </p>
-                <div className="mt-4 rounded-lg bg-caso-navy-light/50 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-caso-glacier">
-                    Data flow
-                  </p>
-                  <p className="mt-1 text-sm text-caso-slate">
-                    Nothing leaves your network
-                  </p>
-                </div>
                 <ul className="mt-4 space-y-2" role="list">
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Complete air-gap support
+                    Everything in AI Verified
                   </li>
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Bring your own AI keys
+                    Expert human review for low-scoring files
                   </li>
                   <li className="flex items-center gap-2 text-sm text-caso-slate">
                     <svg className="h-4 w-4 flex-shrink-0 text-caso-teal" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                     </svg>
-                    Dedicated account manager
+                    Compliance certification
                   </li>
                 </ul>
                 <p className="mt-4 text-xs text-caso-slate">
                   <strong className="text-caso-white">Ideal for:</strong>{" "}
-                  Hospitals, large gov, regulated industries
+                  Government, healthcare, regulated industries
                 </p>
               </div>
             </div>
@@ -749,9 +712,9 @@ services:
                 <dd className="mt-2 text-sm leading-relaxed text-caso-slate">
                   Verify your{" "}
                   <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">
-                    license_key
+                    CASO_LICENSE_KEY
                   </code>{" "}
-                  in config.yaml is correct. The agent needs outbound HTTPS
+                  environment variable is correct. The agent needs outbound HTTPS
                   access to{" "}
                   <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">
                     api.caso.com
@@ -768,9 +731,9 @@ services:
                 <dd className="mt-2 text-sm leading-relaxed text-caso-slate">
                   Verify that your{" "}
                   <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">
-                    scan_paths
+                    CASO_SCAN_PATHS
                   </code>{" "}
-                  in config.yaml match the paths{" "}
+                  environment variable matches the paths{" "}
                   <em>inside the container</em>, not on the host. If you mounted{" "}
                   <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">
                     -v /host/path:/data/documents
@@ -792,7 +755,7 @@ services:
                   <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">
                     docker logs caso-comply
                   </code>
-                  . Common causes include invalid YAML syntax in config.yaml or
+                  . Common causes include missing environment variables or
                   port 9090 already in use (change the host port with{" "}
                   <code className="rounded bg-caso-navy-light px-1.5 py-0.5 text-caso-glacier">
                     -p 8080:9090

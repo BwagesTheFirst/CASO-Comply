@@ -76,9 +76,9 @@ export default async function AgentSetupPage() {
             API Access Required
           </h2>
           <p className="text-caso-slate text-sm max-w-md mx-auto mb-6">
-            The Docker Agent requires API access, which is available on the
-            Professional plan and above. Upgrade your plan to install the agent
-            on your infrastructure.
+            The Docker Agent requires API access. Contact support to enable
+            API access on your account and install the agent on your
+            infrastructure.
           </p>
           <Link
             href="/dashboard/billing"

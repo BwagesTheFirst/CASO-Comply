@@ -48,7 +48,6 @@ services:
     image: caso/comply-agent:latest
     environment:
       - CASO_LICENSE_KEY=YOUR_API_KEY_HERE
-      - CASO_MODE=cloud
       - CASO_SCAN_PATHS=/data/input
       - CASO_OUTPUT_DIR=/data/remediated
       - CASO_CRON=0 2 * * *
@@ -62,27 +61,27 @@ services:
 
 const dockerComposeUpCommand = `docker-compose up -d`;
 
-const modes = [
+const tiers = [
   {
-    name: "Cloud",
-    tag: "default",
+    name: "Standard",
+    price: "$0.25/page",
     tagColor: "bg-caso-blue/10 text-caso-blue",
     description:
-      "Documents are uploaded to the CASO API for processing. Simplest setup with no additional configuration required.",
+      "Automated remediation with font-size heuristic tagging. Fast, reliable, and cost-effective for bulk processing.",
   },
   {
-    name: "Hybrid",
-    tag: "recommended",
+    name: "AI Verified",
+    price: "$0.35/page",
     tagColor: "bg-caso-green/10 text-caso-green",
     description:
-      "Documents are remediated locally, with Gemini AI verifying quality. Requires setting CASO_GEMINI_API_KEY in your environment.",
+      "Gemini AI verifies heading hierarchy, reading order, and generates alt text. Higher accuracy for complex documents.",
   },
   {
-    name: "Local",
-    tag: "Enterprise only",
-    tagColor: "bg-caso-warm/10 text-caso-warm",
+    name: "Human Review",
+    price: "$4.00/page",
+    tagColor: "bg-purple-400/10 text-purple-400",
     description:
-      "Fully on-premise processing. No data leaves your network. Available on Enterprise plans only.",
+      "AI-verified remediation plus expert human review for files scoring below 60. Full compliance certification.",
   },
 ];
 
@@ -92,12 +91,6 @@ const envVars = [
     required: "Yes",
     defaultVal: "\u2014",
     description: "Your API key from the dashboard",
-  },
-  {
-    name: "CASO_MODE",
-    required: "No",
-    defaultVal: "cloud",
-    description: "Processing mode: cloud, hybrid, local",
   },
   {
     name: "CASO_SCAN_PATHS",
@@ -114,7 +107,7 @@ const envVars = [
   {
     name: "CASO_OUTPUT_MODE",
     required: "No",
-    defaultVal: "suffix",
+    defaultVal: "directory",
     description: "How to name output: suffix, overwrite, directory",
   },
   {
@@ -128,18 +121,6 @@ const envVars = [
     required: "No",
     defaultVal: "1",
     description: "Parallel processing threads",
-  },
-  {
-    name: "CASO_GEMINI_API_KEY",
-    required: "Hybrid only",
-    defaultVal: "\u2014",
-    description: "Google Gemini API key",
-  },
-  {
-    name: "CASO_PHONE_HOME",
-    required: "No",
-    defaultVal: "true",
-    description: "Send usage telemetry to CASO",
   },
 ];
 
@@ -227,29 +208,32 @@ export default function AgentSetupContent() {
         </div>
       </div>
 
-      {/* Processing Modes */}
+      {/* Pricing Tiers */}
       <div>
         <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-caso-white mb-4">
-          Processing Modes
+          Pricing Tiers
         </h2>
+        <p className="text-caso-slate text-sm mb-4">
+          Your plan determines how the agent processes documents. The agent reads your plan automatically from your API key.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {modes.map((mode) => (
+          {tiers.map((tier) => (
             <div
-              key={mode.name}
+              key={tier.name}
               className="rounded-xl bg-caso-navy-light border border-caso-border p-6"
             >
               <div className="flex items-center gap-2 mb-3">
                 <h3 className="text-sm font-semibold text-caso-white">
-                  {mode.name}
+                  {tier.name}
                 </h3>
                 <span
-                  className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${mode.tagColor}`}
+                  className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${tier.tagColor}`}
                 >
-                  {mode.tag}
+                  {tier.price}
                 </span>
               </div>
               <p className="text-caso-slate text-sm leading-relaxed">
-                {mode.description}
+                {tier.description}
               </p>
             </div>
           ))}
@@ -371,12 +355,12 @@ export default function AgentSetupContent() {
               </div>
               <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
                 <p className="text-sm font-medium text-caso-white mb-1">
-                  Hybrid mode not verifying
+                  Low scores after remediation
                 </p>
                 <p className="text-caso-slate text-xs">
-                  Confirm <code className="text-caso-green font-mono">CASO_GEMINI_API_KEY</code> is
-                  set and valid. The Gemini API must be enabled in your Google
-                  Cloud project.
+                  Some documents with complex layouts may score below 60 after
+                  automated remediation. Consider upgrading to the Human Review
+                  tier for expert review of these files.
                 </p>
               </div>
             </div>
