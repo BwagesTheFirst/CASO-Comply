@@ -22,11 +22,9 @@ class Processor:
     async def _report_usage(self, filename: str, page_count: int) -> None:
         """Report usage to the CASO cloud API (fire-and-forget).
 
-        Only runs when phone_home is enabled and a license key is configured.
+        Always attempts to report — page counting is billing, not telemetry.
         Failures are logged as warnings and never block processing.
         """
-        if not self.config.phone_home:
-            return
         if not self.config.license_key:
             logger.debug("No license key configured — skipping usage report")
             return
@@ -95,6 +93,7 @@ class Processor:
             status="completed",
             before_score=before_score,
             after_score=after_score,
+            page_count=page_count,
         )
 
         await self._report_usage(Path(pdf_path).name, page_count)

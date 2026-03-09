@@ -68,12 +68,12 @@ class Database:
         row = await cursor.fetchone()
         return dict(row) if row else None
 
-    async def update_result(self, path: str, status: str, before_score: int = 0, after_score: int = 0, error_message: str = ""):
+    async def update_result(self, path: str, status: str, before_score: int = 0, after_score: int = 0, page_count: int = 0, error_message: str = ""):
         await self._db.execute(
             """UPDATE pdfs SET status=?, before_score=?, after_score=?,
-               processed_at=CURRENT_TIMESTAMP, error_message=?
+               page_count=?, processed_at=CURRENT_TIMESTAMP, error_message=?
                WHERE path=?""",
-            (status, before_score, after_score, error_message, path),
+            (status, before_score, after_score, page_count, error_message, path),
         )
         await self._db.commit()
 
