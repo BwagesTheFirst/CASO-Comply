@@ -5,6 +5,7 @@ import logging
 import sys
 from pathlib import Path
 
+import httpx
 import uvicorn
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -20,6 +21,66 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 logger = logging.getLogger("caso-agent")
+
+async def _fetch_completed_reviews(config, db, license_client):
+    """Poll for completed human reviews and download corrected files."""
+    if not config.license_key or not license_client:
+        return
+
+    plan_name = license_client.plan_name
+    if plan_name != "Human Review":
+        return
+
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.get(
+                f"{config.caso_api_url}/api/review/pending",
+                headers={"Authorization": f"Bearer {config.license_key}"},
+            )
+            if resp.status_code != 200:
+                logger.warning("Failed to fetch pending reviews: %d", resp.status_code)
+                return
+
+            reviews = resp.json().get("reviews", [])
+            if not reviews:
+                return
+
+            logger.info("Found %d completed reviews to download", len(reviews))
+
+            for review in reviews:
+                review_id = review["id"]
+                output_path = review["output_path"]
+                filename = review["filename"]
+
+                try:
+                    dl_resp = await client.get(
+                        f"{config.caso_api_url}/api/review/{review_id}/download-corrected",
+                        headers={"Authorization": f"Bearer {config.license_key}"},
+                    )
+                    if dl_resp.status_code != 200:
+                        logger.warning("Failed to download corrected %s: %d", filename, dl_resp.status_code)
+                        continue
+
+                    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+                    with open(output_path, "wb") as f:
+                        f.write(dl_resp.content)
+
+                    logger.info("Downloaded corrected file: %s → %s", filename, output_path)
+
+                    await client.post(
+                        f"{config.caso_api_url}/api/review/{review_id}/delivered",
+                        headers={"Authorization": f"Bearer {config.license_key}"},
+                    )
+
+                    await db.update_result(path=review["original_path"], status="completed")
+
+                    logger.info("Review %s delivered: %s", review_id, filename)
+
+                except Exception:
+                    logger.exception("Failed to process review %s for %s", review_id, filename)
+
+    except Exception:
+        logger.exception("Failed to fetch completed reviews")
 
 async def run_scan_cycle(config, db: Database, processor: Processor):
     """One full scan + process cycle."""
@@ -46,6 +107,9 @@ async def run_scan_cycle(config, db: Database, processor: Processor):
         "Cycle complete: %d total, %d completed, %d failed",
         stats["total"], stats["completed"] or 0, stats["failed"] or 0,
     )
+
+    # Poll for completed human reviews
+    await _fetch_completed_reviews(config, db, processor.license_client)
 
 async def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else "/app/config.yaml"

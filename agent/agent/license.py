@@ -25,6 +25,10 @@ class LicenseClient:
         """Return the plan name from the last validation response."""
         return self._data.get("plan", "unknown")
 
+    @property
+    def review_score_threshold(self) -> int:
+        return self._data.get("review_score_threshold", 70)
+
     async def validate(self) -> bool:
         if not self.enabled:
             return True

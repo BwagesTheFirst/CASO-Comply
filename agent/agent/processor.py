@@ -62,6 +62,45 @@ class Processor:
         except Exception:
             logger.warning("Failed to report usage for %s — will continue", filename)
 
+    async def _submit_for_review(
+        self, pdf_path: str, output_path: str, ai_score: int, page_count: int,
+    ) -> bool:
+        """Upload a low-scoring file to CASO for human review. Returns True on success."""
+        if not self.config.license_key:
+            logger.debug("No license key — skipping review submission")
+            return False
+        try:
+            async with httpx.AsyncClient(timeout=60) as client:
+                with open(output_path, "rb") as f:
+                    resp = await client.post(
+                        f"{self.config.caso_api_url}/api/review/submit",
+                        files={"file": (Path(pdf_path).name, f, "application/pdf")},
+                        params={
+                            "filename": Path(pdf_path).name,
+                            "original_path": pdf_path,
+                            "output_path": output_path,
+                            "ai_score": ai_score,
+                            "page_count": page_count,
+                        },
+                        headers={"Authorization": f"Bearer {self.config.license_key}"},
+                    )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    logger.info(
+                        "Submitted %s for human review (score %d) → review_id=%s",
+                        Path(pdf_path).name, ai_score, data.get("review_id"),
+                    )
+                    return True
+                else:
+                    logger.warning(
+                        "Review submission failed for %s: %d %s",
+                        Path(pdf_path).name, resp.status_code, resp.text,
+                    )
+                    return False
+        except Exception:
+            logger.warning("Failed to submit %s for review — will retry next cycle", Path(pdf_path).name)
+            return False
+
     async def process_one(self, pdf_path: str) -> dict:
         """Process a single PDF. Returns {status, before_score, after_score, error}."""
         try:
@@ -103,15 +142,18 @@ class Processor:
         remediation_type = "ai_verified" if verify else "standard"
         needs_review = False
 
-        # Human Review plan: flag files scoring below 60 for human review
-        if plan_name == "Human Review" and after_score < 60:
+        # Get threshold from license (default 70)
+        threshold = self.license_client.review_score_threshold if self.license_client else 70
+
+        # Human Review plan: submit files scoring below threshold for human review
+        if plan_name == "Human Review" and after_score < threshold:
             remediation_type = "human_review"
             needs_review = True
             logger.warning(
-                "PDF %s flagged for human review: after_score=%d (below 60, plan: %s)",
-                Path(pdf_path).name, after_score, plan_name,
+                "PDF %s flagged for human review: after_score=%d (below %d, plan: %s)",
+                Path(pdf_path).name, after_score, threshold, plan_name,
             )
-        elif after_score < 60:
+        elif after_score < threshold:
             logger.warning(
                 "PDF %s has low score after remediation: after_score=%d (plan: %s)",
                 Path(pdf_path).name, after_score, plan_name,
@@ -129,6 +171,16 @@ class Processor:
         )
 
         await self._report_usage(Path(pdf_path).name, page_count, remediation_type)
+
+        # Submit for human review if flagged
+        if needs_review:
+            submitted = await self._submit_for_review(
+                pdf_path, output_path, after_score, page_count,
+            )
+            if submitted:
+                await self.db.update_result(
+                    path=pdf_path, status="review_pending",
+                )
 
         return {
             "status": "completed",
