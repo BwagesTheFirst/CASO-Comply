@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import crypto from "crypto";
 
-// Helper: get tenant_id for the authenticated user
-async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
+// Helper: authenticate user and get tenant_id using admin client
+async function getAuthenticatedTenantId() {
+  // Auth check (server client)
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: membership } = await supabase
+  // Data query (admin client, bypasses RLS)
+  const admin = createAdminClient();
+  const { data: membership } = await admin
     .from("tenant_members")
     .select("tenant_id")
     .eq("user_id", user.id)
@@ -20,14 +25,14 @@ async function getTenantId(supabase: Awaited<ReturnType<typeof createClient>>) {
 
 // GET — list API keys (masked)
 export async function GET() {
-  const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await getAuthenticatedTenantId();
 
   if (!tenantId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: keys, error } = await supabase
+  const admin = createAdminClient();
+  const { data: keys, error } = await admin
     .from("api_keys")
     .select("id, name, prefix, is_active, created_at, last_used_at")
     .eq("tenant_id", tenantId)
@@ -42,8 +47,7 @@ export async function GET() {
 
 // POST — create new API key
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await getAuthenticatedTenantId();
 
   if (!tenantId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,7 +68,8 @@ export async function POST(request: NextRequest) {
   const prefix = rawKey.slice(0, 12);
   const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
 
-  const { data: newKey, error } = await supabase
+  const admin = createAdminClient();
+  const { data: newKey, error } = await admin
     .from("api_keys")
     .insert({
       tenant_id: tenantId,
@@ -92,8 +97,7 @@ export async function POST(request: NextRequest) {
 
 // DELETE — revoke API key
 export async function DELETE(request: NextRequest) {
-  const supabase = await createClient();
-  const tenantId = await getTenantId(supabase);
+  const tenantId = await getAuthenticatedTenantId();
 
   if (!tenantId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -109,8 +113,10 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
+  const admin = createAdminClient();
+
   // Verify the key belongs to this tenant
-  const { data: existing } = await supabase
+  const { data: existing } = await admin
     .from("api_keys")
     .select("id")
     .eq("id", keyId)
@@ -121,7 +127,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Key not found" }, { status: 404 });
   }
 
-  const { error } = await supabase
+  const { error } = await admin
     .from("api_keys")
     .update({ is_active: false })
     .eq("id", keyId)

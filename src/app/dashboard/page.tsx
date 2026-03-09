@@ -1,18 +1,21 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function DashboardOverview() {
+  // Auth check (server client)
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
-  // Get tenant membership
-  const { data: membership } = await supabase
+  // Data queries (admin client, bypasses RLS)
+  const admin = createAdminClient();
+
+  const { data: membership } = await admin
     .from("tenant_members")
     .select("tenant_id, role")
     .eq("user_id", user.id)
@@ -35,19 +38,19 @@ export default async function DashboardOverview() {
   const tenantId = membership.tenant_id;
 
   // Get tenant + plan info
-  const { data: tenant } = await supabase
+  const { data: tenant } = await admin
     .from("tenants")
     .select("*, subscription_plans(*)")
     .eq("id", tenantId)
     .single();
 
   // Get usage via RPC
-  const { data: usage } = await supabase.rpc("get_tenant_usage", {
+  const { data: usage } = await admin.rpc("get_tenant_usage", {
     p_tenant_id: tenantId,
   });
 
   // Recent scans (last 5)
-  const { data: recentScans } = await supabase
+  const { data: recentScans } = await admin
     .from("scans")
     .select("id, domain, status, created_at, score")
     .eq("tenant_id", tenantId)

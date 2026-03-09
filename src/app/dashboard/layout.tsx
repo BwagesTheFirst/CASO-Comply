@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Sidebar from "@/components/dashboard/Sidebar";
 import LogoutButton from "@/components/dashboard/LogoutButton";
 
@@ -22,8 +23,10 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Get tenant info for this user
-  const { data: membership } = await supabase
+  // Use admin client to bypass RLS for tenant lookups
+  const admin = createAdminClient();
+
+  const { data: membership } = await admin
     .from("tenant_members")
     .select("tenant_id, role")
     .eq("user_id", user.id)
@@ -32,7 +35,7 @@ export default async function DashboardLayout({
   let tenantName = "My Organization";
 
   if (membership) {
-    const { data: tenant } = await supabase
+    const { data: tenant } = await admin
       .from("tenants")
       .select("name")
       .eq("id", membership.tenant_id)

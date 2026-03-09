@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-// Helper: get tenant membership for authenticated user
-async function getTenantMembership(supabase: Awaited<ReturnType<typeof createClient>>) {
+// Helper: authenticate user and get tenant membership using admin client
+async function getAuthenticatedMembership() {
+  // Auth check (server client)
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: membership } = await supabase
+  // Data query (admin client, bypasses RLS)
+  const admin = createAdminClient();
+  const { data: membership } = await admin
     .from("tenant_members")
     .select("tenant_id, role")
     .eq("user_id", user.id)
@@ -19,14 +24,14 @@ async function getTenantMembership(supabase: Awaited<ReturnType<typeof createCli
 
 // GET — return tenant settings
 export async function GET() {
-  const supabase = await createClient();
-  const membership = await getTenantMembership(supabase);
+  const membership = await getAuthenticatedMembership();
 
   if (!membership) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: tenant, error } = await supabase
+  const admin = createAdminClient();
+  const { data: tenant, error } = await admin
     .from("tenants")
     .select("id, name, billing_email, brand_color, logo_url")
     .eq("id", membership.tenant_id)
@@ -41,8 +46,7 @@ export async function GET() {
 
 // PUT — update tenant settings
 export async function PUT(request: NextRequest) {
-  const supabase = await createClient();
-  const membership = await getTenantMembership(supabase);
+  const membership = await getAuthenticatedMembership();
 
   if (!membership) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -72,7 +76,8 @@ export async function PUT(request: NextRequest) {
     );
   }
 
-  const { error } = await supabase
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("tenants")
     .update(updates)
     .eq("id", membership.tenant_id);

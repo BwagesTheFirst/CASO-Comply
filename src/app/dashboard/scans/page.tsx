@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const PAGE_SIZE = 20;
 
@@ -9,15 +10,18 @@ export default async function ScansPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  // Auth check (server client)
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
-  const { data: membership } = await supabase
+  // Data queries (admin client, bypasses RLS)
+  const admin = createAdminClient();
+
+  const { data: membership } = await admin
     .from("tenant_members")
     .select("tenant_id")
     .eq("user_id", user.id)
@@ -32,7 +36,7 @@ export default async function ScansPage({
   const offset = (currentPage - 1) * PAGE_SIZE;
 
   // Get total count
-  const { count: totalCount } = await supabase
+  const { count: totalCount } = await admin
     .from("scans")
     .select("id", { count: "exact", head: true })
     .eq("tenant_id", tenantId);
@@ -40,7 +44,7 @@ export default async function ScansPage({
   const totalPages = Math.ceil((totalCount ?? 0) / PAGE_SIZE);
 
   // Get scans for current page
-  const { data: scans } = await supabase
+  const { data: scans } = await admin
     .from("scans")
     .select("id, domain, status, created_at, score, pdf_count")
     .eq("tenant_id", tenantId)

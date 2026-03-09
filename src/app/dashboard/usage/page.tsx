@@ -1,16 +1,20 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function UsagePage() {
+  // Auth check (server client)
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
-  const { data: membership } = await supabase
+  // Data queries (admin client, bypasses RLS)
+  const admin = createAdminClient();
+
+  const { data: membership } = await admin
     .from("tenant_members")
     .select("tenant_id")
     .eq("user_id", user.id)
@@ -21,7 +25,7 @@ export default async function UsagePage() {
   const tenantId = membership.tenant_id;
 
   // Get usage summary via RPC
-  const { data: usage } = await supabase.rpc("get_tenant_usage", {
+  const { data: usage } = await admin.rpc("get_tenant_usage", {
     p_tenant_id: tenantId,
   });
 
@@ -30,7 +34,7 @@ export default async function UsagePage() {
   const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-  const { data: dailyUsage } = await supabase
+  const { data: dailyUsage } = await admin
     .from("usage_records")
     .select("created_at, action, pages")
     .eq("tenant_id", tenantId)
