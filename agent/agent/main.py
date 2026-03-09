@@ -91,16 +91,18 @@ async def run_scan_cycle(config, db: Database, processor: Processor):
         found = await asyncio.to_thread(scan_folder, scan_path)
         for item in found:
             if await db.needs_processing(item["path"], item["sha256"]):
-                await db.upsert_pdf(
+                await db.upsert_document(
                     path=item["path"],
                     sha256=item["sha256"],
+                    format=item["format"],
                     source="folder",
                 )
 
     pending = await db.get_pending()
-    logger.info("Processing %d pending PDFs", len(pending))
-    for pdf in pending:
-        await processor.process_one(pdf["path"])
+    logger.info("Processing %d pending documents", len(pending))
+    for doc in pending:
+        fmt = doc.get("format", "pdf")
+        await processor.process_one(doc["path"], format=fmt)
 
     stats = await db.get_stats()
     logger.info(
