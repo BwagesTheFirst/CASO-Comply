@@ -7,6 +7,15 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".xlsx", ".pptx"}
+
+EXTENSION_TO_FORMAT = {
+    ".pdf": "pdf",
+    ".docx": "docx",
+    ".xlsx": "xlsx",
+    ".pptx": "pptx",
+}
+
 def compute_file_hash(file_path: str, chunk_size: int = 8192) -> str:
     h = hashlib.sha256()
     with open(file_path, "rb") as f:
@@ -15,26 +24,36 @@ def compute_file_hash(file_path: str, chunk_size: int = 8192) -> str:
     return h.hexdigest()
 
 def scan_folder(folder_path: str) -> list[dict]:
-    """Recursively scan a folder for PDF files. Returns list of {path, sha256}."""
+    """Recursively scan a folder for supported document files.
+
+    Returns list of {path, sha256, format}.
+    """
     root = Path(folder_path)
     if not root.exists():
         logger.warning("Scan path does not exist: %s", folder_path)
         return []
 
     results = []
-    for pdf_file in sorted(root.rglob("*.pdf")):
-        if not pdf_file.is_file():
+    for file_path in sorted(root.rglob("*")):
+        if not file_path.is_file():
+            continue
+        ext = file_path.suffix.lower()
+        if ext not in SUPPORTED_EXTENSIONS:
             continue
         # Skip remediated output files to avoid recursive re-processing
-        if "_remediated" in pdf_file.stem:
+        if "_remediated" in file_path.stem:
             continue
         try:
             results.append({
-                "path": str(pdf_file),
-                "sha256": compute_file_hash(str(pdf_file)),
+                "path": str(file_path),
+                "sha256": compute_file_hash(str(file_path)),
+                "format": EXTENSION_TO_FORMAT[ext],
             })
         except OSError:
-            logger.warning("Could not read file: %s", pdf_file)
+            logger.warning("Could not read file: %s", file_path)
 
-    logger.info("Found %d PDFs in %s", len(results), folder_path)
+    logger.info("Found %d documents in %s (%s)",
+                len(results), folder_path,
+                ", ".join(f"{sum(1 for r in results if r['format'] == fmt)} {fmt}"
+                          for fmt in sorted(set(r["format"] for r in results))))
     return results
