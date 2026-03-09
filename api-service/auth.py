@@ -252,7 +252,8 @@ def enforce_tenant_access(tenant_id: str, required_scope: str | None = None) -> 
             .select(
                 "id, name, status, trial_ends_at, plan_id, "
                 "subscription_plans(id, name, pages_included, features, overage_rate_cents, "
-                "standard_rate_cents, ai_verified_rate_cents, human_review_rate_cents)"
+                "standard_rate_cents, ai_verified_rate_cents, human_review_rate_cents, "
+                "review_score_threshold)"
             )
             .eq("id", tenant_id)
             .limit(1)
@@ -353,4 +354,5 @@ def enforce_tenant_access(tenant_id: str, required_scope: str | None = None) -> 
         "plan_id": plan.get("id"),
         "pages_used": pages_used,
         "features": features,
+        "plan": plan,
     }

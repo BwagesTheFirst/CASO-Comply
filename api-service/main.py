@@ -227,12 +227,17 @@ async def license_validate(body: LicenseValidateRequest):
         body.hostname or "unknown",
     )
 
+    # Get the plan dict from enforce_tenant_access for threshold
+    plan = tenant_info.get("plan", {})
+    threshold = plan.get("review_score_threshold", 70) if isinstance(plan, dict) else 70
+
     return {
         "valid": True,
         "org": tenant_info["org_name"],
         "plan": tenant_info["plan_name"],
         "pages_used": tenant_info["pages_used"],
         "features": tenant_info.get("features", {}),
+        "review_score_threshold": threshold,
     }
 
 
