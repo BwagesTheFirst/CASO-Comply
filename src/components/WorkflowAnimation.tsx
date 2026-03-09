@@ -327,57 +327,117 @@ export default function WorkflowAnimation() {
         </svg>
       </div>
 
-      {/* Mobile Layout - Vertical */}
+      {/* Mobile Layout - Vertical single column */}
       <div className="md:hidden">
-        <svg viewBox="0 0 320 700" className="w-full" aria-label="Workflow diagram showing how documents flow through CASO Comply">
-          {/* Simplified vertical flow for mobile */}
-          {/* Shared path down */}
-          <AnimatedPath d="M 160 60 L 160 120" color="#94A3B8" opacity={1} />
-          <AnimatedPath d="M 160 190 L 160 250" color="#94A3B8" opacity={1} />
+        <svg
+          viewBox={`0 0 300 ${!selectedPlan ? 270 : selectedPlan === "standard" ? 420 : selectedPlan === "ai_verified" ? 500 : 660}`}
+          className="w-full"
+          aria-label="Workflow diagram showing how documents flow through CASO Comply"
+        >
+          {/* Shared: Watch Folders → Remediate → Score (always visible) */}
+          <AnimatedPath d="M 150 60 L 150 90" color="#94A3B8" opacity={1} />
+          <AnimatedPath d="M 150 155 L 150 185" color="#94A3B8" opacity={1} />
+          <AnimatedParticle path="M 150 60 L 150 90" color="#94A3B8" duration={1.5} delay={0} />
+          <AnimatedParticle path="M 150 155 L 150 185" color="#94A3B8" duration={1.5} delay={0.5} />
 
-          <AnimatedParticle path="M 160 60 L 160 120" color="#94A3B8" duration={1.5} delay={0} />
-          <AnimatedParticle path="M 160 190 L 160 250" color="#94A3B8" duration={1.5} delay={0.5} />
+          <NodeBox x={90} y={5} width={120} height={55} icon={FolderIcon} label="Watch Folders" sublabel="Scans directories" />
+          <NodeBox x={90} y={95} width={120} height={60} icon={WrenchIcon} label="Remediate" sublabel="Auto-tag & metadata" />
+          <NodeBox x={90} y={190} width={120} height={60} icon={ChartIcon} label="Score" sublabel="PDF/UA + WCAG 2.1" />
 
-          {/* Branch paths */}
-          <AnimatedPath d="M 160 320 C 160 340, 80 350, 80 370" color="#2EA3F2" opacity={getOpacity(["standard"])} />
-          <AnimatedPath d="M 160 320 C 160 340, 160 350, 160 370" color="#14B6D3" opacity={getOpacity(["ai_verified"])} />
-          <AnimatedPath d="M 160 320 C 160 340, 240 350, 240 370" color="#F59E0B" opacity={getOpacity(["human_review"])} />
+          {/* === Standard path === */}
+          {selectedPlan === "standard" && (
+            <g>
+              <AnimatedPath d="M 150 250 L 150 290" color="#2EA3F2" opacity={getOpacity(["standard"])} />
+              <AnimatedParticle path="M 150 250 L 150 290" color="#2EA3F2" duration={1.5} delay={0} opacity={getOpacity(["standard"])} />
+              {/* Label */}
+              <text x={150} y={275} textAnchor="middle" fill="#2EA3F2" fontSize={9} fontWeight={600} opacity={getOpacity(["standard"])}>
+                ▼ Standard
+              </text>
+              <NodeBox x={90} y={295} width={120} height={55} icon={CheckIcon} label="Output" sublabel="Remediated file ready" opacity={getOpacity(["standard"])} glowColor={selectedPlan === "standard" ? "#2EA3F2" : undefined} />
+            </g>
+          )}
 
-          <AnimatedParticle path="M 160 320 C 160 340, 80 350, 80 370" color="#2EA3F2" duration={2} delay={0} opacity={getOpacity(["standard"])} />
-          <AnimatedParticle path="M 160 320 C 160 340, 160 350, 160 370" color="#14B6D3" duration={2} delay={0.3} opacity={getOpacity(["ai_verified"])} />
-          <AnimatedParticle path="M 160 320 C 160 340, 240 350, 240 370" color="#F59E0B" duration={2} delay={0.6} opacity={getOpacity(["human_review"])} />
+          {/* === AI Verified path === */}
+          {selectedPlan === "ai_verified" && (
+            <g>
+              {(() => {
+                const yStart = !selectedPlan ? 250 : 250;
+                const yVerify = !selectedPlan ? 295 : 295;
+                const yLine2 = yVerify + 60;
+                const yOutput = yLine2 + 5;
+                return (
+                  <>
+                    <AnimatedPath d={`M 150 ${yStart} L 150 ${yVerify}`} color="#14B6D3" opacity={getOpacity(["ai_verified"])} />
+                    <AnimatedPath d={`M 150 ${yVerify + 55} L 150 ${yOutput}`} color="#14B6D3" opacity={getOpacity(["ai_verified"])} />
+                    <AnimatedParticle path={`M 150 ${yStart} L 150 ${yVerify}`} color="#14B6D3" duration={1.5} delay={0} opacity={getOpacity(["ai_verified"])} />
+                    <AnimatedParticle path={`M 150 ${yVerify + 55} L 150 ${yOutput}`} color="#14B6D3" duration={1.5} delay={0.5} opacity={getOpacity(["ai_verified"])} />
+                    <text x={150} y={yStart + 20} textAnchor="middle" fill="#14B6D3" fontSize={9} fontWeight={600} opacity={getOpacity(["ai_verified"])}>
+                      ▼ AI Verified
+                    </text>
+                    <NodeBox x={90} y={yVerify} width={120} height={55} icon={SparkleIcon} label="AI Verification" sublabel="Verifies tags & alt text" opacity={getOpacity(["ai_verified"])} glowColor={selectedPlan === "ai_verified" ? "#14B6D3" : undefined} />
+                    <NodeBox x={90} y={yOutput} width={120} height={55} icon={CheckIcon} label="Output" sublabel="Verified & ready" opacity={getOpacity(["ai_verified"])} glowColor={selectedPlan === "ai_verified" ? "#14B6D3" : undefined} />
+                  </>
+                );
+              })()}
+            </g>
+          )}
 
-          {/* AI Verified → Output */}
-          <AnimatedPath d="M 160 440 L 160 470" color="#14B6D3" opacity={getOpacity(["ai_verified"])} />
+          {/* === Human Review path === */}
+          {selectedPlan === "human_review" && (
+            <g>
+              {(() => {
+                const yStart = 250;
+                const yDecision = 295;
+                const yPassOutput = yDecision + 10;
+                const yCasoApi = yDecision + 80;
+                const yExpert = yCasoApi + 75;
+                const yOutput = yExpert + 75;
+                return (
+                  <>
+                    <AnimatedPath d={`M 150 ${yStart} L 150 ${yDecision}`} color="#F59E0B" opacity={getOpacity(["human_review"])} />
+                    <text x={150} y={yStart + 20} textAnchor="middle" fill="#F59E0B" fontSize={9} fontWeight={600} opacity={getOpacity(["human_review"])}>
+                      ▼ Human Review
+                    </text>
+                    <NodeBox x={120} y={yDecision} width={60} height={50} icon={null} label="< 70?" diamond opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
 
-          {/* Human Review flow */}
-          <AnimatedPath d="M 240 440 L 240 480" color="#F59E0B" opacity={getOpacity(["human_review"])} />
-          <AnimatedPath d="M 240 550 L 240 580" color="#F59E0B" opacity={getOpacity(["human_review"])} />
-          <AnimatedPath d="M 240 650 C 240 670, 160 670, 160 650" color="#10B981" opacity={getOpacity(["human_review"])} />
+                    {/* Pass path (right side) */}
+                    <AnimatedPath d={`M 180 ${yDecision + 25} C 220 ${yDecision + 25}, 230 ${yPassOutput + 40}, 230 ${yOutput}`} color="#10B981" opacity={getOpacity(["human_review"])} />
+                    <text x={225} y={yDecision + 10} textAnchor="start" fill="#10B981" fontSize={9} fontWeight={600} opacity={getOpacity(["human_review"])}>
+                      PASS
+                    </text>
 
-          {/* Nodes */}
-          <NodeBox x={105} y={25} width={110} height={55} icon={FolderIcon} label="Watch Folders" sublabel="Scans directories" />
-          <NodeBox x={100} y={130} width={120} height={60} icon={WrenchIcon} label="Remediate" sublabel="Auto-tag & metadata" />
-          <NodeBox x={100} y={260} width={120} height={60} icon={ChartIcon} label="Score" sublabel="PDF/UA + WCAG 2.1" />
+                    {/* Fail path (down) */}
+                    <AnimatedPath d={`M 150 ${yDecision + 50} L 150 ${yCasoApi}`} color="#F59E0B" opacity={getOpacity(["human_review"])} />
+                    <text x={135} y={yDecision + 65} textAnchor="end" fill="#F59E0B" fontSize={9} fontWeight={600} opacity={getOpacity(["human_review"])}>
+                      FAIL
+                    </text>
+                    <AnimatedParticle path={`M 150 ${yDecision + 50} L 150 ${yCasoApi}`} color="#F59E0B" duration={1.5} delay={0} opacity={getOpacity(["human_review"])} />
 
-          {/* Standard Output */}
-          <NodeBox x={25} y={380} width={110} height={55} icon={CheckIcon} label="Output" sublabel="Standard" opacity={getOpacity(["standard"])} glowColor={selectedPlan === "standard" ? "#2EA3F2" : undefined} />
+                    <NodeBox x={90} y={yCasoApi} width={120} height={55} icon={CloudIcon} label="CASO API" sublabel="Sent for review" opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
 
-          {/* AI Verify */}
-          <NodeBox x={105} y={380} width={110} height={55} icon={SparkleIcon} label="AI Verify" sublabel="AI Verified" opacity={getOpacity(["ai_verified"])} glowColor={selectedPlan === "ai_verified" ? "#14B6D3" : undefined} />
+                    <AnimatedPath d={`M 150 ${yCasoApi + 55} L 150 ${yExpert}`} color="#F59E0B" opacity={getOpacity(["human_review"])} />
+                    <AnimatedParticle path={`M 150 ${yCasoApi + 55} L 150 ${yExpert}`} color="#F59E0B" duration={1.5} delay={0.5} opacity={getOpacity(["human_review"])} />
 
-          {/* AI Verified Output */}
-          <NodeBox x={105} y={475} width={110} height={55} icon={CheckIcon} label="Output" sublabel="Verified & ready" opacity={getOpacity(["ai_verified"])} glowColor={selectedPlan === "ai_verified" ? "#14B6D3" : undefined} />
+                    <NodeBox x={90} y={yExpert} width={120} height={55} icon={PersonIcon} label="Expert Review" sublabel="Fixed in Acrobat" opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
 
-          {/* Decision */}
-          <NodeBox x={210} y={380} width={60} height={50} icon={null} label="< 70?" diamond opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
+                    <AnimatedPath d={`M 150 ${yExpert + 55} L 150 ${yOutput}`} color="#10B981" opacity={getOpacity(["human_review"])} />
+                    <AnimatedParticle path={`M 150 ${yExpert + 55} L 150 ${yOutput}`} color="#10B981" duration={1.5} delay={1} opacity={getOpacity(["human_review"])} />
 
-          {/* CASO API */}
-          <NodeBox x={190} y={490} width={100} height={55} icon={CloudIcon} label="CASO API" sublabel="Sent for review" opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
+                    {/* Pass line also reaches Output */}
+                    <AnimatedParticle path={`M 180 ${yDecision + 25} C 220 ${yDecision + 25}, 230 ${yPassOutput + 40}, 230 ${yOutput}`} color="#10B981" duration={2.5} delay={0.3} opacity={getOpacity(["human_review"])} />
 
-          {/* Human Review */}
-          <NodeBox x={190} y={590} width={100} height={55} icon={PersonIcon} label="Expert Review" sublabel="Fixed in Acrobat" opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
+                    <NodeBox x={90} y={yOutput} width={120} height={55} icon={CheckIcon} label="Output" sublabel="Remediated file ready" opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#10B981" : undefined} />
+                  </>
+                );
+              })()}
+            </g>
+          )}
         </svg>
+
+        {/* Mobile hint */}
+        {!selectedPlan && (
+          <p className="text-center text-xs text-caso-slate/60 -mt-2 mb-2">Select a plan below to see its flow</p>
+        )}
       </div>
 
       {/* Plan Selector */}

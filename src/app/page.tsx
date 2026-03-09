@@ -100,7 +100,7 @@ const DEPLOYMENT_MODES = [
     features: [
       "Dedicated account manager",
       "Custom SLAs & reporting",
-      "Dedicated account manager",
+      "On-premise or cloud deployment",
     ],
     ideal: "Hospitals, large gov, regulated industries",
   },
