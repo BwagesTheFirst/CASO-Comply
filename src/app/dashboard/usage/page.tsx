@@ -24,6 +24,15 @@ export default async function UsagePage() {
 
   const tenantId = membership.tenant_id;
 
+  // Get tenant plan for fallback values
+  const { data: tenant } = await admin
+    .from("tenants")
+    .select("*, subscription_plans(*)")
+    .eq("id", tenantId)
+    .single();
+
+  const plan = tenant?.subscription_plans;
+
   // Get usage summary via RPC
   const { data: usage } = await admin.rpc("get_tenant_usage", {
     p_tenant_id: tenantId,
@@ -45,7 +54,7 @@ export default async function UsagePage() {
   // RPC returns one row per (billing_period_start, action) — aggregate them
   const usageRows = Array.isArray(usage) ? usage : usage ? [usage] : [];
   const totalPages = usageRows.reduce((sum: number, r: { total_pages?: number }) => sum + (r.total_pages ?? 0), 0);
-  const pagesIncluded = usageRows[0]?.pages_included ?? 0;
+  const pagesIncluded = usageRows[0]?.pages_included ?? plan?.pages_included ?? 0;
   const pagesRemaining = Math.max(0, pagesIncluded - totalPages);
   const overagePages = Math.max(0, totalPages - pagesIncluded);
   const totalAnalyses = usageRows
