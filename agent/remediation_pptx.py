@@ -325,37 +325,34 @@ def _fix_reading_order(slide):
         return
 
     def sort_key(el):
-        nvSpPr = el.find(".//{%s}nvSpPr" % NSMAP["p"])
-        if nvSpPr is not None:
-            nvPr = nvSpPr.find("{%s}nvPr" % NSMAP["p"])
-            if nvPr is not None:
-                ph = nvPr.find("{%s}ph" % NSMAP["p"])
-                if ph is not None:
-                    ph_type = ph.get("type", "")
-                    # Title and center title go first
-                    if ph_type in ("title", "ctrTitle"):
-                        return (-2, 0)
-                    # Subtitle goes second
-                    if ph_type in ("subTitle", "body"):
-                        return (-1, 0)
-                    if ph.get("idx") == "0":
-                        return (-2, 0)
+        # Check for placeholder type across all shape kinds
+        # (sp uses nvSpPr, pic uses nvPicPr, graphicFrame uses nvGraphicFramePr)
+        for nv_tag in ("nvSpPr", "nvPicPr", "nvGraphicFramePr", "nvCxnSpPr"):
+            nv_parent = el.find("{%s}%s" % (NSMAP["p"], nv_tag))
+            if nv_parent is not None:
+                nvPr = nv_parent.find("{%s}nvPr" % NSMAP["p"])
+                if nvPr is not None:
+                    ph = nvPr.find("{%s}ph" % NSMAP["p"])
+                    if ph is not None:
+                        ph_type = ph.get("type", "")
+                        if ph_type in ("title", "ctrTitle"):
+                            return (-999999999, 0)
+                        if ph_type in ("subTitle", "body"):
+                            return (-999999998, 0)
+                        if ph.get("idx") == "0":
+                            return (-999999999, 0)
+                break
 
-        spPr = el.find(".//{%s}spPr" % NSMAP["a"])
-        if spPr is not None:
-            off = spPr.find("{%s}off" % NSMAP["a"])
-            if off is not None:
-                y = int(off.get("y", "0"))
-                x = int(off.get("x", "0"))
-                return (y, x)
-
-        xfrm = el.find(".//{%s}xfrm" % NSMAP["a"])
-        if xfrm is not None:
-            off = xfrm.find("{%s}off" % NSMAP["a"])
-            if off is not None:
-                y = int(off.get("y", "0"))
-                x = int(off.get("x", "0"))
-                return (y, x)
+        # Find position from any xfrm/off element (works for sp, pic,
+        # graphicFrame regardless of namespace)
+        for xfrm in el.iter():
+            if etree.QName(xfrm.tag).localname == "xfrm":
+                for child in xfrm:
+                    if etree.QName(child.tag).localname == "off":
+                        y = int(child.get("y", "0"))
+                        x = int(child.get("x", "0"))
+                        return (y, x)
+                break
 
         return (999999, 999999)
 
