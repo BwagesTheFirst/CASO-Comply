@@ -36,6 +36,7 @@ class Processor:
                         "pages_processed": page_count,
                         "pdfs_completed": 1,
                         "hostname": platform.node(),
+                        "filename": filename,
                     },
                     headers={
                         "Authorization": f"Bearer {self.config.license_key}",
