@@ -32,11 +32,21 @@ def analyze_pptx(file_path: str) -> dict:
     """Analyze PowerPoint presentation for accessibility issues."""
     prs = Presentation(file_path)
 
-    # Check slide titles
+    # Check slide titles (placeholder OR remediation textbox at origin)
     slides_without_title = []
     total_slides = len(prs.slides)
     for i, slide in enumerate(prs.slides):
-        if not slide.shapes.title or not slide.shapes.title.text.strip():
+        if slide.shapes.title and slide.shapes.title.text.strip():
+            continue
+        # Check for remediation title textbox (added by _add_missing_titles)
+        has_remediation_title = False
+        for shape in slide.shapes:
+            if (shape.shape_type == 17  # TEXT_BOX
+                    and shape.left == 0 and shape.top == 0
+                    and shape.has_text_frame and shape.text_frame.text.strip()):
+                has_remediation_title = True
+                break
+        if not has_remediation_title:
             slides_without_title.append(i + 1)
 
     title_coverage = (total_slides - len(slides_without_title)) / max(total_slides, 1)
@@ -54,7 +64,7 @@ def analyze_pptx(file_path: str) -> dict:
     images_with_alt = 0
     for slide in prs.slides:
         for shape in slide.shapes:
-            if shape.shape_type and shape.shape_type in (13, 17):  # Picture, Linked Picture
+            if shape.shape_type and shape.shape_type in (13, 11):  # Picture, Linked Picture
                 total_images += 1
                 if _shape_has_alt_text(shape):
                     images_with_alt += 1
@@ -145,13 +155,17 @@ def _has_reading_order_issue(slide) -> bool:
     if title_shape:
         sp_tree = slide._element.find(".//{%s}spTree" % NSMAP["p"])
         if sp_tree is not None:
-            children = list(sp_tree)
+            # Only count actual shape elements, skip nvGrpSpPr/grpSpPr
+            shape_children = [
+                c for c in sp_tree
+                if etree.QName(c.tag).localname not in ("nvGrpSpPr", "grpSpPr")
+            ]
             title_idx = None
-            for i, child in enumerate(children):
+            for i, child in enumerate(shape_children):
                 if child == title_shape._element:
                     title_idx = i
                     break
-            if title_idx is not None and title_idx > 1:
+            if title_idx is not None and title_idx > 0:
                 return True
 
     positioned = [(s.top or 0, s.left or 0, s) for s in shapes if hasattr(s, 'top') and s.top is not None]
