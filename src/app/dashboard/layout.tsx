@@ -46,9 +46,18 @@ export default async function DashboardLayout({
     }
   }
 
+  // Check if user is a super admin
+  const { data: sa } = await admin
+    .from("super_admins")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  const isSuperAdmin = !!sa;
+
   return (
     <div className="min-h-screen bg-caso-navy flex">
-      <Sidebar />
+      <Sidebar isSuperAdmin={isSuperAdmin} />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}

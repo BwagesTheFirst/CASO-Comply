@@ -73,12 +73,51 @@ const navItems = [
   },
 ];
 
-export default function Sidebar() {
+const adminNavItems = [
+  {
+    label: "Admin",
+    href: "/dashboard/admin",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+    ),
+  },
+  {
+    label: "Tenants",
+    href: "/dashboard/admin/tenants",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    ),
+  },
+  {
+    label: "Users",
+    href: "/dashboard/admin/users",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+  },
+];
+
+interface SidebarProps {
+  isSuperAdmin?: boolean;
+}
+
+export default function Sidebar({ isSuperAdmin = false }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/dashboard/admin") return pathname === "/dashboard/admin";
     return pathname.startsWith(href);
   }
 
@@ -147,6 +186,38 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Admin Section */}
+        {isSuperAdmin && (
+          <div className="px-3 pb-4">
+            <div className="border-t border-caso-border pt-4 mb-2">
+              <p className="px-3 text-xs font-semibold text-caso-slate/60 uppercase tracking-wider mb-2">
+                Admin
+              </p>
+            </div>
+            <div className="space-y-1">
+              {adminNavItems.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-caso-blue/10 text-caso-blue"
+                        : "text-caso-slate hover:text-caso-white hover:bg-white/5"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-caso-border">
