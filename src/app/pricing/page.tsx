@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 const PLANS = [
   {
     name: "Standard",
-    price: "Per Page",
-    period: "",
+    price: "$0.25",
+    period: "/page",
     description:
       "Automated remediation with font-size heuristic tagging. Perfect for bulk document processing.",
     features: [
@@ -29,8 +29,8 @@ const PLANS = [
   },
   {
     name: "AI Verified",
-    price: "Per Page",
-    period: "",
+    price: "$0.35",
+    period: "/page",
     description:
       "Everything in Standard plus Gemini AI verification for heading hierarchy, reading order, and alt text.",
     features: [
@@ -48,8 +48,8 @@ const PLANS = [
   },
   {
     name: "Human Review",
-    price: "Per Page",
-    period: "",
+    price: "$4.00",
+    period: "/page",
     description:
       "For documents that need expert human review — complex layouts, low-scoring files, or compliance-critical content.",
     features: [
