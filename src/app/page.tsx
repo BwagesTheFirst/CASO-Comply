@@ -455,23 +455,22 @@ export default function Home() {
         </section>
 
         {/* Before/After Preview */}
-        <section id="demo" aria-label="Remediation preview" className="relative overflow-hidden border-y border-caso-border/50 bg-caso-navy px-6 py-20 md:py-28">
+        <section id="demo" aria-label="Remediation preview" className="relative overflow-hidden border-y border-gray-200 bg-[#F0F4F8] px-6 py-20 md:py-28">
           {/* Background image */}
           <div className="pointer-events-none absolute inset-0" aria-hidden="true">
             <Image
-              src="/bg-demo.png"
+              src="/bg-demo-light.png"
               alt=""
               fill
-              className="object-cover opacity-10"
+              className="object-cover opacity-40"
             />
-            <div className="absolute inset-0 bg-caso-navy/70" />
           </div>
           <div className="relative mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 See the difference
               </h2>
-              <p className="mt-4 text-lg text-caso-slate">
+              <p className="mt-4 text-lg text-gray-600">
                 Watch a non-compliant document transform into a fully accessible,
                 tagged file — in real time.
               </p>
@@ -480,7 +479,7 @@ export default function Home() {
             <div className="mx-auto mt-12 max-w-4xl">
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Before */}
-                <div className="rounded-2xl border border-caso-red-dark/30 bg-caso-navy-light p-6">
+                <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
                   <div className="mb-4 flex items-center gap-2">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-caso-red/20" aria-hidden="true">
                       <svg className="h-3.5 w-3.5 text-caso-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -489,30 +488,30 @@ export default function Home() {
                     </span>
                     <span className="text-sm font-bold uppercase tracking-wider text-caso-red">Before</span>
                   </div>
-                  <div className="flex h-48 items-center justify-center rounded-xl border border-caso-border bg-caso-navy/50">
+                  <div className="flex h-48 items-center justify-center rounded-xl border border-red-100 bg-red-50/50">
                     <div className="text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caso-red/10">
-                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-caso-red">F</span>
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-red-600">F</span>
                       </div>
-                      <p className="mt-3 text-sm font-semibold text-caso-red/70">
+                      <p className="mt-3 text-sm font-semibold text-red-500">
                         Score: 23/100
                       </p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-caso-red/80">
+                    <div className="flex items-center gap-2 text-sm text-red-600">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       No structure tags
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-caso-red/80">
+                    <div className="flex items-center gap-2 text-sm text-red-600">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                       Missing alt text
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-caso-red/80">
+                    <div className="flex items-center gap-2 text-sm text-red-600">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -522,7 +521,7 @@ export default function Home() {
                 </div>
 
                 {/* After */}
-                <div className="rounded-2xl border border-caso-green/30 bg-caso-navy-light p-6">
+                <div className="rounded-2xl border border-green-200 bg-white p-6 shadow-sm">
                   <div className="mb-4 flex items-center gap-2">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-caso-green/20" aria-hidden="true">
                       <svg className="h-3.5 w-3.5 text-caso-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -531,30 +530,30 @@ export default function Home() {
                     </span>
                     <span className="text-sm font-bold uppercase tracking-wider text-caso-green">After</span>
                   </div>
-                  <div className="flex h-48 items-center justify-center rounded-xl border border-caso-border bg-caso-navy/50">
+                  <div className="flex h-48 items-center justify-center rounded-xl border border-green-100 bg-green-50/50">
                     <div className="text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-caso-green/10">
-                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-caso-green">A</span>
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-green-600">A</span>
                       </div>
-                      <p className="mt-3 text-sm font-semibold text-caso-green/70">
+                      <p className="mt-3 text-sm font-semibold text-green-500">
                         Score: 97/100
                       </p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-caso-green/80">
+                    <div className="flex items-center gap-2 text-sm text-green-600">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       Full PDF/UA structure tags
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-caso-green/80">
+                    <div className="flex items-center gap-2 text-sm text-green-600">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                       AI-generated alt text
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-caso-green/80">
+                    <div className="flex items-center gap-2 text-sm text-green-600">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
@@ -575,7 +574,7 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                   </svg>
                 </Link>
-                <p className="mt-3 text-sm text-caso-slate">
+                <p className="mt-3 text-sm text-gray-500">
                   Upload your own document and see the results in real time
                 </p>
               </div>
@@ -584,14 +583,23 @@ export default function Home() {
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl">
+        <section id="pricing" className="relative overflow-hidden border-y border-gray-200 bg-[#F0F4F8] px-6 py-20 md:py-28">
+          {/* Background image */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-pricing-light.png"
+              alt=""
+              fill
+              className="object-cover opacity-30"
+            />
+          </div>
+          <div className="relative mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
+              <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 Per-page pricing for{" "}
                 <span className="text-caso-blue">any volume.</span>
               </h2>
-              <p className="mt-4 text-lg text-caso-slate">
+              <p className="mt-4 text-lg text-gray-600">
                 Choose the service level that matches your documents&apos; complexity.
                 Mix and match across your library.
               </p>
@@ -603,8 +611,8 @@ export default function Home() {
                   key={tier.level}
                   className={`service-card relative rounded-2xl border p-8 ${
                     tier.featured
-                      ? "border-caso-blue bg-caso-navy-light shadow-xl shadow-caso-blue/10"
-                      : "border-caso-border bg-caso-navy-light/50"
+                      ? "border-caso-blue bg-white shadow-xl shadow-caso-blue/10"
+                      : "border-gray-200 bg-white shadow-sm"
                   }`}
                 >
                   {tier.featured && (
@@ -612,26 +620,26 @@ export default function Home() {
                       Most Popular
                     </div>
                   )}
-                  <div className="text-sm font-semibold uppercase tracking-wider text-caso-glacier">
+                  <div className="text-sm font-semibold uppercase tracking-wider text-caso-blue">
                     {tier.level}
                   </div>
-                  <div className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">
+                  <div className="mt-2 font-[family-name:var(--font-display)] text-2xl font-bold text-gray-900">
                     {tier.name}
                   </div>
                   <div className="mt-4 flex items-baseline gap-1">
-                    <span className="font-[family-name:var(--font-display)] text-4xl font-bold text-caso-white">
+                    <span className="font-[family-name:var(--font-display)] text-4xl font-bold text-gray-900">
                       {tier.price}
                     </span>
-                    <span className="text-base text-caso-slate">/page</span>
+                    <span className="text-base text-gray-500">/page</span>
                   </div>
-                  <p className="mt-4 text-sm leading-relaxed text-caso-slate">
+                  <p className="mt-4 text-sm leading-relaxed text-gray-600">
                     {tier.description}
                   </p>
                   <ul className="mt-6 space-y-3" role="list">
                     {tier.features.map((feature) => (
                       <li
                         key={feature}
-                        className="flex items-start gap-3 text-sm text-caso-slate"
+                        className="flex items-start gap-3 text-sm text-gray-600"
                       >
                         <svg
                           className="mt-0.5 h-4 w-4 shrink-0 text-caso-green"
@@ -655,8 +663,8 @@ export default function Home() {
                     href="#scan"
                     className={`mt-8 block rounded-xl px-6 py-3 text-center text-sm font-bold transition-all ${
                       tier.featured
-                        ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
-                        : "border border-caso-border bg-transparent text-caso-white hover:border-caso-blue hover:bg-caso-navy-light"
+                        ? "bg-caso-blue text-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                        : "border border-gray-300 bg-transparent text-gray-700 hover:border-caso-blue hover:bg-gray-50"
                     }`}
                   >
                     Get Started
