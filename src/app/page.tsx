@@ -254,14 +254,14 @@ export default function Home() {
         </section>
 
         {/* Stats Strip */}
-        <section aria-label="Key statistics" className="border-y border-caso-border/50 bg-caso-navy-light/50">
+        <section aria-label="Key statistics" className="border-y border-gray-200 bg-white">
           <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-14 md:grid-cols-4 md:gap-8">
             {STATS.map((item) => (
               <div key={item.label} className="text-center">
                 <div className="font-[family-name:var(--font-display)] text-3xl font-bold text-caso-blue sm:text-4xl">
                   {item.value}
                 </div>
-                <div className="mt-2 text-sm font-medium text-caso-slate">
+                <div className="mt-2 text-sm font-medium text-gray-600">
                   {item.label}
                 </div>
               </div>
