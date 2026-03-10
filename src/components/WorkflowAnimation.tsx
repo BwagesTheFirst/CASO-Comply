@@ -292,7 +292,7 @@ export default function WorkflowAnimation() {
           <NodeBox x={200} y={120} width={120} height={70} icon={WrenchIcon} label="Remediate" sublabel="Auto-tag & metadata" opacity={getOpacity(["standard", "ai_verified", "human_review"])} glowColor={selectedPlan ? getColor(selectedPlan) : undefined} />
 
           {/* Score */}
-          <NodeBox x={370} y={120} width={120} height={70} icon={ChartIcon} label="Score" sublabel="PDF/UA + WCAG 2.1" opacity={getOpacity(["standard", "ai_verified", "human_review"])} glowColor={selectedPlan ? getColor(selectedPlan) : undefined} />
+          <NodeBox x={370} y={120} width={120} height={70} icon={ChartIcon} label="Score" sublabel="PDF/UA + WCAG 2.2" opacity={getOpacity(["standard", "ai_verified", "human_review"])} glowColor={selectedPlan ? getColor(selectedPlan) : undefined} />
 
           {/* Standard Output */}
           <NodeBox x={580} y={50} width={120} height={60} icon={CheckIcon} label="Output" sublabel="Remediated file ready" opacity={getOpacity(["standard"])} glowColor={selectedPlan === "standard" ? "#2EA3F2" : undefined} />
@@ -342,7 +342,7 @@ export default function WorkflowAnimation() {
 
           <NodeBox x={90} y={5} width={120} height={55} icon={FolderIcon} label="Watch Folders" sublabel="Scans directories" />
           <NodeBox x={90} y={95} width={120} height={60} icon={WrenchIcon} label="Remediate" sublabel="Auto-tag & metadata" />
-          <NodeBox x={90} y={190} width={120} height={60} icon={ChartIcon} label="Score" sublabel="PDF/UA + WCAG 2.1" />
+          <NodeBox x={90} y={190} width={120} height={60} icon={ChartIcon} label="Score" sublabel="PDF/UA + WCAG 2.2" />
 
           {/* === Standard path === */}
           {selectedPlan === "standard" && (

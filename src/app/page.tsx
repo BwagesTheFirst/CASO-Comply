@@ -193,8 +193,16 @@ export default function Home() {
       <main id="main-content">
         {/* Hero Section — Enterprise-first messaging */}
         <section className="relative overflow-hidden px-6 pb-8 pt-16 md:pb-16 md:pt-24">
-          {/* Background gradient */}
+          {/* Background image + gradient overlay */}
           <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-hero.png"
+              alt=""
+              fill
+              className="object-cover opacity-20"
+              priority
+            />
+            <div className="absolute inset-0 bg-caso-navy/60" />
             <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-caso-blue/5 blur-3xl" />
             <div className="absolute right-0 top-1/4 h-[400px] w-[400px] rounded-full bg-caso-teal/5 blur-3xl" />
           </div>
@@ -225,7 +233,7 @@ export default function Home() {
 
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-caso-slate md:text-xl">
                 CASO Comply deploys on your infrastructure and remediates every document
-                to WCAG 2.1 AA, PDF/UA, and Section 508 compliance — PDFs, Word files,
+                to WCAG 2.2 AA, PDF/UA, and Section 508 compliance — PDFs, Word files,
                 and Excel spreadsheets, automatically on your schedule.
               </p>
             </div>
@@ -262,7 +270,7 @@ export default function Home() {
         </section>
 
         {/* How It Works — Animated Workflow */}
-        <section id="how-it-works" className="border-b border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
+        <section id="how-it-works" className="border-b border-caso-border/50 bg-[#0F1D32] px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
@@ -280,8 +288,18 @@ export default function Home() {
         </section>
 
         {/* Enterprise Deployment / On-Premise Agent */}
-        <section id="enterprise" className="px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl">
+        <section id="enterprise" className="relative overflow-hidden px-6 py-20 md:py-28">
+          {/* Background image */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-enterprise.png"
+              alt=""
+              fill
+              className="object-cover opacity-15"
+            />
+            <div className="absolute inset-0 bg-caso-navy/70" />
+          </div>
+          <div className="relative mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-caso-teal/30 bg-caso-teal/10 px-4 py-1.5">
                 <svg className="h-4 w-4 text-caso-teal" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
@@ -427,7 +445,7 @@ export default function Home() {
         </section>
 
         {/* Before/After Preview */}
-        <section id="demo" aria-label="Remediation preview" className="border-y border-caso-border/50 bg-caso-navy-light/30 px-6 py-20 md:py-28">
+        <section id="demo" aria-label="Remediation preview" className="border-y border-caso-border/50 bg-[#0F1D32] px-6 py-20 md:py-28">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
@@ -630,8 +648,18 @@ export default function Home() {
         </section>
 
         {/* Social Proof / Testimonials */}
-        <section id="partners" aria-label="Trusted by organizations" className="px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl">
+        <section id="partners" aria-label="Trusted by organizations" className="relative overflow-hidden px-6 py-20 md:py-28">
+          {/* Background image */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-partners.png"
+              alt=""
+              fill
+              className="object-cover opacity-15"
+            />
+            <div className="absolute inset-0 bg-caso-navy/70" />
+          </div>
+          <div className="relative mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
                 Trusted by government and education
@@ -685,8 +713,18 @@ export default function Home() {
         </section>
 
         {/* Footer CTA */}
-        <section aria-label="Get your free accessibility report" className="px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-3xl text-center">
+        <section aria-label="Get your free accessibility report" className="relative overflow-hidden px-6 py-20 md:py-28">
+          {/* Background image */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-cta.png"
+              alt=""
+              fill
+              className="object-cover opacity-15"
+            />
+            <div className="absolute inset-0 bg-caso-navy/60" />
+          </div>
+          <div className="relative mx-auto max-w-3xl text-center">
             <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
               Get your free accessibility report
             </h2>
