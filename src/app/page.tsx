@@ -706,14 +706,14 @@ export default function Home() {
                 Trusted by government and education
               </h2>
               <p className="mt-4 text-lg text-caso-slate">
-                CASO has over 20 years of experience serving public sector
-                organizations across the country.
+                CASO has over 30 years of experience serving public sector
+                organizations across the country since 1994.
               </p>
             </div>
 
-            {/* Logo placeholder strip */}
+            {/* Client types strip */}
             <div className="mt-14 flex flex-wrap items-center justify-center gap-10">
-              {["State Agencies", "Universities", "Municipalities", "School Districts", "Federal Contractors"].map(
+              {["State Agencies", "Universities", "Medical Centers", "Municipalities", "Nonprofits", "Construction"].map(
                 (name) => (
                   <div
                     key={name}
@@ -725,30 +725,48 @@ export default function Home() {
               )}
             </div>
 
-            {/* Testimonial placeholder */}
-            <div className="mx-auto mt-14 max-w-3xl rounded-2xl border border-caso-border bg-caso-navy-light p-8 md:p-10">
-              <svg className="h-8 w-8 text-caso-blue/30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11h4v10H0z" />
-              </svg>
-              <blockquote className="mt-4">
-                <p className="text-lg leading-relaxed text-caso-slate italic">
-                  &ldquo;Testimonial from a satisfied client will go here. This
-                  section is ready for real customer quotes once collected.&rdquo;
-                </p>
-                <footer className="mt-6 flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-caso-blue/10 text-sm font-bold text-caso-blue" aria-hidden="true">
-                    AB
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-caso-white">
-                      Client Name
-                    </div>
-                    <div className="text-sm text-caso-slate">
-                      Title, Organization
-                    </div>
-                  </div>
-                </footer>
-              </blockquote>
+            {/* Testimonials */}
+            <div className="mx-auto mt-14 grid max-w-5xl gap-6 md:grid-cols-3">
+              {[
+                {
+                  quote: "The CDM Team has been exceptional. They completed the work faster and cheaper than we could have, and have always accommodated our needs. It is a pleasure working with them.",
+                  name: "Richard Ajimati",
+                  org: "SUNY Downstate Medical Center",
+                  initials: "RA",
+                },
+                {
+                  quote: "We saw immediate benefits in efficiency, accuracy and process control. With ECM Toolbox AP Workflow, we have a solution that allows us to grow and meet our new needs.",
+                  name: "Nick Coccagna",
+                  org: "CIO, PJ Dick/Trumbull",
+                  initials: "NC",
+                },
+                {
+                  quote: "CDM\u2019s Digital Mail Workflow has given us the ability to not only serve our clients during these unprecedented times, but also to empower us to deliver our renowned services with unmatched speed, accuracy and security.",
+                  name: "Gregory Lawler",
+                  org: "GPM Life",
+                  initials: "GL",
+                },
+              ].map((t) => (
+                <div key={t.name} className="rounded-2xl border border-caso-border bg-caso-navy-light p-6 md:p-8">
+                  <svg className="h-6 w-6 text-caso-blue/30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11h4v10H0z" />
+                  </svg>
+                  <blockquote className="mt-3">
+                    <p className="text-sm leading-relaxed text-caso-slate italic">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                    <footer className="mt-5 flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-caso-blue/10 text-xs font-bold text-caso-blue" aria-hidden="true">
+                        {t.initials}
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-caso-white">{t.name}</div>
+                        <div className="text-xs text-caso-slate">{t.org}</div>
+                      </div>
+                    </footer>
+                  </blockquote>
+                </div>
+              ))}
             </div>
           </div>
         </section>
