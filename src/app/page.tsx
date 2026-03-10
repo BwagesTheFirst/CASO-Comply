@@ -477,20 +477,20 @@ export default function Home() {
             </div>
 
             <div className="mx-auto mt-12 max-w-4xl">
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="flex flex-col items-center gap-6 md:flex-row md:justify-center md:gap-0">
                 {/* Before */}
-                <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+                <div className="w-full max-w-sm rounded-2xl border border-slate-200 border-t-4 border-t-red-400 bg-white p-6 shadow-md shadow-slate-200/50 md:scale-95 md:opacity-90">
                   <div className="mb-4 flex items-center gap-2">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-caso-red/20" aria-hidden="true">
                       <svg className="h-3.5 w-3.5 text-caso-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </span>
-                    <span className="text-sm font-bold uppercase tracking-wider text-caso-red">Before</span>
+                    <span className="text-sm font-bold uppercase tracking-wider text-red-500">Before</span>
                   </div>
                   <div className="flex h-48 items-center justify-center rounded-xl border border-red-100 bg-red-50/50">
                     <div className="text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-red-200 bg-red-50">
                         <span className="font-[family-name:var(--font-display)] text-2xl font-black text-red-600">F</span>
                       </div>
                       <p className="mt-3 text-sm font-semibold text-red-500">
@@ -520,8 +520,21 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* Transformation Arrow */}
+                <div className="z-20 hidden h-14 w-14 items-center justify-center rounded-full border border-slate-100 bg-white shadow-xl md:flex md:-mx-7" aria-hidden="true">
+                  <svg className="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </div>
+                {/* Mobile arrow */}
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-100 bg-white shadow-lg md:hidden" aria-hidden="true">
+                  <svg className="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                </div>
+
                 {/* After */}
-                <div className="rounded-2xl border border-green-200 bg-white p-6 shadow-sm">
+                <div className="relative z-10 w-full max-w-sm rounded-2xl border-2 border-green-500 bg-gradient-to-b from-green-50/30 to-white p-6 shadow-xl shadow-green-900/10 md:scale-105">
                   <div className="mb-4 flex items-center gap-2">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-caso-green/20" aria-hidden="true">
                       <svg className="h-3.5 w-3.5 text-caso-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
@@ -530,10 +543,10 @@ export default function Home() {
                     </span>
                     <span className="text-sm font-bold uppercase tracking-wider text-caso-green">After</span>
                   </div>
-                  <div className="flex h-48 items-center justify-center rounded-xl border border-green-100 bg-green-50/50">
+                  <div className="flex h-48 items-center justify-center rounded-xl border border-green-100 bg-green-50/30">
                     <div className="text-center">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                        <span className="font-[family-name:var(--font-display)] text-2xl font-black text-green-600">A</span>
+                      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-green-500 shadow-lg shadow-green-500/40">
+                        <span className="font-[family-name:var(--font-display)] text-3xl font-black text-white">A</span>
                       </div>
                       <p className="mt-3 text-sm font-semibold text-green-500">
                         Score: 97/100
