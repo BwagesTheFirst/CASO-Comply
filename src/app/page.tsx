@@ -747,21 +747,21 @@ export default function Home() {
                   initials: "GL",
                 },
               ].map((t) => (
-                <div key={t.name} className="rounded-2xl border border-caso-border bg-caso-navy-light p-6 md:p-8">
-                  <svg className="h-6 w-6 text-caso-blue/30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <div key={t.name} className="rounded-2xl border border-caso-blue/30 bg-white/[0.07] p-6 shadow-lg shadow-black/20 backdrop-blur-sm md:p-8">
+                  <svg className="h-7 w-7 text-caso-teal" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11h4v10H0z" />
                   </svg>
                   <blockquote className="mt-3">
-                    <p className="text-sm leading-relaxed text-caso-slate italic">
+                    <p className="text-sm leading-relaxed text-gray-200 italic">
                       &ldquo;{t.quote}&rdquo;
                     </p>
-                    <footer className="mt-5 flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-caso-blue/10 text-xs font-bold text-caso-blue" aria-hidden="true">
+                    <footer className="mt-5 flex items-center gap-3 border-t border-white/10 pt-5">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-caso-teal/20 text-xs font-bold text-caso-teal" aria-hidden="true">
                         {t.initials}
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-caso-white">{t.name}</div>
-                        <div className="text-xs text-caso-slate">{t.org}</div>
+                        <div className="text-sm font-semibold text-white">{t.name}</div>
+                        <div className="text-xs text-caso-teal">{t.org}</div>
                       </div>
                     </footer>
                   </blockquote>
