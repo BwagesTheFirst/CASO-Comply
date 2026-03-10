@@ -270,8 +270,18 @@ export default function Home() {
         </section>
 
         {/* How It Works — Animated Workflow */}
-        <section id="how-it-works" className="border-b border-caso-border/50 bg-[#0F1D32] px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl">
+        <section id="how-it-works" className="relative overflow-hidden border-b border-caso-border/50 bg-caso-navy px-6 py-20 md:py-28">
+          {/* Background image */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-workflow.png"
+              alt=""
+              fill
+              className="object-cover opacity-15"
+            />
+            <div className="absolute inset-0 bg-caso-navy/60" />
+          </div>
+          <div className="relative mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
                 How It Works
@@ -445,8 +455,18 @@ export default function Home() {
         </section>
 
         {/* Before/After Preview */}
-        <section id="demo" aria-label="Remediation preview" className="border-y border-caso-border/50 bg-[#0F1D32] px-6 py-20 md:py-28">
-          <div className="mx-auto max-w-7xl">
+        <section id="demo" aria-label="Remediation preview" className="relative overflow-hidden border-y border-caso-border/50 bg-caso-navy px-6 py-20 md:py-28">
+          {/* Background image */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <Image
+              src="/bg-demo.png"
+              alt=""
+              fill
+              className="object-cover opacity-10"
+            />
+            <div className="absolute inset-0 bg-caso-navy/70" />
+          </div>
+          <div className="relative mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold tracking-tight sm:text-4xl">
                 See the difference
