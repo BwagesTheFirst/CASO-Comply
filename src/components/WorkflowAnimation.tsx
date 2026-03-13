@@ -9,7 +9,7 @@ const PLANS: { id: Plan; label: string; price: string; color: string; descriptio
     id: "standard",
     label: "Basic Accessibility",
     price: "$0.30/pg",
-    color: "#2EA3F2",
+    color: "#1A8FDE",
     description: "Automated tagging, structure, and reading order. Fast turnaround for bulk processing. 24-48 hour delivery.",
   },
   {
