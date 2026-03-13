@@ -7,24 +7,24 @@ type Plan = "standard" | "ai_verified" | "human_review" | null;
 const PLANS: { id: Plan; label: string; price: string; color: string; description: string }[] = [
   {
     id: "standard",
-    label: "Standard",
-    price: "$0.25/pg",
+    label: "Basic Accessibility",
+    price: "$0.30/pg",
     color: "#2EA3F2",
-    description: "Documents are auto-remediated and placed in your output directory. Fast and cost-effective for bulk processing.",
+    description: "Automated tagging, structure, and reading order. Fast turnaround for bulk processing. 24-48 hour delivery.",
   },
   {
     id: "ai_verified",
-    label: "AI Verified",
-    price: "$0.35/pg",
+    label: "Enhanced Compliance",
+    price: "$1.80/pg",
     color: "#14B6D3",
-    description: "After remediation, AI verifies heading hierarchy, reading order, and generates alt text for higher accuracy.",
+    description: "AI-powered remediation with enhanced checks, alt text generation, and a detailed compliance report. 2-3 business days.",
   },
   {
     id: "human_review",
-    label: "Human Review",
-    price: "$4.00/pg",
+    label: "Full Remediation",
+    price: "$12.00/pg",
     color: "#F59E0B",
-    description: "Files scoring below threshold are automatically sent to our team for expert correction and returned to your output directory.",
+    description: "Complete remediation with expert human QA review and Certificate of Compliance. 3-5 business days.",
   },
 ];
 
@@ -351,7 +351,7 @@ export default function WorkflowAnimation() {
               <AnimatedParticle path="M 150 250 L 150 290" color="#2EA3F2" duration={1.5} delay={0} opacity={getOpacity(["standard"])} />
               {/* Label */}
               <text x={150} y={275} textAnchor="middle" fill="#2EA3F2" fontSize={9} fontWeight={600} opacity={getOpacity(["standard"])}>
-                ▼ Standard
+                ▼ Basic
               </text>
               <NodeBox x={90} y={295} width={120} height={55} icon={CheckIcon} label="Output" sublabel="Remediated file ready" opacity={getOpacity(["standard"])} glowColor={selectedPlan === "standard" ? "#2EA3F2" : undefined} />
             </g>
@@ -372,7 +372,7 @@ export default function WorkflowAnimation() {
                     <AnimatedParticle path={`M 150 ${yStart} L 150 ${yVerify}`} color="#14B6D3" duration={1.5} delay={0} opacity={getOpacity(["ai_verified"])} />
                     <AnimatedParticle path={`M 150 ${yVerify + 55} L 150 ${yOutput}`} color="#14B6D3" duration={1.5} delay={0.5} opacity={getOpacity(["ai_verified"])} />
                     <text x={150} y={yStart + 20} textAnchor="middle" fill="#14B6D3" fontSize={9} fontWeight={600} opacity={getOpacity(["ai_verified"])}>
-                      ▼ AI Verified
+                      ▼ Enhanced
                     </text>
                     <NodeBox x={90} y={yVerify} width={120} height={55} icon={SparkleIcon} label="AI Verification" sublabel="Verifies tags & alt text" opacity={getOpacity(["ai_verified"])} glowColor={selectedPlan === "ai_verified" ? "#14B6D3" : undefined} />
                     <NodeBox x={90} y={yOutput} width={120} height={55} icon={CheckIcon} label="Output" sublabel="Verified & ready" opacity={getOpacity(["ai_verified"])} glowColor={selectedPlan === "ai_verified" ? "#14B6D3" : undefined} />
@@ -396,7 +396,7 @@ export default function WorkflowAnimation() {
                   <>
                     <AnimatedPath d={`M 150 ${yStart} L 150 ${yDecision}`} color="#F59E0B" opacity={getOpacity(["human_review"])} />
                     <text x={150} y={yStart + 20} textAnchor="middle" fill="#F59E0B" fontSize={9} fontWeight={600} opacity={getOpacity(["human_review"])}>
-                      ▼ Human Review
+                      ▼ Full Remediation
                     </text>
                     <NodeBox x={120} y={yDecision} width={60} height={50} icon={null} label="< 70?" diamond opacity={getOpacity(["human_review"])} glowColor={selectedPlan === "human_review" ? "#F59E0B" : undefined} />
 
