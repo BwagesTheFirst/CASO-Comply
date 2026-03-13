@@ -15,10 +15,23 @@ const publicPaths = [
   "/privacy",
   "/terms",
   "/auth/callback",
+  "/about",
+  "/contact",
+  "/free-scan",
+  "/sitemap.xml",
+  "/robots.txt",
 ];
 
 // Prefix-based public paths (startsWith)
-const publicPrefixes = ["/report/", "/api/", "/auth/"];
+const publicPrefixes = [
+  "/report/",
+  "/api/",
+  "/auth/",
+  "/services/",
+  "/solutions/",
+  "/resources/",
+  "/legal/",
+];
 
 function isPublicRoute(pathname: string): boolean {
   if (publicPaths.includes(pathname)) return true;
