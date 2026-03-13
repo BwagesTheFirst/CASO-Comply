@@ -137,7 +137,7 @@ export default function MobileNav() {
                 <a
                   href="/free-scan"
                   onClick={() => setIsOpen(false)}
-                  className="block rounded-xl bg-caso-blue px-6 py-4 text-center font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-colors hover:bg-caso-blue-bright"
+                  className="block rounded-xl bg-caso-blue-deep px-6 py-4 text-center font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-colors hover:bg-caso-blue"
                 >
                   Free Compliance Scan
                 </a>

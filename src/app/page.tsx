@@ -210,7 +210,7 @@ export default function Home() {
           <div className="mx-auto mt-10 flex max-w-lg flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/free-scan"
-              className="inline-flex items-center gap-2 rounded-xl bg-caso-blue px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+              className="inline-flex items-center gap-2 rounded-xl bg-caso-blue-deep px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
             >
               Get a Free Compliance Scan
               <svg
@@ -496,7 +496,7 @@ export default function Home() {
                 Full WCAG 2.1 AA, PDF/UA, and Section 508 compliance. Starting
                 at $0.30/page.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-caso-blue">
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-caso-blue-bright">
                 Learn more
                 <svg
                   className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
@@ -776,7 +776,7 @@ export default function Home() {
             <div className="mt-8 text-center">
               <Link
                 href="/demo"
-                className="inline-flex items-center gap-2 rounded-xl bg-caso-blue px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                className="inline-flex items-center gap-2 rounded-xl bg-caso-blue-deep px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
               >
                 Try the Live Demo
                 <svg
@@ -838,7 +838,7 @@ export default function Home() {
                 }`}
               >
                 {tier.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-blue px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-blue-deep px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
                     Most Popular
                   </div>
                 )}
@@ -888,7 +888,7 @@ export default function Home() {
                   href="/free-scan"
                   className={`mt-8 block rounded-xl px-6 py-3 text-center text-sm font-bold transition-all ${
                     tier.featured
-                      ? "bg-caso-blue text-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                      ? "bg-caso-blue-deep text-white hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
                       : "border border-gray-300 bg-transparent text-gray-700 hover:border-caso-blue hover:bg-gray-50"
                   }`}
                 >
@@ -982,7 +982,7 @@ export default function Home() {
                 <p className="mt-2 text-sm leading-relaxed text-caso-slate">
                   {sector.desc}
                 </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-caso-blue">
+                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-caso-blue-bright">
                   Learn more
                   <svg
                     className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
@@ -1301,7 +1301,7 @@ export default function Home() {
           </div>
           <Link
             href="/about"
-            className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-caso-blue transition-colors hover:text-caso-blue-bright"
+            className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-caso-blue-bright transition-colors hover:text-caso-white"
           >
             Learn more about CASO
             <svg
