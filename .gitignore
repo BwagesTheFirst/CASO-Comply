@@ -51,3 +51,12 @@ agent/.venv/
 
 # worktrees
 .worktrees/
+
+# test files
+agent/docker-test/
+agent/*.pptx
+agent/*.docx
+agent/*.xlsx
+
+# supabase temp
+supabase/.temp/
