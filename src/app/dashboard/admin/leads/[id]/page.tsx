@@ -185,7 +185,7 @@ export default function LeadDetailPage() {
         </Link>
         <div className="mt-3 flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{lead.name || lead.email}</h1>
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">{lead.name || lead.email}</h1>
             <p className="mt-1 text-sm text-caso-slate">
               {lead.organization && `${lead.organization} · `}
               {sourceLabel(lead.source)} · {new Date(lead.created_at).toLocaleDateString()}

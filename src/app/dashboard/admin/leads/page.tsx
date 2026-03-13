@@ -122,7 +122,7 @@ export default function AdminLeadsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Leads</h1>
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white">Leads</h1>
           <p className="mt-1 text-sm text-caso-slate">
             All form submissions and lead tracking
           </p>
