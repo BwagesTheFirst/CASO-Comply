@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     title: "About CASO Comply — CASO Document Management",
     description:
       "CASO Comply is the accessibility-focused product line from CASO Document Management. Learn about our mission, leadership, security credentials, and partnership with Accessibility on Demand.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/about",

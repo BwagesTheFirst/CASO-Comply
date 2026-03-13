@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "Enterprise Document Accessibility — CASO Comply",
     description:
       "Enterprise-grade document accessibility remediation with API integration, SOC 2 certification, and HIPAA compliance. Reduce legal risk and make your documents accessible at scale.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/solutions/enterprise",

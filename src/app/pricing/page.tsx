@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "Pricing — CASO Comply",
     description:
       "Simple, per-page pricing for AI-powered document accessibility remediation. Three service levels starting at $0.30/page. WCAG 2.1 AA, PDF/UA, and Section 508 compliance.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/pricing",

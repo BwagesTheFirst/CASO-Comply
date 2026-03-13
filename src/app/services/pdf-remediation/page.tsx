@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "PDF Remediation Services — CASO Comply",
     description:
       "Professional PDF accessibility remediation services. Make your documents compliant with WCAG 2.1 AA, Section 508, and PDF/UA standards using AI-powered automation and expert review.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/services/pdf-remediation",

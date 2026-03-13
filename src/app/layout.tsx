@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     url: "https://casocomply.com",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "CASO Comply — AI-Powered Document Accessibility Remediation",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     title: "CASO Comply — AI-Powered Document Accessibility Remediation",
     description:
       "AI-powered document accessibility remediation. WCAG 2.1 AA, PDF/UA, Section 508 compliance starting at $0.30/page.",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   alternates: {
     canonical: "https://casocomply.com",

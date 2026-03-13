@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "Contact Us — CASO Comply",
     description:
       "Get in touch with the CASO Comply team. Whether you need PDF remediation, a free compliance scan, or enterprise pricing, we are here to help.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/contact",

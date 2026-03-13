@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "Document Accessibility for Higher Education — CASO Comply",
     description:
       "ADA Title II compliance for public universities and colleges. Automated PDF remediation, document inventory, and compliance tracking for higher education institutions.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/solutions/higher-education",

@@ -14,6 +14,7 @@ export const metadata: Metadata = {
       "ADA Title II Document Compliance Guide: WCAG 2.1 AA Requirements for Government PDFs | CASO Comply",
     description:
       "Complete guide to ADA Title II digital document accessibility requirements. Learn WCAG 2.1 AA compliance deadlines, PDF accessibility standards, and how state and local governments can remediate documents before the April 2026 deadline.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/resources/ada-title-ii-guide",

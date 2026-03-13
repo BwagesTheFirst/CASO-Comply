@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "Security & Privacy — CASO Comply",
     description:
       "Learn how CASO Comply protects your documents with on-premise processing, SOC 2 certification, encryption, and enterprise-grade security controls.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/security",

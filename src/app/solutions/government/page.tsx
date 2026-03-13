@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "ADA Title II Document Compliance for Government — CASO Comply",
     description:
       "Meet ADA Title II digital accessibility deadlines with CASO Comply. Automated PDF remediation, SiteScan inventory, and Certificate of Compliance for government agencies.",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {
     canonical: "/solutions/government",
