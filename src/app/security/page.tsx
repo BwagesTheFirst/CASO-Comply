@@ -417,7 +417,7 @@ export default function SecurityPage() {
 
               {/* On-prem (CASO) */}
               <div className="rounded-2xl border border-caso-blue bg-caso-navy-light/50 p-8 shadow-lg shadow-caso-blue/10">
-                <p className="text-xs font-semibold uppercase tracking-wider text-caso-blue">CASO Comply</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-caso-blue-bright">CASO Comply</p>
                 <h3 className="mt-2 font-[family-name:var(--font-display)] text-xl font-bold">Runs on your servers</h3>
                 <ul className="mt-6 space-y-3 text-sm">
                   {[
