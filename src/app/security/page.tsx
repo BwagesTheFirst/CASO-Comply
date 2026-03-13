@@ -100,7 +100,7 @@ const COMPLIANCE_ITEMS = [
     available: true,
   },
   {
-    name: "WCAG 2.2 AA",
+    name: "WCAG 2.1 AA",
     status: "Compliant",
     description:
       "Our platform is built to the same accessibility standards we help you achieve. We practice what we preach.",
@@ -132,27 +132,6 @@ const COMPLIANCE_ITEMS = [
     status: "Not Required",
     description:
       "Our Docker agent runs on your infrastructure, not our cloud. FedRAMP applies to cloud services — on-premise software falls under your existing ATO.",
-    available: true,
-  },
-  {
-    name: "EN 301 549",
-    status: "Supported",
-    description:
-      "European standard for digital accessibility, mandated across all EU member states.",
-    available: true,
-  },
-  {
-    name: "AODA",
-    status: "Supported",
-    description:
-      "Ontario's Accessibility for Ontarians with Disabilities Act, requiring WCAG conformance.",
-    available: true,
-  },
-  {
-    name: "DDA",
-    status: "Supported",
-    description:
-      "Australia's Disability Discrimination Act covers digital document accessibility.",
     available: true,
   },
 ];
@@ -289,7 +268,7 @@ export default function SecurityPage() {
             <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
               {[
                 { label: "SOC 2 Type II", sublabel: "Certified" },
-                { label: "WCAG 2.2 AA", sublabel: "Compliant" },
+                { label: "WCAG 2.1 AA", sublabel: "Compliant" },
                 { label: "Section 508", sublabel: "Conformant" },
                 { label: "TLS 1.2+", sublabel: "All Communications" },
               ].map((badge) => (

@@ -168,7 +168,6 @@ function DemoPage() {
   const [result, setResult] = useState<RemediateResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showPdfViewer, setShowPdfViewer] = useState(false);
-  const [showPdfEditor, setShowPdfEditor] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [auditEmail, setAuditEmail] = useState("");
   const [auditEmailState, setAuditEmailState] = useState<"idle" | "submitting" | "sent" | "error">("idle");
@@ -274,7 +273,7 @@ function DemoPage() {
           ),
           tag_assignments: raw.tag_assignments || [],
           page_dimensions: raw.page_dimensions || [],
-          verification: raw.verification?.verification_score > 0 ? raw.verification : undefined,
+          verification: raw.verification || undefined,
         };
 
         simulateProgress(90, 100, 500);
@@ -438,7 +437,7 @@ function DemoPage() {
               <div className="mt-6 text-center">
                 <p className="text-xs text-caso-slate/60">
                   Your file is processed securely and never stored permanently.
-                  We evaluate against WCAG 2.2 AA, PDF/UA, and Section 508 standards.
+                  We evaluate against WCAG 2.1 AA, PDF/UA, and Section 508 standards.
                 </p>
                 <div className="mt-4 flex items-center justify-center gap-2">
                   <span className="text-sm text-caso-slate/50">or</span>
@@ -669,8 +668,8 @@ function DemoPage() {
                 </div>
               )}
 
-              {/* AI Verification Results (shown after running, hidden if score is 0 = failed) */}
-              {result.verification && result.verification.verification_score > 0 && (
+              {/* AI Verification Results (shown after running) */}
+              {result.verification && (
                 <div className="mt-8 rounded-2xl border border-caso-blue/30 bg-gradient-to-r from-caso-blue/5 to-transparent p-6 md:p-8">
                   <div className="mb-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-caso-blue/10">
@@ -758,25 +757,6 @@ function DemoPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
                     </svg>
                     View Tagged PDF
-                  </button>
-                )}
-                {result.tag_assignments && result.tag_assignments.length > 0 && (
-                  <button
-                    onClick={() => setShowPdfEditor(true)}
-                    className="relative inline-flex w-full items-center justify-center gap-2 rounded-xl border border-caso-green/50 bg-caso-green/10 px-8 py-4 text-base font-bold text-caso-green transition-all hover:border-caso-green hover:bg-caso-green/20 hover:shadow-lg hover:shadow-caso-green/15 sm:w-auto"
-                    aria-label="Edit tags in interactive editor"
-                  >
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                    </svg>
-                    Manual Review
-                    {/* AI Review Recommended badge — hidden once verification has run */}
-                    {!result.verification && (
-                      <span className="absolute -right-2 -top-2 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-400 ring-1 ring-amber-500/30">
-                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                        AI Review
-                      </span>
-                    )}
                   </button>
                 )}
                 <button
@@ -871,7 +851,7 @@ function DemoPage() {
         </div>
       </main>
 
-      {/* PDF Viewer Modal (read-only) */}
+      {/* PDF Viewer Modal */}
       {showPdfViewer && result && (
         <PdfViewer
           downloadUrl={
@@ -885,97 +865,6 @@ function DemoPage() {
             result.tag_assignments.find((t) => t.type === "H1")?.text || "Remediated PDF"
           }
           onClose={() => setShowPdfViewer(false)}
-          editable={false}
-        />
-      )}
-
-      {/* PDF Editor Modal (editable) */}
-      {showPdfEditor && result && (
-        <PdfViewer
-          downloadUrl={
-            result.download_url.startsWith("http")
-              ? result.download_url
-              : `${API_BASE}${result.download_url}`
-          }
-          tagAssignments={result.tag_assignments}
-          pageDimensions={result.page_dimensions}
-          title={
-            result.tag_assignments.find((t) => t.type === "H1")?.text || "Manual Review"
-          }
-          onClose={() => setShowPdfEditor(false)}
-          editable={true}
-          onVerify={async () => {
-            const res = await fetch(`${API_BASE}/api/verify/${result.file_id}`, {
-              method: "POST",
-            });
-            if (!res.ok) throw new Error("Verification failed");
-            const data = await res.json();
-            const transformChecks = (checksObj: Record<string, { passed: boolean; description: string }>) =>
-              Object.entries(checksObj).map(([, val]) => ({
-                name: val.description,
-                passed: val.passed,
-              }));
-            // Merge alt_text into text for Figure tags so the UI displays it
-            const mergedTags = (data.tag_assignments || []).map((tag: TagAssignment & { alt_text?: string }) => {
-              if (tag.type === "Figure" && tag.alt_text && !tag.text) {
-                return { ...tag, text: tag.alt_text };
-              }
-              return tag;
-            });
-            // Update parent state with verification results
-            setResult((prev) => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                verification: data.verification || undefined,
-                tag_assignments: mergedTags.length > 0 ? mergedTags : prev.tag_assignments,
-                page_dimensions: data.page_dimensions || prev.page_dimensions,
-                after: data.after?.score ? {
-                  score: data.after.score.score,
-                  grade: data.after.score.grade,
-                  checks: transformChecks(data.after.score.checks),
-                } : prev.after,
-              };
-            });
-            return {
-              tag_assignments: mergedTags.length > 0 ? mergedTags : result.tag_assignments,
-              verification: data.verification,
-            };
-          }}
-          onSave={async (updatedTags) => {
-            try {
-              const res = await fetch("/api/apply-edits", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  file_id: result.file_id,
-                  edits: updatedTags,
-                }),
-              });
-              if (!res.ok) {
-                const err = await res.json().catch(() => ({ error: "Unknown error" }));
-                throw new Error(err.error || `Apply-edits failed: ${res.status}`);
-              }
-              const data = await res.json();
-              setResult((prev) => {
-                if (!prev) return prev;
-                return {
-                  ...prev,
-                  after: data.after ?? prev.after,
-                  download_url: data.download_url ?? prev.download_url,
-                  tag_assignments: data.tag_assignments ?? updatedTags,
-                };
-              });
-              setShowPdfEditor(false);
-            } catch (err) {
-              console.error("Failed to apply edits:", err);
-              alert(
-                err instanceof Error
-                  ? err.message
-                  : "Failed to apply edits. Please try again."
-              );
-            }
-          }}
         />
       )}
     </div>
