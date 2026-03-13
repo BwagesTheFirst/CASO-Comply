@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "PDF Remediation Services — CASO Comply",
   description:
     "Professional PDF accessibility remediation services. Make your documents compliant with WCAG 2.1 AA, Section 508, and PDF/UA standards using AI-powered automation and expert review.",
+  openGraph: {
+    title: "PDF Remediation Services — CASO Comply",
+    description:
+      "Professional PDF accessibility remediation services. Make your documents compliant with WCAG 2.1 AA, Section 508, and PDF/UA standards using AI-powered automation and expert review.",
+  },
+  alternates: {
+    canonical: "/services/pdf-remediation",
+  },
 };
 
 const WHAT_GETS_FIXED = [

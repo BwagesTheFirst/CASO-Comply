@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Terms of Service — CASO Comply",
   description:
     "CASO Comply terms of service. Read the terms and conditions governing your use of our document accessibility remediation platform.",
+  robots: "noindex, follow",
 };
 
 export default function TermsOfServicePage() {

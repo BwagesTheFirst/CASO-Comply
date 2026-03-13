@@ -9,6 +9,15 @@ export const metadata: Metadata = {
     "Complete guide to ADA Title II digital document accessibility requirements. Learn WCAG 2.1 AA compliance deadlines, PDF accessibility standards, and how state and local governments can remediate documents before the April 2026 deadline.",
   keywords:
     "ADA Title II document compliance, WCAG 2.1 AA document requirements, government PDF accessibility, ADA Title II deadline 2026, accessible PDF requirements, Section 508 compliance, PDF/UA, government document remediation",
+  openGraph: {
+    title:
+      "ADA Title II Document Compliance Guide: WCAG 2.1 AA Requirements for Government PDFs | CASO Comply",
+    description:
+      "Complete guide to ADA Title II digital document accessibility requirements. Learn WCAG 2.1 AA compliance deadlines, PDF accessibility standards, and how state and local governments can remediate documents before the April 2026 deadline.",
+  },
+  alternates: {
+    canonical: "/resources/ada-title-ii-guide",
+  },
 };
 
 const TOC_ITEMS = [
@@ -35,6 +44,21 @@ const TOC_ITEMS = [
 export default function ADAGuidePage() {
   return (
     <MarketingLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: "ADA Title II Document Compliance Guide",
+            description: "Complete guide to ADA Title II digital document accessibility requirements for government agencies.",
+            author: { "@type": "Organization", name: "CASO Comply" },
+            publisher: { "@type": "Organization", name: "CASO Comply", url: "https://casocomply.com" },
+            datePublished: "2025-01-15",
+            dateModified: "2026-03-01",
+          }),
+        }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden px-6 py-20 md:py-28">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">

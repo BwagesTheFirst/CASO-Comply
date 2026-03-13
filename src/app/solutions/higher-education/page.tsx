@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Document Accessibility for Higher Education — CASO Comply",
   description:
     "ADA Title II compliance for public universities and colleges. Automated PDF remediation, document inventory, and compliance tracking for higher education institutions.",
+  openGraph: {
+    title: "Document Accessibility for Higher Education — CASO Comply",
+    description:
+      "ADA Title II compliance for public universities and colleges. Automated PDF remediation, document inventory, and compliance tracking for higher education institutions.",
+  },
+  alternates: {
+    canonical: "/solutions/higher-education",
+  },
 };
 
 function CheckIcon() {
@@ -279,6 +287,39 @@ export default function HigherEducationSolutionPage() {
           >
             View standard pricing &rarr;
           </Link>
+        </div>
+      </section>
+
+      {/* Related Solutions */}
+      <section className="border-t border-caso-border px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-2xl font-bold">
+            Solutions for Every Sector
+          </h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Link
+              href="/solutions/government"
+              className="group rounded-xl border border-caso-border bg-caso-navy-light p-6 transition-colors hover:border-caso-blue/50"
+            >
+              <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white group-hover:text-caso-blue">
+                Government
+              </h3>
+              <p className="mt-2 text-sm text-caso-slate">
+                ADA Title II compliance for state, county, and municipal agencies.
+              </p>
+            </Link>
+            <Link
+              href="/solutions/enterprise"
+              className="group rounded-xl border border-caso-border bg-caso-navy-light p-6 transition-colors hover:border-caso-blue/50"
+            >
+              <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white group-hover:text-caso-blue">
+                Enterprise
+              </h3>
+              <p className="mt-2 text-sm text-caso-slate">
+                ADA Title III compliance with API integration and SOC 2 certification.
+              </p>
+            </Link>
+          </div>
         </div>
       </section>
 

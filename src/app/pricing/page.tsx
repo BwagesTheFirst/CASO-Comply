@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Pricing — CASO Comply",
   description:
     "Simple, per-page pricing for AI-powered document accessibility remediation. Three service levels starting at $0.30/page. WCAG 2.1 AA, PDF/UA, and Section 508 compliance.",
+  openGraph: {
+    title: "Pricing — CASO Comply",
+    description:
+      "Simple, per-page pricing for AI-powered document accessibility remediation. Three service levels starting at $0.30/page. WCAG 2.1 AA, PDF/UA, and Section 508 compliance.",
+  },
+  alternates: {
+    canonical: "/pricing",
+  },
 };
 
 const PLANS = [
@@ -83,6 +91,44 @@ const VOLUME_DISCOUNTS = [
 export default function PricingPage() {
   return (
     <MarketingLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: "CASO Comply Document Remediation",
+            description: "AI-powered document accessibility remediation service",
+            brand: { "@type": "Brand", name: "CASO Comply" },
+            offers: [
+              {
+                "@type": "Offer",
+                name: "Basic Accessibility",
+                price: "0.30",
+                priceCurrency: "USD",
+                unitText: "per page",
+                description: "Automated tagging, structure, and reading order",
+              },
+              {
+                "@type": "Offer",
+                name: "Enhanced Compliance",
+                price: "1.80",
+                priceCurrency: "USD",
+                unitText: "per page",
+                description: "AI-powered remediation with alt text and compliance report",
+              },
+              {
+                "@type": "Offer",
+                name: "Full Remediation",
+                price: "12.00",
+                priceCurrency: "USD",
+                unitText: "per page",
+                description: "Complete remediation with expert QA and Certificate of Compliance",
+              },
+            ],
+          }),
+        }}
+      />
       <div className="relative">
         {/* Background */}
         <div

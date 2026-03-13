@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Contact Us — CASO Comply",
   description:
     "Get in touch with the CASO Comply team. Whether you need PDF remediation, a free compliance scan, or enterprise pricing, we are here to help.",
+  openGraph: {
+    title: "Contact Us — CASO Comply",
+    description:
+      "Get in touch with the CASO Comply team. Whether you need PDF remediation, a free compliance scan, or enterprise pricing, we are here to help.",
+  },
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 function PhoneIcon() {
@@ -94,6 +102,36 @@ const CONTACT_INFO = [
 export default function ContactPage() {
   return (
     <MarketingLayout>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            mainEntity: {
+              "@type": "Organization",
+              name: "CASO Comply",
+              telephone: "+1-631-393-2700",
+              email: "info@caso.com",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "1 Bates Drive",
+                addressLocality: "Bohemia",
+                addressRegion: "NY",
+                postalCode: "11716",
+                addressCountry: "US",
+              },
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "sales",
+                telephone: "+1-631-393-2700",
+                email: "info@caso.com",
+                availableLanguage: "English",
+              },
+            },
+          }),
+        }}
+      />
       {/* Hero */}
       <section className="border-b border-caso-border/50 px-6 py-20 md:py-28">
         <div className="mx-auto max-w-4xl text-center">

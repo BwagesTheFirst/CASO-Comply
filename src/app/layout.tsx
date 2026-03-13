@@ -17,6 +17,7 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://casocomply.com"),
   title: "CASO Comply — AI-Powered Document Accessibility Remediation",
   description:
     "Automated document accessibility compliance for government, education, and enterprise. Remediate PDFs, Word documents, and Excel spreadsheets to WCAG 2.2 AA, PDF/UA, and Section 508 standards — starting at $0.10/page.",
@@ -43,6 +44,25 @@ export const metadata: Metadata = {
       "Scan your website. Find every inaccessible document. Remediate PDFs, Word docs, and spreadsheets automatically. Starting at $0.10/page.",
     type: "website",
     siteName: "CASO Comply",
+    url: "https://casocomply.com",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "CASO Comply — AI-Powered Document Accessibility Remediation",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CASO Comply — AI-Powered Document Accessibility Remediation",
+    description:
+      "AI-powered document accessibility remediation. WCAG 2.1 AA, PDF/UA, Section 508 compliance starting at $0.30/page.",
+    images: ["/og-image.png"],
+  },
+  alternates: {
+    canonical: "https://casocomply.com",
   },
 };
 

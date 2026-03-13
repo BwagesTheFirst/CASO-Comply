@@ -5,6 +5,14 @@ export const metadata: Metadata = {
   title: "Free Compliance Scan — CASO Comply",
   description:
     "Get a free document accessibility compliance scan of your website. We'll crawl your site, identify every document, and deliver a detailed compliance report within 2 business days.",
+  openGraph: {
+    title: "Free Compliance Scan — CASO Comply",
+    description:
+      "Get a free document accessibility compliance scan of your website. We'll crawl your site, identify every document, and deliver a detailed compliance report within 2 business days.",
+  },
+  alternates: {
+    canonical: "/free-scan",
+  },
 };
 
 export default function FreeScanLayout({

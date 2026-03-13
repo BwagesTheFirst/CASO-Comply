@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Security & Privacy — CASO Comply",
   description:
     "Learn how CASO Comply protects your documents with on-premise processing, SOC 2 certification, encryption, and enterprise-grade security controls.",
+  openGraph: {
+    title: "Security & Privacy — CASO Comply",
+    description:
+      "Learn how CASO Comply protects your documents with on-premise processing, SOC 2 certification, encryption, and enterprise-grade security controls.",
+  },
+  alternates: {
+    canonical: "/security",
+  },
 };
 
 function ShieldIcon() {
@@ -219,6 +227,37 @@ const ENTERPRISE_QUESTIONS = [
 export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-caso-navy text-caso-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "Does CASO Comply process documents in the cloud?",
+                acceptedAnswer: { "@type": "Answer", text: "No. Our Docker Agent processes documents entirely on your infrastructure. Documents never leave your network." },
+              },
+              {
+                "@type": "Question",
+                name: "Is CASO Comply SOC 2 certified?",
+                acceptedAnswer: { "@type": "Answer", text: "Yes. CASO Document Management holds SOC 2 Type II certification, audited annually." },
+              },
+              {
+                "@type": "Question",
+                name: "Is CASO Comply HIPAA compliant?",
+                acceptedAnswer: { "@type": "Answer", text: "Yes. Our on-premise deployment model means PHI never leaves your environment, and we execute BAAs for healthcare clients." },
+              },
+              {
+                "@type": "Question",
+                name: "Can we get your SOC 2 report?",
+                acceptedAnswer: { "@type": "Answer", text: "Yes. Contact us to request our SOC 2 Type II report, penetration test summary, or security questionnaire responses." },
+              },
+            ],
+          }),
+        }}
+      />
       <a href="#security-content" className="skip-link">
         Skip to security content
       </a>

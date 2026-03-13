@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy — CASO Comply",
   description:
     "CASO Comply privacy policy. Learn how we collect, use, and protect your data when you use our document accessibility remediation platform.",
+  robots: "noindex, follow",
 };
 
 export default function PrivacyPolicyPage() {

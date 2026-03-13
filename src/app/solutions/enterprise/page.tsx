@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: "Enterprise Document Accessibility — CASO Comply",
   description:
     "Enterprise-grade document accessibility remediation with API integration, SOC 2 certification, and HIPAA compliance. Reduce legal risk and make your documents accessible at scale.",
+  openGraph: {
+    title: "Enterprise Document Accessibility — CASO Comply",
+    description:
+      "Enterprise-grade document accessibility remediation with API integration, SOC 2 certification, and HIPAA compliance. Reduce legal risk and make your documents accessible at scale.",
+  },
+  alternates: {
+    canonical: "/solutions/enterprise",
+  },
 };
 
 function CheckIcon() {
@@ -262,6 +270,39 @@ export default function EnterpriseSolutionPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Related Solutions */}
+      <section className="border-t border-caso-border px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-8 text-center font-[family-name:var(--font-display)] text-2xl font-bold">
+            Solutions for Every Sector
+          </h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Link
+              href="/solutions/government"
+              className="group rounded-xl border border-caso-border bg-caso-navy-light p-6 transition-colors hover:border-caso-blue/50"
+            >
+              <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white group-hover:text-caso-blue">
+                Government
+              </h3>
+              <p className="mt-2 text-sm text-caso-slate">
+                ADA Title II compliance for state, county, and municipal agencies.
+              </p>
+            </Link>
+            <Link
+              href="/solutions/higher-education"
+              className="group rounded-xl border border-caso-border bg-caso-navy-light p-6 transition-colors hover:border-caso-blue/50"
+            >
+              <h3 className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white group-hover:text-caso-blue">
+                Higher Education
+              </h3>
+              <p className="mt-2 text-sm text-caso-slate">
+                Section 508 and ADA compliance for universities and colleges.
+              </p>
+            </Link>
           </div>
         </div>
       </section>
