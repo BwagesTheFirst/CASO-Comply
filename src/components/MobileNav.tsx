@@ -3,11 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 
 const NAV_LINKS = [
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#enterprise", label: "Enterprise" },
-  { href: "#demo", label: "Demo" },
-  { href: "#partners", label: "Partners" },
+  { href: "/services/pdf-remediation", label: "PDF Remediation" },
+  { href: "/solutions/government", label: "Government" },
+  { href: "/solutions/higher-education", label: "Higher Education" },
+  { href: "/solutions/enterprise", label: "Enterprise" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/resources/ada-title-ii-guide", label: "ADA Title II Guide" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
   { href: "/login", label: "Login" },
 ];
 
@@ -132,11 +135,11 @@ export default function MobileNav() {
               </ul>
               <div className="mt-8 border-t border-caso-border pt-8">
                 <a
-                  href="/signup"
+                  href="/free-scan"
                   onClick={() => setIsOpen(false)}
                   className="block rounded-xl bg-caso-blue px-6 py-4 text-center font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-colors hover:bg-caso-blue-bright"
                 >
-                  Sign Up
+                  Free Compliance Scan
                 </a>
               </div>
             </nav>

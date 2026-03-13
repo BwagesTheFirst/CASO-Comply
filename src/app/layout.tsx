@@ -19,7 +19,7 @@ const sourceSans = Source_Sans_3({
 export const metadata: Metadata = {
   title: "CASO Comply — AI-Powered Document Accessibility Remediation",
   description:
-    "Automated document accessibility compliance for government, education, and enterprise. Remediate PDFs, Word documents, and Excel spreadsheets to WCAG 2.1 AA, PDF/UA, and Section 508 standards — starting at $0.10/page.",
+    "Automated document accessibility compliance for government, education, and enterprise. Remediate PDFs, Word documents, and Excel spreadsheets to WCAG 2.2 AA, PDF/UA, and Section 508 standards — starting at $0.10/page.",
   keywords: [
     "PDF accessibility remediation",
     "document accessibility remediation",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     "Excel accessibility",
     "DOCX remediation",
     "XLSX remediation",
-    "WCAG 2.1 compliance",
+    "WCAG 2.2 compliance",
     "ADA Title II",
     "Section 508",
     "PDF accessibility",
@@ -46,6 +46,76 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "CASO Comply",
+  url: "https://casocomply.com",
+  logo: "https://casocomply.com/caso-comply-logo-white.png",
+  description:
+    "AI-powered document accessibility remediation for government, education, and enterprise. WCAG 2.1 AA, PDF/UA, Section 508 compliance.",
+  parentOrganization: {
+    "@type": "Organization",
+    name: "CASO Document Management, Inc.",
+    url: "https://caso.com",
+  },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Bohemia",
+    addressRegion: "NY",
+    addressCountry: "US",
+  },
+  telephone: "+1-631-393-2700",
+  sameAs: [
+    "https://www.linkedin.com/company/caso-inc",
+    "https://www.facebook.com/casodocumentmanagement/",
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Document Accessibility Services",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "PDF Remediation - Basic Accessibility",
+          description:
+            "Automated tagging, structure, and reading order for PDF documents",
+        },
+        price: "0.30",
+        priceCurrency: "USD",
+        unitText: "per page",
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "PDF Remediation - Enhanced Compliance",
+          description:
+            "Automated remediation with enhanced checks and compliance report",
+        },
+        price: "1.80",
+        priceCurrency: "USD",
+        unitText: "per page",
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "PDF Remediation - Full Remediation",
+          description:
+            "Complete remediation with expert QA and Certificate of Compliance",
+        },
+        price: "12.00",
+        priceCurrency: "USD",
+        unitText: "per page",
+      },
+    ],
+  },
+};
+
+const jsonLdString = JSON.stringify(jsonLd);
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,6 +123,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${raleway.variable} ${sourceSans.variable}`}>
+      <head>
+        <script type="application/ld+json" suppressHydrationWarning>
+          {jsonLdString}
+        </script>
+      </head>
       <body className="font-[family-name:var(--font-body)] antialiased">
         {children}
       </body>
