@@ -95,6 +95,28 @@ export async function POST(
     );
   }
 
+  // Enforce trial page limits
+  const { data: tenant } = await admin
+    .from("tenants")
+    .select("subscription_status, trial_pages_used, trial_pages_limit")
+    .eq("id", auth.tenantId)
+    .single();
+
+  if (
+    tenant?.subscription_status === "trialing" &&
+    tenant.trial_pages_limit != null &&
+    tenant.trial_pages_used >= tenant.trial_pages_limit
+  ) {
+    return NextResponse.json(
+      {
+        error: "Trial page limit exceeded. Please upgrade to continue processing documents.",
+        trial_pages_used: tenant.trial_pages_used,
+        trial_pages_limit: tenant.trial_pages_limit,
+      },
+      { status: 403 }
+    );
+  }
+
   // Update status to processing
   await admin
     .from("documents")
@@ -259,6 +281,30 @@ export async function POST(
           updated_at: now,
         })
         .eq("id", document.batch_id);
+    }
+
+    // Queue for human review if expert-level
+    if (document.service_level === "expert") {
+      await admin.from("review_queue").insert({
+        tenant_id: auth.tenantId,
+        filename: document.filename,
+        original_path: document.storage_path,
+        output_path: remediatedPath,
+        ai_score: scoreAfter ?? 0,
+        page_count: pages,
+        status: "pending",
+        storage_path: document.storage_path,
+      });
+    }
+
+    // Increment trial pages used if tenant is on trial
+    if (tenant?.subscription_status === "trialing") {
+      await admin
+        .from("tenants")
+        .update({
+          trial_pages_used: (tenant.trial_pages_used ?? 0) + pages,
+        })
+        .eq("id", auth.tenantId);
     }
 
     // Re-fetch updated document
