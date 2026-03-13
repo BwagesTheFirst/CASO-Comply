@@ -21,7 +21,7 @@ from supabase import create_client
 
 from auth import validate_api_key, record_usage, update_last_used, enforce_tenant_access
 from convert import is_convertible, convert_to_pdf
-from remediation import analyze_pdf, remediate_pdf_async
+from remediation import analyze_pdf, apply_tag_edits, remediate_pdf_async
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -157,6 +157,7 @@ async def root():
             "POST /api/analyze",
             "POST /api/remediate",
             "POST /api/verify/{file_id}",
+            "POST /api/apply-edits",
             "GET  /api/download/{file_id}",
         ],
     }
@@ -178,6 +179,21 @@ class LicenseUsageRequest(BaseModel):
     hostname: str | None = None
     filename: str | None = None
     remediation_type: str | None = None
+
+
+class TagEdit(BaseModel):
+    type: str
+    text: str = ""
+    page: int
+    mcid: int
+    font_size: float = 0.0
+    bbox: list[float] = []
+    alt_text: str | None = None
+
+
+class ApplyEditsRequest(BaseModel):
+    file_id: str
+    edits: list[TagEdit]
 
 
 class ReviewSubmitResponse(BaseModel):
@@ -442,6 +458,19 @@ async def remediate(
     # Include Gemini verification details when available
     if "verification" in result:
         body["verification"] = result["verification"]
+        # Merge alt texts into Figure tags for frontend display
+        alt_texts = result["verification"].get("alt_texts", {})
+        figure_idx_per_page: dict[int, int] = {}
+        for tag in body["tag_assignments"]:
+            if tag["type"] == "Figure":
+                page_key = tag["page"]  # int key to match Gemini's output
+                page_alts = alt_texts.get(page_key, [])
+                fig_idx = figure_idx_per_page.get(tag["page"], 0)
+                if fig_idx < len(page_alts):
+                    desc = page_alts[fig_idx].get("description", "")
+                    if desc:
+                        tag["alt_text"] = desc
+                figure_idx_per_page[tag["page"]] = fig_idx + 1
 
     # Track usage -- always record, even for anonymous/demo requests
     DEMO_TENANT_ID = "00000000-0000-0000-0000-000000000000"
@@ -504,11 +533,27 @@ async def verify(file_id: str):
         logger.exception("Verification failed for %s", upload_path.name)
         raise HTTPException(status_code=500, detail=f"Verification failed: {exc}") from exc
 
+    # Merge Gemini alt texts into Figure tag assignments for frontend display
+    tags = result["tag_assignments"]
+    if "verification" in result:
+        alt_texts = result["verification"].get("alt_texts", {})
+        figure_idx_per_page: dict[int, int] = {}
+        for tag in tags:
+            if tag["type"] == "Figure":
+                page_key = tag["page"]  # int key to match Gemini's output
+                page_alts = alt_texts.get(page_key, [])
+                fig_idx = figure_idx_per_page.get(tag["page"], 0)
+                if fig_idx < len(page_alts):
+                    desc = page_alts[fig_idx].get("description", "")
+                    if desc:
+                        tag["alt_text"] = desc
+                figure_idx_per_page[tag["page"]] = fig_idx + 1
+
     response = {
         "file_id": file_id,
         "blocks_tagged": result["blocks_tagged"],
         "tag_summary": result.get("tag_summary", {}),
-        "tag_assignments": result["tag_assignments"],
+        "tag_assignments": tags,
         "page_dimensions": result.get("page_dimensions", []),
         "after": {
             "score": result["after"]["score"],
@@ -520,6 +565,90 @@ async def verify(file_id: str):
         response["verification"] = result["verification"]
 
     return response
+
+
+@app.post("/api/apply-edits")
+async def apply_edits(
+    body: ApplyEditsRequest,
+    authorization: str | None = Header(None),
+):
+    """
+    Apply edited tag assignments to a previously remediated PDF.
+
+    Accepts updated tag types (and optional alt text for Figure tags) from the
+    web UI, rebuilds the PDF structure tree with the new assignments, re-scores
+    the document, and returns a download URL with fresh compliance results.
+    """
+    file_id = body.file_id
+
+    # Validate file_id format
+    if not file_id.isalnum() or len(file_id) > 24:
+        raise HTTPException(status_code=400, detail="Invalid file ID")
+
+    # Optional API key authentication + tenant enforcement
+    auth_ctx: dict | None = None
+    if authorization:
+        auth_ctx = validate_api_key(authorization)
+        enforce_tenant_access(auth_ctx["tenant_id"])
+
+    # Find the previously remediated PDF
+    remediated_path = OUTPUT_DIR / f"{file_id}_remediated.pdf"
+    if not remediated_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Remediated file not found -- run remediation first",
+        )
+
+    # Convert Pydantic models to dicts for the remediation engine
+    tag_assignments = [edit.model_dump() for edit in body.edits]
+
+    # Validate tag types
+    valid_types = {"H1", "H2", "H3", "H4", "H5", "H6", "P", "Figure",
+                   "Table", "TR", "TD", "TH", "L", "LI", "Span", "Link"}
+    for tag in tag_assignments:
+        if tag["type"] not in valid_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid tag type '{tag['type']}'. "
+                       f"Must be one of: {', '.join(sorted(valid_types))}",
+            )
+
+    # Apply edits -- overwrites the existing remediated file in place
+    output_path = str(remediated_path)
+    try:
+        after_analysis = apply_tag_edits(
+            pdf_path=output_path,
+            output_path=output_path,
+            tag_assignments=tag_assignments,
+        )
+    except Exception as exc:
+        logger.exception("apply-edits failed for file_id=%s", file_id)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to apply edits: {exc}",
+        ) from exc
+
+    # Build response tag_assignments with truncated text
+    response_tags = [
+        {
+            "type": t["type"],
+            "page": t["page"],
+            "mcid": t["mcid"],
+            "text": t.get("text", "")[:120],
+            "font_size": t.get("font_size", 0),
+            "bbox": t.get("bbox", []),
+        }
+        for t in tag_assignments
+    ]
+
+    return {
+        "download_url": f"/api/download/{file_id}",
+        "after": {
+            "score": after_analysis["score"],
+            "structure": after_analysis["structure"],
+        },
+        "tag_assignments": response_tags,
+    }
 
 
 @app.get("/api/download/{file_id}")

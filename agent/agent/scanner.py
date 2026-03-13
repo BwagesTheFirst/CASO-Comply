@@ -3,9 +3,14 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 from pathlib import Path
 
+from agent.config import sanitize_filename
+
 logger = logging.getLogger(__name__)
+
+_HIPAA_MODE = os.environ.get("CASO_HIPAA_MODE", "").lower() in ("true", "1", "yes")
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".xlsx", ".pptx"}
 
@@ -50,7 +55,8 @@ def scan_folder(folder_path: str) -> list[dict]:
                 "format": EXTENSION_TO_FORMAT[ext],
             })
         except OSError:
-            logger.warning("Could not read file: %s", file_path)
+            logger.warning("Could not read file: %s",
+                          sanitize_filename(file_path.name, _HIPAA_MODE))
 
     logger.info("Found %d documents in %s (%s)",
                 len(results), folder_path,

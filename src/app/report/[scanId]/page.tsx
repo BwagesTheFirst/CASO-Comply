@@ -377,7 +377,7 @@ export default async function ReportPage({
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-sm text-caso-slate">
             CASO Comply can automatically remediate all {typedScan.pdf_count}{" "}
-            documents on your site for full WCAG 2.1 AA and PDF/UA compliance.
+            documents on your site for full WCAG 2.2 AA and PDF/UA compliance.
           </p>
           <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a

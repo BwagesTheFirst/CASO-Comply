@@ -342,6 +342,10 @@ async def verify_and_correct(
     pdf_path: str,
     tag_assignments: list[dict],
     content: dict,
+    *,
+    gemini_provider: str = "standard",
+    gcp_project: str = "",
+    gcp_location: str = "us-central1",
 ) -> dict:
     """Send page images + tags to Gemini 2.5 Flash and return corrections.
 
@@ -355,7 +359,12 @@ async def verify_and_correct(
     """
     # ── Graceful fallback wrapper ────────────────────────────────────
     try:
-        return await _call_gemini(pdf_path, tag_assignments, content)
+        return await _call_gemini(
+            pdf_path, tag_assignments, content,
+            gemini_provider=gemini_provider,
+            gcp_project=gcp_project,
+            gcp_location=gcp_location,
+        )
     except Exception:
         logger.exception("Gemini verification failed -- returning original tags unchanged")
         return {
@@ -370,16 +379,22 @@ async def _call_gemini(
     pdf_path: str,
     tag_assignments: list[dict],
     content: dict,
+    *,
+    gemini_provider: str = "standard",
+    gcp_project: str = "",
+    gcp_location: str = "us-central1",
 ) -> dict:
     """Internal: actually call the Gemini API."""
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY not set")
-
     from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=api_key)
+    if gemini_provider == "vertex":
+        client = genai.Client(vertexai=True, project=gcp_project, location=gcp_location)
+    else:
+        api_key = os.environ.get("GEMINI_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY not set")
+        client = genai.Client(api_key=api_key)
 
     # ── Render pages ─────────────────────────────────────────────────
     logger.info("Rendering PDF pages as images for Gemini verification")
@@ -478,6 +493,10 @@ async def verify_and_correct_office(
     file_path: str,
     structure_data: dict | list,
     format: str,
+    *,
+    gemini_provider: str = "standard",
+    gcp_project: str = "",
+    gcp_location: str = "us-central1",
 ) -> dict:
     """Send rendered Office pages + structure to Gemini for verification.
 
@@ -495,7 +514,12 @@ async def verify_and_correct_office(
     dict with format-specific corrections
     """
     try:
-        return await _call_gemini_office(file_path, structure_data, format)
+        return await _call_gemini_office(
+            file_path, structure_data, format,
+            gemini_provider=gemini_provider,
+            gcp_project=gcp_project,
+            gcp_location=gcp_location,
+        )
     except Exception:
         logger.exception("Gemini verification failed for %s -- returning defaults", format)
         if format == "docx":
@@ -526,21 +550,31 @@ async def _call_gemini_office(
     file_path: str,
     structure_data: dict | list,
     format: str,
+    *,
+    gemini_provider: str = "standard",
+    gcp_project: str = "",
+    gcp_location: str = "us-central1",
 ) -> dict:
     """Internal: call Gemini API for Office file verification."""
-    api_key = os.environ.get("GEMINI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY not set")
-
     from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=api_key)
+    if gemini_provider == "vertex":
+        client = genai.Client(vertexai=True, project=gcp_project, location=gcp_location)
+    else:
+        api_key = os.environ.get("GEMINI_API_KEY", "")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY not set")
+        client = genai.Client(api_key=api_key)
 
-    # Render pages via LibreOffice temp PDF
-    logger.info("Rendering %s as images for Gemini verification", format.upper())
-    page_images = await asyncio.to_thread(_render_office_as_images, file_path)
-    logger.info("Rendered %d page images", len(page_images))
+    # Render pages via LibreOffice temp PDF (graceful fallback if unavailable)
+    page_images: list[str] = []
+    try:
+        logger.info("Rendering %s as images for Gemini verification", format.upper())
+        page_images = await asyncio.to_thread(_render_office_as_images, file_path)
+        logger.info("Rendered %d page images", len(page_images))
+    except (FileNotFoundError, RuntimeError) as exc:
+        logger.warning("Could not render images (LibreOffice unavailable: %s) -- using text-only mode", exc)
 
     # Build request parts
     parts: list[dict] = []

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from agent.scanner import scan_folder
 from agent.processor import Processor
 from agent.license import LicenseClient
 from agent.api import create_app
+from agent.purge import cleanup_temp_files, run_purge_cycle
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,6 +26,9 @@ logger = logging.getLogger("caso-agent")
 
 async def _fetch_completed_reviews(config, db, license_client):
     """Poll for completed human reviews and download corrected files."""
+    if config.hipaa_mode:
+        logger.debug("HIPAA mode — skipping cloud review polling")
+        return
     if not config.license_key or not license_client:
         return
 
@@ -113,11 +118,32 @@ async def run_scan_cycle(config, db: Database, processor: Processor):
     # Poll for completed human reviews
     await _fetch_completed_reviews(config, db, processor.license_client)
 
+    # Run data retention purge cycle
+    await run_purge_cycle(config, db)
+
 async def main():
     config_path = sys.argv[1] if len(sys.argv) > 1 else "/app/config.yaml"
     config = load_config(config_path)
 
     logger.info("CASO Comply Agent starting (mode=%s)", config.mode)
+
+    if config.hipaa_mode:
+        logger.info("HIPAA mode ACTIVE — no filenames, PDFs, or usage data will be sent to cloud")
+        if (config.purge_originals_after_hours == 0
+                and config.purge_remediated_after_hours == 0
+                and config.purge_db_paths_after_days == 0):
+            logger.warning(
+                "HIPAA mode is ON but all data retention purge values are 0 (disabled). "
+                "Consider setting CASO_PURGE_ORIGINALS_HOURS, CASO_PURGE_REMEDIATED_HOURS, "
+                "and/or CASO_PURGE_DB_PATHS_DAYS for compliance."
+            )
+
+    if config.cleanup_on_startup:
+        cleanup_temp_files()
+
+    # Bridge config gemini_api_key to env var used by gemini_verify.py
+    if config.gemini_api_key and not os.environ.get("GEMINI_API_KEY"):
+        os.environ["GEMINI_API_KEY"] = config.gemini_api_key
 
     # Store DB alongside output directory
     db_dir = Path(config.output_dir).parent

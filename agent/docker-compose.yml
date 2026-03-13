@@ -19,6 +19,18 @@ services:
       - CASO_PHONE_HOME=false
       # Scan schedule (default: every hour)
       - CASO_CRON=0 * * * *
+      # ── HIPAA Mode (uncomment to enable) ──
+      # - CASO_HIPAA_MODE=true
+      # ── Data Retention / Auto-Purge (uncomment to enable) ──
+      # - CASO_PURGE_ORIGINALS_HOURS=24
+      # - CASO_PURGE_REMEDIATED_HOURS=168
+      # - CASO_PURGE_DB_PATHS_DAYS=90
+      # - CASO_CLEANUP_ON_STARTUP=true
+      # ── Vertex AI Gemini (uncomment to use instead of API key) ──
+      # - CASO_GEMINI_PROVIDER=vertex
+      # - CASO_GCP_PROJECT=your-gcp-project-id
+      # - CASO_GCP_LOCATION=us-central1
+      # - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-credentials.json
     ports:
       - "9090:9090"
     volumes:
@@ -29,6 +41,8 @@ services:
       - ./remediated:/data/output
       # Persistent data (scan history, settings)
       - caso-data:/app/data
+      # ── GCP credentials for Vertex AI (uncomment if using CASO_GEMINI_PROVIDER=vertex) ──
+      # - ./gcp-credentials.json:/app/gcp-credentials.json:ro
     restart: unless-stopped
 
 volumes:

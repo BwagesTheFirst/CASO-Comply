@@ -66,6 +66,43 @@ max_workers: 1
 # Get one at https://aistudio.google.com/apikey
 gemini_api_key: ""
 
+# ── Gemini Provider ──────────────────────────────────────────
+# Which Gemini API endpoint to use:
+#   standard → Google AI Studio (default). Uses gemini_api_key above.
+#   vertex   → Vertex AI on Google Cloud. Auth via GOOGLE_APPLICATION_CREDENTIALS
+#              env var (service account JSON). No API key needed.
+# gemini_provider: standard
+# gcp_project: ""           # Required when gemini_provider is "vertex"
+# gcp_location: us-central1 # GCP region for Vertex AI
+
+# ── HIPAA Mode ──────────────────────────────────────────────
+# When enabled:
+#   - No filenames, PDFs, or usage data are sent to CASO cloud
+#   - Filenames are hashed in all log messages
+#   - API endpoints require authentication
+#   - CORS is restricted to localhost only
+# hipaa_mode: false
+
+# ── Data Retention / Auto-Purge (HIPAA) ──────────────────────
+# All values default to 0 (disabled). Set to enable automatic
+# cleanup of documents for HIPAA compliance.
+
+# Delete original input files N hours after successful processing.
+# 0 = never delete originals.
+# purge_originals_after_hours: 24
+
+# Delete remediated output files N hours after creation.
+# 0 = never delete remediated files.
+# purge_remediated_after_hours: 168
+
+# Hash file paths in DB records older than N days.
+# Preserves audit trail (scores, dates) while removing actual paths.
+# 0 = never hash paths.
+# purge_db_paths_after_days: 90
+
+# Remove orphaned temp files on startup (default: true)
+# cleanup_on_startup: true
+
 # ── Advanced ─────────────────────────────────────────────────
 # CASO API endpoint (don't change unless directed by support)
 caso_api_url: https://caso-comply-api.onrender.com

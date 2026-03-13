@@ -387,6 +387,10 @@ async def remediate_docx_async(
     file_path: str,
     output_path: str | None = None,
     verify: bool = True,
+    *,
+    gemini_provider: str = "standard",
+    gcp_project: str = "",
+    gcp_location: str = "us-central1",
 ) -> dict:
     """Full Word document remediation pipeline."""
     file_path = str(file_path)
@@ -432,6 +436,9 @@ async def remediate_docx_async(
             file_path=file_path,
             structure_data=tag_assignments,
             format="docx",
+            gemini_provider=gemini_provider,
+            gcp_project=gcp_project,
+            gcp_location=gcp_location,
         )
 
         verification_info = {

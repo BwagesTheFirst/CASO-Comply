@@ -73,9 +73,15 @@ def _get_client_ip(request: Request) -> str:
 def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
     app = FastAPI(title="CASO Comply Agent", version="0.1.0")
 
+    # In HIPAA mode, restrict CORS to localhost only
+    cors_origins = (
+        ["http://localhost:*", "http://127.0.0.1:*"]
+        if config.hipaa_mode
+        else ["*"]
+    )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -83,18 +89,27 @@ def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
     # Store scheduler on app state for access in endpoints
     app.state.scheduler = scheduler
 
-    # --- Public read-only endpoints ---
+    # --- Helper: conditionally require auth in HIPAA mode ---
+
+    def _hipaa_auth(authorization: str | None):
+        """In HIPAA mode, require auth; otherwise allow public access."""
+        if config.hipaa_mode:
+            _require_auth(authorization)
+
+    # --- Public read-only endpoints (auth-gated in HIPAA mode) ---
 
     @app.get("/api/health")
     async def health():
-        return {"status": "ok", "mode": config.mode}
+        return {"status": "ok", "mode": config.mode, "hipaa_mode": config.hipaa_mode}
 
     @app.get("/api/stats")
-    async def stats():
+    async def stats(authorization: str | None = Header(default=None)):
+        _hipaa_auth(authorization)
         return await db.get_stats()
 
     @app.get("/api/config")
-    async def get_config():
+    async def get_config(authorization: str | None = Header(default=None)):
+        _hipaa_auth(authorization)
         return {
             "mode": config.mode,
             "scan_paths": config.scan_paths,
@@ -105,14 +120,20 @@ def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
             "output_mode": config.output_mode,
             "max_workers": config.max_workers,
             "phone_home": config.phone_home,
+            "hipaa_mode": config.hipaa_mode,
         }
 
     @app.get("/api/pdfs")
-    async def list_pdfs(limit: int = 100, offset: int = 0):
+    async def list_pdfs(
+        limit: int = 100, offset: int = 0,
+        authorization: str | None = Header(default=None),
+    ):
+        _hipaa_auth(authorization)
         return await db.get_all(limit=limit, offset=offset)
 
     @app.get("/api/pdfs/pending")
-    async def pending_pdfs():
+    async def pending_pdfs(authorization: str | None = Header(default=None)):
+        _hipaa_auth(authorization)
         return await db.get_pending()
 
     @app.post("/api/scan/trigger")

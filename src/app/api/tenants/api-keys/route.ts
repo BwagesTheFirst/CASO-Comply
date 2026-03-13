@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Generate a secure API key
-  const rawKey = `caso_${crypto.randomBytes(32).toString("hex")}`;
-  const prefix = rawKey.slice(0, 12);
+  const rawKey = `caso_ak_${crypto.randomBytes(20).toString("hex")}`;
+  const prefix = rawKey.slice(0, 16);
   const keyHash = crypto.createHash("sha256").update(rawKey).digest("hex");
 
   const admin = createAdminClient();

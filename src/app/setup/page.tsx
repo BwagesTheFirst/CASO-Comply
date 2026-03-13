@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import MobileNav from "@/components/MobileNav";
+import HipaaConfig from "@/components/HipaaConfig";
 
 function TerminalBlock({
   title,
@@ -386,6 +387,9 @@ services:
             </TerminalBlock>
           </div>
         </section>
+
+        {/* HIPAA Compliance Mode */}
+        <HipaaConfig />
 
         {/* Pricing Tiers */}
         <section

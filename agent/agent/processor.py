@@ -4,13 +4,15 @@ from __future__ import annotations
 import logging
 import platform
 import shutil
+import time
 from pathlib import Path
 
 import httpx
 
-from agent.config import AgentConfig
+from agent.config import AgentConfig, sanitize_filename
 from agent.db import Database
 from agent.license import LicenseClient
+from compliance_certificate import generate_certificate
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,9 @@ class Processor:
         Always attempts to report — page counting is billing, not telemetry.
         Failures are logged as warnings and never block processing.
         """
+        if self.config.hipaa_mode:
+            logger.debug("HIPAA mode — skipping cloud usage report")
+            return
         if not self.config.license_key:
             logger.debug("No license key configured — skipping usage report")
             return
@@ -53,19 +58,24 @@ class Processor:
                     data = resp.json()
                     logger.info(
                         "Usage reported for %s (%d pages). Pages remaining: %s",
-                        filename, page_count, data.get("pages_remaining", "unknown"),
+                        sanitize_filename(filename, self.config.hipaa_mode),
+                        page_count, data.get("pages_remaining", "unknown"),
                     )
                 else:
                     logger.warning(
                         "Usage report returned %d: %s", resp.status_code, resp.text,
                     )
         except Exception:
-            logger.warning("Failed to report usage for %s — will continue", filename)
+            logger.warning("Failed to report usage for %s — will continue",
+                          sanitize_filename(filename, self.config.hipaa_mode))
 
     async def _submit_for_review(
         self, pdf_path: str, output_path: str, ai_score: int, page_count: int,
     ) -> bool:
         """Upload a low-scoring file to CASO for human review. Returns True on success."""
+        if self.config.hipaa_mode:
+            logger.debug("HIPAA mode — skipping cloud review submission")
+            return False
         if not self.config.license_key:
             logger.debug("No license key — skipping review submission")
             return False
@@ -88,17 +98,20 @@ class Processor:
                     data = resp.json()
                     logger.info(
                         "Submitted %s for human review (score %d) → review_id=%s",
-                        Path(pdf_path).name, ai_score, data.get("review_id"),
+                        sanitize_filename(Path(pdf_path).name, self.config.hipaa_mode),
+                        ai_score, data.get("review_id"),
                     )
                     return True
                 else:
                     logger.warning(
                         "Review submission failed for %s: %d %s",
-                        Path(pdf_path).name, resp.status_code, resp.text,
+                        sanitize_filename(Path(pdf_path).name, self.config.hipaa_mode),
+                        resp.status_code, resp.text,
                     )
                     return False
         except Exception:
-            logger.warning("Failed to submit %s for review — will retry next cycle", Path(pdf_path).name)
+            logger.warning("Failed to submit %s for review — will retry next cycle",
+                          sanitize_filename(Path(pdf_path).name, self.config.hipaa_mode))
             return False
 
     async def process_one(self, file_path: str, format: str = "pdf") -> dict:
@@ -109,7 +122,8 @@ class Processor:
             else:
                 return await self._process_local(file_path, format)
         except Exception as e:
-            logger.exception("Failed to process %s", file_path)
+            logger.exception("Failed to process %s",
+                             sanitize_filename(Path(file_path).name, self.config.hipaa_mode))
             error_msg = str(e)
             await self.db.update_result(
                 path=file_path, status="failed", error_message=error_msg,
@@ -121,28 +135,51 @@ class Processor:
         output_path = self._output_path(file_path)
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        # Determine AI verification based on plan tier
+        # Determine AI verification based on plan tier or features
         plan_name = self.license_client.plan_name if self.license_client else "Standard"
-        verify = plan_name in ("AI Verified", "Human Review")
+        features = self.license_client.features if self.license_client else {}
+        verify = plan_name in ("AI Verified", "Human Review", "Enterprise") or features.get("verify", False)
+
+        # If Gemini key is configured but plan is unknown (offline mode), enable AI
+        if not verify and self.config.gemini_api_key and plan_name == "unknown":
+            verify = True
+            logger.info("Gemini key configured — enabling AI verification (offline mode)")
 
         if not verify:
             logger.info("Plan '%s' — standard remediation (no AI)", plan_name)
 
+        # Build provider kwargs for Gemini client initialization
+        provider_kwargs = {
+            "gemini_provider": self.config.gemini_provider,
+            "gcp_project": self.config.gcp_project,
+            "gcp_location": self.config.gcp_location,
+        }
+
         # Route to format-specific remediation
+        t0 = time.monotonic()
         if format == "pdf":
             from remediation import remediate_pdf_async
-            result = await remediate_pdf_async(file_path, output_path, verify=verify)
+            result = await remediate_pdf_async(
+                file_path, output_path, verify=verify, **provider_kwargs,
+            )
         elif format == "docx":
             from remediation_docx import remediate_docx_async
-            result = await remediate_docx_async(file_path, output_path, verify=verify)
+            result = await remediate_docx_async(
+                file_path, output_path, verify=verify, **provider_kwargs,
+            )
         elif format == "xlsx":
             from remediation_xlsx import remediate_xlsx_async
-            result = await remediate_xlsx_async(file_path, output_path, verify=verify)
+            result = await remediate_xlsx_async(
+                file_path, output_path, verify=verify, **provider_kwargs,
+            )
         elif format == "pptx":
             from remediation_pptx import remediate_pptx_async
-            result = await remediate_pptx_async(file_path, output_path, verify=verify)
+            result = await remediate_pptx_async(
+                file_path, output_path, verify=verify, **provider_kwargs,
+            )
         else:
             raise ValueError(f"Unsupported format: {format}")
+        processing_time = time.monotonic() - t0
 
         before_score = result["before"]["score"]["score"]
         after_score = result["after"]["score"]["score"]
@@ -161,13 +198,48 @@ class Processor:
             needs_review = True
             logger.warning(
                 "%s %s flagged for human review: after_score=%d (below %d)",
-                format.upper(), Path(file_path).name, after_score, threshold,
+                format.upper(),
+                sanitize_filename(Path(file_path).name, self.config.hipaa_mode),
+                after_score, threshold,
             )
         elif after_score < threshold:
             logger.warning(
                 "%s %s has low score after remediation: after_score=%d",
-                format.upper(), Path(file_path).name, after_score,
+                format.upper(),
+                sanitize_filename(Path(file_path).name, self.config.hipaa_mode),
+                after_score,
             )
+
+        # --- Generate compliance certificate ---
+        org_name = (
+            self.license_client._data.get("org", "Local Processing")
+            if self.license_client
+            else "Local Processing"
+        )
+        verification_info = None
+        v = result.get("verification")
+        if verify and v:
+            verification_info = {
+                "model": "gemini-2.5-flash",
+                "score": v.get("verification_score"),
+                "issues": v.get("issues_found", []),
+            }
+        try:
+            generate_certificate(
+                original_path=file_path,
+                remediated_path=output_path,
+                format=format,
+                before_analysis=result["before"],
+                after_analysis=result["after"],
+                remediation_type=remediation_type,
+                verification_info=verification_info,
+                org_name=org_name,
+                plan_name=plan_name,
+                processing_time=processing_time,
+            )
+        except Exception:
+            logger.warning("Certificate generation failed for %s — continuing",
+                          sanitize_filename(Path(file_path).name, self.config.hipaa_mode))
 
         if self.config.output_mode == "overwrite":
             shutil.copy2(output_path, file_path)

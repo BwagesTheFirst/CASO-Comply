@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -19,9 +20,14 @@ import pdfplumber
 import pikepdf
 from pikepdf import Array, Dictionary, Name, String
 
+from agent.config import sanitize_filename
 from gemini_verify import verify_and_correct
 
 logger = logging.getLogger(__name__)
+
+# Module-level HIPAA flag — set once from env so remediation functions
+# can sanitize log output without needing a config reference.
+_HIPAA_MODE = os.environ.get("CASO_HIPAA_MODE", "").lower() in ("true", "1", "yes")
 
 
 # ---------------------------------------------------------------------------
@@ -133,6 +139,20 @@ def extract_content(pdf_path: str, max_pages: int = 50) -> dict:
                 })
                 content["total_images"] += 1
 
+        # Also detect XObject images that don't appear as block type 1
+        xobj_images = page.get_images(full=True)
+        if xobj_images and not page_data["images"]:
+            for img_info in xobj_images:
+                img_width = img_info[2]
+                img_height = img_info[3]
+                if img_width > 50 and img_height > 50:
+                    page_data["images"].append({
+                        "bbox": [0, 0, float(page.rect.width), float(page.rect.height)],
+                        "width": img_width,
+                        "height": img_height,
+                    })
+                    content["total_images"] += 1
+
         content["pages"].append(page_data)
 
     doc.close()
@@ -217,12 +237,18 @@ def compute_score(structure: dict, content: dict, tables: dict) -> dict:
         },
     }
 
-    # Image alt text -- conservative: if tagged we give partial credit
+    # Image alt text -- actually verify /Alt on Figure StructElems
     if content["total_images"] > 0:
+        alt_text_passed = False
+        if structure["has_struct_tree"]:
+            alt_text_passed = _check_figure_alt_texts(structure.get("file", ""))
         checks["alt_text"] = {
-            "passed": structure["tagged"],
+            "passed": alt_text_passed,
             "weight": 10,
-            "description": "Images may have alt text (tagged PDF)",
+            "description": (
+                "Figure elements have alt text" if alt_text_passed
+                else "Images found but Figure elements lack /Alt attributes"
+            ),
         }
     else:
         checks["alt_text"] = {
@@ -231,12 +257,18 @@ def compute_score(structure: dict, content: dict, tables: dict) -> dict:
             "description": "No images -- alt text not needed",
         }
 
-    # Table headers
+    # Table headers -- actually verify TH children in Table StructElems
     if tables["tables_found"] > 0:
+        th_passed = False
+        if structure["has_struct_tree"]:
+            th_passed = _check_table_headers(structure.get("file", ""))
         checks["table_headers"] = {
-            "passed": structure["tagged"],
+            "passed": th_passed,
             "weight": 10,
-            "description": "Tables may have proper headers (tagged PDF)",
+            "description": (
+                "Tables have TH header elements" if th_passed
+                else "Tables detected but no TH elements in structure tree"
+            ),
         }
     else:
         checks["table_headers"] = {
@@ -261,6 +293,69 @@ def compute_score(structure: dict, content: dict, tables: dict) -> dict:
             "F"
         ),
     }
+
+
+def _walk_struct_elems(node, tag_name: str) -> list:
+    """Recursively collect StructElems whose /S matches tag_name."""
+    results = []
+    s = node.get("/S")
+    if s is not None and str(s) == f"/{tag_name}":
+        results.append(node)
+    kids = node.get("/K")
+    if kids is not None:
+        if isinstance(kids, Array):
+            for child in kids:
+                if isinstance(child, Dictionary) or hasattr(child, "get"):
+                    try:
+                        results.extend(_walk_struct_elems(child, tag_name))
+                    except Exception:
+                        pass
+        elif isinstance(kids, Dictionary) or hasattr(kids, "get"):
+            try:
+                results.extend(_walk_struct_elems(kids, tag_name))
+            except Exception:
+                pass
+    return results
+
+
+def _check_figure_alt_texts(pdf_path: str) -> bool:
+    """Return True if at least one Figure StructElem has an /Alt attribute."""
+    if not pdf_path:
+        return False
+    try:
+        with pikepdf.open(pdf_path) as pdf:
+            struct_tree = pdf.Root.get("/StructTreeRoot")
+            if not struct_tree:
+                return False
+            figures = _walk_struct_elems(struct_tree, "Figure")
+            if not figures:
+                return False
+            # Pass if at least one Figure has /Alt
+            return any(fig.get("/Alt") is not None for fig in figures)
+    except Exception:
+        return False
+
+
+def _check_table_headers(pdf_path: str) -> bool:
+    """Return True if at least one Table StructElem contains a TH child."""
+    if not pdf_path:
+        return False
+    try:
+        with pikepdf.open(pdf_path) as pdf:
+            struct_tree = pdf.Root.get("/StructTreeRoot")
+            if not struct_tree:
+                return False
+            tables = _walk_struct_elems(struct_tree, "Table")
+            if not tables:
+                return False
+            # Check if any table has TH descendants
+            for table in tables:
+                th_elems = _walk_struct_elems(table, "TH")
+                if th_elems:
+                    return True
+            return False
+    except Exception:
+        return False
 
 
 def analyze_pdf(file_path: str) -> dict:
@@ -371,6 +466,42 @@ def _add_metadata(pdf: pikepdf.Pdf, title: str, lang: str = "en-US"):
     with pdf.open_metadata() as meta:
         meta["dc:title"] = title
         meta["dc:language"] = [lang]
+        meta["pdfuaid:part"] = "1"
+
+    # Ensure the pdfuaid namespace is in the XMP packet
+    # pikepdf's open_metadata may not register the pdfuaid namespace,
+    # so we inject it directly into the XMP stream.
+    if "/Metadata" in pdf.Root:
+        xmp_stream = pdf.Root["/Metadata"]
+        xmp_bytes = xmp_stream.read_bytes()
+        xmp_str = xmp_bytes.decode("utf-8", errors="replace")
+
+        pdfuaid_ns = 'xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"'
+        pdfuaid_element = "<pdfuaid:part>1</pdfuaid:part>"
+
+        if "pdfuaid:part" not in xmp_str:
+            # Add namespace and element before closing </rdf:Description>
+            # Find the last </rdf:Description> and inject before it
+            insertion_point = xmp_str.rfind("</rdf:Description>")
+            if insertion_point != -1:
+                # Find the opening <rdf:Description that precedes this closing tag
+                # and add namespace there
+                desc_start = xmp_str.rfind("<rdf:Description", 0, insertion_point)
+                if desc_start != -1:
+                    # Find the > that closes this opening tag
+                    tag_end = xmp_str.find(">", desc_start)
+                    if tag_end != -1:
+                        # Insert a new rdf:Description block with pdfuaid
+                        new_block = (
+                            f'\n    <rdf:Description rdf:about="" {pdfuaid_ns}>'
+                            f"\n      {pdfuaid_element}"
+                            f"\n    </rdf:Description>"
+                        )
+                        # Insert after the last </rdf:Description>
+                        close_end = insertion_point + len("</rdf:Description>")
+                        xmp_str = xmp_str[:close_end] + new_block + xmp_str[close_end:]
+
+            xmp_stream.write(xmp_str.encode("utf-8"))
 
     pdf.docinfo[Name("/Title")] = String(title)
 
@@ -383,17 +514,48 @@ def _add_metadata(pdf: pikepdf.Pdf, title: str, lang: str = "en-US"):
     })
 
 
-def _build_structure_tree(pdf: pikepdf.Pdf, tag_assignments: list[dict]):
+def _build_structure_tree(
+    pdf: pikepdf.Pdf,
+    tag_assignments: list[dict],
+    alt_texts: dict | None = None,
+):
     """Build StructTreeRoot with Document -> heading/paragraph elements."""
     struct_elems = []
 
+    # Build a lookup: page_number -> list of alt text descriptions
+    page_alt_texts: dict[int, list[str]] = {}
+    if alt_texts:
+        for page_key, alt_list in alt_texts.items():
+            page_num = int(page_key)
+            page_alt_texts[page_num] = [
+                item.get("description", "") for item in alt_list
+            ]
+
+    # Track how many Figure elements we've seen per page for alt text indexing
+    figure_counters: dict[int, int] = defaultdict(int)
+
     for tag in tag_assignments:
-        elem = pdf.make_indirect(Dictionary({
+        elem_dict = {
             "/Type": Name("/StructElem"),
             "/S": Name(f"/{tag['type']}"),
             "/Pg": pdf.pages[tag["page"]].obj,
             "/K": tag["mcid"],
-        }))
+        }
+
+        # Set /Alt on Figure elements if alt text is available
+        if tag["type"] == "Figure":
+            page_num = tag["page"]
+            fig_idx = figure_counters[page_num]
+            figure_counters[page_num] += 1
+
+            alts = page_alt_texts.get(page_num, [])
+            if fig_idx < len(alts) and alts[fig_idx]:
+                elem_dict["/Alt"] = String(alts[fig_idx])
+            elif tag.get("alt_text"):
+                # Fallback: alt_text directly on the tag assignment
+                elem_dict["/Alt"] = String(tag["alt_text"])
+
+        elem = pdf.make_indirect(Dictionary(elem_dict))
         struct_elems.append(elem)
 
     doc_elem = pdf.make_indirect(Dictionary({
@@ -567,6 +729,10 @@ async def remediate_pdf_async(
     file_path: str,
     output_path: str | None = None,
     verify: bool = True,
+    *,
+    gemini_provider: str = "standard",
+    gcp_project: str = "",
+    gcp_location: str = "us-central1",
 ) -> dict:
     """
     Full remediation pipeline (async, supports Gemini verification):
@@ -582,7 +748,8 @@ async def remediate_pdf_async(
         p = Path(file_path)
         output_path = str(p.parent / f"{p.stem}_remediated{p.suffix}")
 
-    logger.info("Analyzing input PDF: %s", file_path)
+    logger.info("Analyzing input PDF: %s",
+                 sanitize_filename(Path(file_path).name, _HIPAA_MODE))
     before_analysis = analyze_pdf(file_path)
 
     logger.info("Extracting content for classification")
@@ -607,6 +774,9 @@ async def remediate_pdf_async(
             pdf_path=file_path,
             tag_assignments=tag_assignments,
             content=content,
+            gemini_provider=gemini_provider,
+            gcp_project=gcp_project,
+            gcp_location=gcp_location,
         )
         verification_info = {
             "issues_found": verification_result["issues_found"],
@@ -642,6 +812,33 @@ async def remediate_pdf_async(
                 t["mcid"] = mcid_counters[t["page"]]
                 mcid_counters[t["page"]] += 1
 
+    # ── Add Figure tags for image blocks ─────────────────────────────
+    # Images are not included by _classify_blocks, so we add them here.
+    mcid_counters_fig: dict[int, int] = defaultdict(int)
+    for t in tag_assignments:
+        mcid_counters_fig[t["page"]] = max(
+            mcid_counters_fig[t["page"]], t["mcid"] + 1
+        )
+
+    for page_data in content["pages"]:
+        page_num = page_data["page"]
+        for img in page_data["images"]:
+            mcid = mcid_counters_fig[page_num]
+            mcid_counters_fig[page_num] += 1
+            tag_assignments.append({
+                "type": "Figure",
+                "page": page_num,
+                "mcid": mcid,
+                "text": "",
+                "bbox": img["bbox"],
+                "font_size": 0,
+            })
+
+    # Extract alt_texts from verification result
+    alt_texts: dict | None = None
+    if verification_info is not None:
+        alt_texts = verification_info.get("alt_texts")
+
     # Derive title from first H1
     title = "Untitled Document"
     for tag in tag_assignments:
@@ -656,7 +853,7 @@ async def remediate_pdf_async(
     pdf = pikepdf.open(file_path)
 
     _add_metadata(pdf, title)
-    _build_structure_tree(pdf, tag_assignments)
+    _build_structure_tree(pdf, tag_assignments, alt_texts=alt_texts)
 
     # Inject marked content per page
     pages_tags: dict[int, list[dict]] = defaultdict(list)
@@ -669,7 +866,8 @@ async def remediate_pdf_async(
     pdf.save(output_path)
     pdf.close()
 
-    logger.info("Saved remediated PDF: %s", output_path)
+    logger.info("Saved remediated PDF: %s",
+                 sanitize_filename(Path(output_path).name, _HIPAA_MODE))
 
     after_analysis = analyze_pdf(output_path)
 
@@ -708,6 +906,97 @@ async def remediate_pdf_async(
         result["verification"] = verification_info
 
     return result
+
+
+def apply_tag_edits(
+    pdf_path: str,
+    output_path: str,
+    tag_assignments: list[dict],
+) -> dict:
+    """
+    Apply edited tag assignments to an existing PDF.
+
+    Opens the PDF with pikepdf, removes any existing structure tree,
+    rebuilds it with the new tag assignments (using _build_structure_tree
+    and _inject_marked_content), and saves to output_path.
+
+    Args:
+        pdf_path: Path to the source PDF (typically a previously remediated file).
+        output_path: Where to save the re-tagged PDF.
+        tag_assignments: List of dicts, each with keys:
+            type (str), text (str), page (int), mcid (int),
+            font_size (float), bbox ([x0,y0,x1,y1]).
+            Figure tags may also include alt_text (str).
+
+    Returns:
+        A dict with the analysis result of the newly saved PDF.
+    """
+    logger.info("Applying %d tag edits to %s", len(tag_assignments),
+                 sanitize_filename(Path(pdf_path).name, _HIPAA_MODE))
+
+    # Re-assign MCIDs sequentially per page to ensure consistency
+    mcid_counters: dict[int, int] = defaultdict(int)
+    for tag in tag_assignments:
+        tag["mcid"] = mcid_counters[tag["page"]]
+        mcid_counters[tag["page"]] += 1
+
+    # Derive title from first H1
+    title = "Untitled Document"
+    for tag in tag_assignments:
+        if tag["type"] == "H1":
+            title = tag.get("text", "")[:256]
+            break
+
+    pdf = pikepdf.open(pdf_path)
+
+    # Remove existing structure tree so we can rebuild cleanly
+    if "/StructTreeRoot" in pdf.Root:
+        del pdf.Root[Name("/StructTreeRoot")]
+    if "/MarkInfo" in pdf.Root:
+        del pdf.Root[Name("/MarkInfo")]
+
+    # Clear existing StructParents and marked content from pages
+    for page in pdf.pages:
+        if "/StructParents" in page:
+            del page[Name("/StructParents")]
+
+    # Set metadata and rebuild structure
+    _add_metadata(pdf, title)
+
+    # Build alt_texts dict from tag assignments that have alt_text
+    alt_texts_for_tree: dict[int, list[dict]] = defaultdict(list)
+    for tag in tag_assignments:
+        if tag["type"] == "Figure" and tag.get("alt_text"):
+            alt_texts_for_tree[tag["page"]].append(
+                {"description": tag["alt_text"]}
+            )
+
+    # Use alt_texts if any were provided
+    alt_texts_param = (
+        {str(k): v for k, v in alt_texts_for_tree.items()}
+        if alt_texts_for_tree
+        else None
+    )
+
+    _build_structure_tree(pdf, tag_assignments, alt_texts=alt_texts_param)
+
+    # Inject marked content per page
+    pages_tags: dict[int, list[dict]] = defaultdict(list)
+    for tag in tag_assignments:
+        pages_tags[tag["page"]].append(tag)
+    for page_num, ptags in pages_tags.items():
+        ptags.sort(key=lambda t: t["mcid"])
+        _inject_marked_content(pdf, page_num, ptags)
+
+    pdf.save(output_path)
+    pdf.close()
+
+    logger.info("Saved edited PDF: %s",
+                 sanitize_filename(Path(output_path).name, _HIPAA_MODE))
+
+    # Re-analyze the output
+    after_analysis = analyze_pdf(output_path)
+    return after_analysis
 
 
 def remediate_pdf(

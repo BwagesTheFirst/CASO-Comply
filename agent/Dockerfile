@@ -30,6 +30,7 @@ COPY remediation_docx.py .
 COPY remediation_xlsx.py .
 COPY remediation_pptx.py .
 COPY gemini_verify.py .
+COPY compliance_certificate.py .
 COPY entrypoint.sh .
 COPY config.example.yaml ./config.yaml
 # Keep legacy crawler available

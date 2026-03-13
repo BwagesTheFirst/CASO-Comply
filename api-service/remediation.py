@@ -133,6 +133,24 @@ def extract_content(pdf_path: str, max_pages: int = 50) -> dict:
                 })
                 content["total_images"] += 1
 
+        # Also detect XObject images that don't appear as block type 1
+        xobj_images = page.get_images(full=True)
+        if xobj_images and not page_data["images"]:
+            # No inline image blocks found, but XObject images exist
+            for img_info in xobj_images:
+                # img_info: (xref, smask, width, height, bpc, colorspace, alt, name, filter)
+                img_width = img_info[2]
+                img_height = img_info[3]
+                # Use page dimensions as bbox estimate since XObjects lack position info
+                # Skip tiny images (likely artifacts/spacers)
+                if img_width > 50 and img_height > 50:
+                    page_data["images"].append({
+                        "bbox": [0, 0, float(page.rect.width), float(page.rect.height)],
+                        "width": img_width,
+                        "height": img_height,
+                    })
+                    content["total_images"] += 1
+
         content["pages"].append(page_data)
 
     doc.close()
@@ -383,9 +401,12 @@ def _add_metadata(pdf: pikepdf.Pdf, title: str, lang: str = "en-US"):
     })
 
 
-def _build_structure_tree(pdf: pikepdf.Pdf, tag_assignments: list[dict]):
+def _build_structure_tree(pdf: pikepdf.Pdf, tag_assignments: list[dict], alt_texts: dict | None = None):
     """Build StructTreeRoot with Document -> heading/paragraph elements."""
     struct_elems = []
+
+    # Track figure index per page for alt_text matching
+    figure_idx_per_page: dict[int, int] = defaultdict(int)
 
     for tag in tag_assignments:
         elem = pdf.make_indirect(Dictionary({
@@ -394,6 +415,19 @@ def _build_structure_tree(pdf: pikepdf.Pdf, tag_assignments: list[dict]):
             "/Pg": pdf.pages[tag["page"]].obj,
             "/K": tag["mcid"],
         }))
+        # Inject /Alt for Figure tags
+        if tag["type"] == "Figure" and alt_texts:
+            page_key = tag["page"]  # int key to match Gemini's output
+            page_alts = alt_texts.get(page_key, [])
+            fig_idx = figure_idx_per_page[tag["page"]]
+            if fig_idx < len(page_alts):
+                desc = page_alts[fig_idx].get("description", "")
+                if desc:
+                    elem[Name("/Alt")] = String(desc)
+            figure_idx_per_page[tag["page"]] += 1
+        # Also check inline alt_text from tag dict (from apply_tag_edits)
+        elif tag["type"] == "Figure" and tag.get("alt_text"):
+            elem[Name("/Alt")] = String(tag["alt_text"])
         struct_elems.append(elem)
 
     doc_elem = pdf.make_indirect(Dictionary({
@@ -642,6 +676,32 @@ async def remediate_pdf_async(
                 t["mcid"] = mcid_counters[t["page"]]
                 mcid_counters[t["page"]] += 1
 
+    # ── Create Figure tags for images ─────────────────────────────────
+    mcid_counters_fig: dict[int, int] = defaultdict(int)
+    for t in tag_assignments:
+        mcid_counters_fig[t["page"]] = max(
+            mcid_counters_fig[t["page"]], t["mcid"] + 1
+        )
+
+    for page_data in content["pages"]:
+        page_num = page_data["page"]
+        for img in page_data["images"]:
+            mcid = mcid_counters_fig[page_num]
+            mcid_counters_fig[page_num] += 1
+            tag_assignments.append({
+                "type": "Figure",
+                "page": page_num,
+                "mcid": mcid,
+                "text": "",
+                "bbox": img["bbox"],
+                "font_size": 0,
+            })
+
+    # Extract alt_texts from verification result
+    alt_texts: dict | None = None
+    if verification_info is not None:
+        alt_texts = verification_info.get("alt_texts")
+
     # Derive title from first H1
     title = "Untitled Document"
     for tag in tag_assignments:
@@ -656,7 +716,7 @@ async def remediate_pdf_async(
     pdf = pikepdf.open(file_path)
 
     _add_metadata(pdf, title)
-    _build_structure_tree(pdf, tag_assignments)
+    _build_structure_tree(pdf, tag_assignments, alt_texts=alt_texts)
 
     # Inject marked content per page
     pages_tags: dict[int, list[dict]] = defaultdict(list)
@@ -708,6 +768,90 @@ async def remediate_pdf_async(
         result["verification"] = verification_info
 
     return result
+
+
+def apply_tag_edits(
+    pdf_path: str,
+    output_path: str,
+    tag_assignments: list[dict],
+) -> dict:
+    """
+    Apply edited tag assignments to an existing PDF.
+
+    Opens the PDF with pikepdf, removes any existing structure tree,
+    rebuilds it with the new tag assignments (using _build_structure_tree
+    and _inject_marked_content), and saves to output_path.
+
+    Args:
+        pdf_path: Path to the source PDF (typically a previously remediated file).
+        output_path: Where to save the re-tagged PDF.
+        tag_assignments: List of dicts, each with keys:
+            type (str), text (str), page (int), mcid (int),
+            font_size (float), bbox ([x0,y0,x1,y1]).
+            Figure tags may also include alt_text (str).
+
+    Returns:
+        A dict with the analysis result of the newly saved PDF.
+    """
+    logger.info("Applying %d tag edits to %s", len(tag_assignments), pdf_path)
+
+    # Re-assign MCIDs sequentially per page to ensure consistency
+    mcid_counters: dict[int, int] = defaultdict(int)
+    for tag in tag_assignments:
+        tag["mcid"] = mcid_counters[tag["page"]]
+        mcid_counters[tag["page"]] += 1
+
+    # Derive title from first H1
+    title = "Untitled Document"
+    for tag in tag_assignments:
+        if tag["type"] == "H1":
+            title = tag.get("text", "")[:256]
+            break
+
+    pdf = pikepdf.open(pdf_path)
+
+    # Remove existing structure tree so we can rebuild cleanly
+    if "/StructTreeRoot" in pdf.Root:
+        del pdf.Root[Name("/StructTreeRoot")]
+    if "/MarkInfo" in pdf.Root:
+        del pdf.Root[Name("/MarkInfo")]
+
+    # Clear existing StructParents and marked content from pages
+    for page in pdf.pages:
+        if "/StructParents" in page:
+            del page[Name("/StructParents")]
+
+    # Set metadata and rebuild structure
+    _add_metadata(pdf, title)
+    _build_structure_tree(pdf, tag_assignments)
+
+    # Write /Alt on Figure StructElems that have alt_text provided
+    # We do this after _build_structure_tree so we can patch the elements
+    struct_tree = pdf.Root.get("/StructTreeRoot")
+    if struct_tree:
+        figures = _walk_struct_elems(struct_tree, "Figure")
+        # Match figures to tag assignments in order
+        figure_tags = [t for t in tag_assignments if t["type"] == "Figure"]
+        for fig_elem, fig_tag in zip(figures, figure_tags):
+            if fig_tag.get("alt_text"):
+                fig_elem[Name("/Alt")] = String(fig_tag["alt_text"])
+
+    # Inject marked content per page
+    pages_tags: dict[int, list[dict]] = defaultdict(list)
+    for tag in tag_assignments:
+        pages_tags[tag["page"]].append(tag)
+    for page_num, ptags in pages_tags.items():
+        ptags.sort(key=lambda t: t["mcid"])
+        _inject_marked_content(pdf, page_num, ptags)
+
+    pdf.save(output_path)
+    pdf.close()
+
+    logger.info("Saved edited PDF: %s", output_path)
+
+    # Re-analyze the output
+    after_analysis = analyze_pdf(output_path)
+    return after_analysis
 
 
 def remediate_pdf(

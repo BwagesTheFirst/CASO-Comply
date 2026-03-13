@@ -20,6 +20,7 @@ export default function ApiKeysPage() {
   const [createdKey, setCreatedKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [copiedPrefix, setCopiedPrefix] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchKeys = useCallback(async () => {
@@ -238,9 +239,22 @@ export default function ApiKeysPage() {
                       {key.name}
                     </td>
                     <td className="px-6 py-3">
-                      <code className="text-caso-slate font-mono text-xs">
-                        {key.key_prefix}...
-                      </code>
+                      <div className="flex items-center gap-2">
+                        <code className="text-caso-slate font-mono text-xs">
+                          {key.key_prefix}...
+                        </code>
+                        <button
+                          onClick={async () => {
+                            await navigator.clipboard.writeText(key.key_prefix);
+                            setCopiedPrefix(key.id);
+                            setTimeout(() => setCopiedPrefix(null), 2000);
+                          }}
+                          className="shrink-0 rounded-md bg-caso-blue/10 border border-caso-blue/20 px-2 py-0.5 text-xs text-caso-blue hover:bg-caso-blue/20 transition-colors"
+                          title="Copy key prefix"
+                        >
+                          {copiedPrefix === key.id ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-3 text-caso-slate">
                       {new Date(key.created_at).toLocaleDateString()}
@@ -279,6 +293,10 @@ export default function ApiKeysPage() {
           </div>
         )}
       </div>
+
+      <p className="text-caso-slate/50 text-xs">
+        Full API keys are only shown once at creation. If you have lost a key, revoke it and create a new one.
+      </p>
     </div>
   );
 }
