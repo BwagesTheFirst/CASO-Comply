@@ -102,6 +102,9 @@ export async function POST(
     .eq("id", id);
 
   try {
+    // Start timing for cost tracking
+    const processingStart = Date.now();
+
     // Download file from Supabase storage
     const { data: fileData, error: downloadError } = await admin.storage
       .from("documents")
@@ -210,6 +213,32 @@ export async function POST(
       document_filename: document.filename,
       remediation_type: document.service_level,
       cost_cents: costCents,
+    });
+
+    // Record internal costs for profitability tracking
+    const processingMs = Date.now() - processingStart;
+    const geminiCostCents =
+      document.service_level !== "standard" ? pages * 0.5 : 0; // ~$0.005/page for verification
+    const renderCostCents = (processingMs / 3600000) * 10; // $0.10/hour
+    const originalBytes = fileData.size;
+    const remediatedBytes = remediatedBuffer.length;
+    const storageCostCents =
+      ((originalBytes + remediatedBytes) / (1024 * 1024 * 1024)) * 2.1; // $0.021/GB/month
+    const totalInternalCost =
+      geminiCostCents + renderCostCents + storageCostCents;
+
+    await admin.from("cost_records").insert({
+      document_id: id,
+      tenant_id: auth.tenantId,
+      gemini_cost_cents: geminiCostCents,
+      processing_ms: processingMs,
+      render_cost_cents: renderCostCents,
+      original_bytes: originalBytes,
+      remediated_bytes: remediatedBytes,
+      storage_cost_cents: storageCostCents,
+      total_internal_cost_cents: totalInternalCost,
+      revenue_cents: costCents,
+      margin_cents: costCents - totalInternalCost,
     });
 
     // Update batch counters if applicable

@@ -155,18 +155,16 @@ export default async function DashboardOverview() {
             Current Plan
           </h2>
           <p className="text-2xl font-bold text-caso-white mb-1">
-            {plan?.name ?? "No Plan"}
+            {plan?.name ?? "Per-Page Plan"}
           </p>
-          {plan && (
-            <>
-              <p className="text-caso-blue text-lg font-semibold">
-                ${(plan.monthly_price_cents / 100).toFixed(0)}
-                <span className="text-caso-slate text-sm font-normal">/mo</span>
-              </p>
-              <p className="text-xs text-caso-slate mt-2">
-                {plan.pages_included?.toLocaleString()} pages included
-              </p>
-            </>
+          {isTrial ? (
+            <p className="text-caso-warm text-sm font-medium mt-2">
+              Trial &mdash; {totalPages} of 10 pages used
+            </p>
+          ) : (
+            <p className="text-caso-slate text-xs mt-2">
+              Standard $0.30/pg &nbsp;|&nbsp; Enhanced $1.80/pg &nbsp;|&nbsp; Expert $12.00/pg
+            </p>
           )}
           <Link
             href="/dashboard/billing"
@@ -183,14 +181,16 @@ export default async function DashboardOverview() {
           </h2>
           <div className="space-y-3">
             <Link
-              href="/demo"
+              href="/dashboard/remediate"
               className="flex items-center gap-3 rounded-lg bg-caso-blue/10 border border-caso-blue/20 px-4 py-3 text-sm font-medium text-caso-blue hover:bg-caso-blue/20 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="12" y1="18" x2="12" y2="12" />
+                <line x1="9" y1="15" x2="15" y2="15" />
               </svg>
-              New Scan
+              Remediate Documents
             </Link>
             <Link
               href="/dashboard/api-keys"

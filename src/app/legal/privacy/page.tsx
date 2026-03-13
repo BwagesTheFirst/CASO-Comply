@@ -183,12 +183,6 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="mt-4 ml-6 list-disc space-y-2 text-sm text-caso-slate leading-relaxed">
                 <li>
-                  <strong className="text-caso-white">Stripe</strong> — Payment
-                  processing. Stripe handles all credit card information
-                  directly; we never store your full card number. Stripe is PCI
-                  DSS Level 1 certified.
-                </li>
-                <li>
                   <strong className="text-caso-white">Supabase</strong> —
                   Database and authentication infrastructure. Account data and
                   platform metadata are stored in Supabase&apos;s SOC 2

@@ -3,6 +3,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+const SERVICE_RATES: Record<string, { label: string; rate: number }> = {
+  standard: { label: "Standard", rate: 0.30 },
+  enhanced: { label: "Enhanced", rate: 1.80 },
+  expert: { label: "Expert", rate: 12.00 },
+};
+
 export default async function BillingPage() {
   // Auth check (server client)
   const supabase = await createClient();
@@ -32,19 +38,46 @@ export default async function BillingPage() {
     .single();
 
   const plan = tenant?.subscription_plans;
+  const isTrial = tenant?.status === "trial";
 
-  // Get usage for billing context
+  // Get current billing period start (first of the current month)
+  const now = new Date();
+  const billingPeriodStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
+  // Query usage_records grouped by remediation_type for the current billing period
+  const { data: usageByType } = await admin
+    .from("usage_records")
+    .select("remediation_type, pages_consumed, cost_cents")
+    .eq("tenant_id", tenantId)
+    .gte("billing_period_start", billingPeriodStart);
+
+  // Aggregate usage by remediation type
+  const usageSummary: Record<string, { pages: number; cost: number }> = {};
+  let totalPages = 0;
+  let totalCostCents = 0;
+
+  if (usageByType) {
+    for (const row of usageByType) {
+      const type = row.remediation_type ?? "standard";
+      if (!usageSummary[type]) {
+        usageSummary[type] = { pages: 0, cost: 0 };
+      }
+      usageSummary[type].pages += row.pages_consumed ?? 0;
+      usageSummary[type].cost += row.cost_cents ?? 0;
+      totalPages += row.pages_consumed ?? 0;
+      totalCostCents += row.cost_cents ?? 0;
+    }
+  }
+
+  // For trial accounts, also get total usage via RPC for the trial page limit
   const { data: usage } = await admin.rpc("get_tenant_usage", {
     p_tenant_id: tenantId,
   });
-
   const usageRows = Array.isArray(usage) ? usage : usage ? [usage] : [];
-  const totalPages = usageRows.reduce((sum: number, r: { total_pages?: number }) => sum + (r.total_pages ?? 0), 0);
-  const pagesIncluded = usageRows[0]?.pages_included ?? plan?.pages_included ?? 0;
-  const overagePages = Math.max(0, totalPages - pagesIncluded);
-  const overageCost = plan?.overage_rate_cents
-    ? ((overagePages * plan.overage_rate_cents) / 100).toFixed(2)
-    : "0.00";
+  const trialTotalPages = usageRows.reduce(
+    (sum: number, r: { total_pages?: number }) => sum + (r.total_pages ?? 0),
+    0
+  );
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -52,55 +85,112 @@ export default async function BillingPage() {
         Billing
       </h1>
 
-      {/* Current Plan */}
+      {/* Account Status */}
       <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
         <h2 className="text-sm font-medium text-caso-slate mb-4">
-          Current Plan
+          Account Status
         </h2>
-        <div className="flex items-start justify-between">
+        {isTrial ? (
           <div>
-            <p className="text-2xl font-bold text-caso-white">
-              {plan?.name ?? "No Plan"}
+            <div className="flex items-center gap-3 mb-3">
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-caso-warm/10 text-caso-warm">
+                Trial
+              </span>
+              <p className="text-2xl font-bold text-caso-white">
+                Trial Account
+              </p>
+            </div>
+            <div className="flex items-end justify-between mb-2">
+              <span className="text-sm text-caso-slate">
+                {trialTotalPages} of 10 pages used
+              </span>
+              <span className="text-sm text-caso-slate">
+                {Math.max(0, 10 - trialTotalPages)} remaining
+              </span>
+            </div>
+            <div className="w-full bg-caso-navy rounded-full h-2.5">
+              <div
+                className={`h-2.5 rounded-full transition-all ${
+                  trialTotalPages >= 10 ? "bg-caso-red" : trialTotalPages >= 8 ? "bg-caso-warm" : "bg-caso-green"
+                }`}
+                style={{ width: `${Math.min((trialTotalPages / 10) * 100, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-caso-slate mt-3">
+              Trial accounts are limited to 10 pages. Contact us to activate your account.
             </p>
-            {plan && (
-              <ul className="mt-3 space-y-1 text-sm text-caso-slate">
-                <li>
-                  {plan.pages_included?.toLocaleString()} pages included/month
-                </li>
-              </ul>
-            )}
           </div>
-          <Link
-            href="/pricing"
-            className="rounded-lg border border-caso-border px-4 py-2 text-sm font-medium text-caso-slate hover:text-caso-white hover:bg-white/5 transition-colors"
-          >
-            Change Plan
-          </Link>
-        </div>
+        ) : (
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-caso-green/10 text-caso-green">
+                Active
+              </span>
+              <p className="text-2xl font-bold text-caso-white">
+                {plan?.name ?? "Per-Page Plan"}
+              </p>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-4">
+              {Object.entries(SERVICE_RATES).map(([key, { label, rate }]) => (
+                <div key={key} className="text-center">
+                  <p className="text-xs text-caso-slate mb-1">{label}</p>
+                  <p className="text-lg font-bold text-caso-white">
+                    ${rate.toFixed(2)}
+                    <span className="text-xs text-caso-slate font-normal">/pg</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Current Period */}
+      {/* Usage This Period */}
       <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
         <h2 className="text-sm font-medium text-caso-slate mb-4">
-          Current Billing Period
+          Usage This Period
         </h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs text-caso-slate mb-1">Pages Used</p>
-            <p className="text-xl font-bold text-caso-blue">
-              {totalPages.toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-caso-slate mb-1">Pages Included</p>
-            <p className="text-xl font-bold text-caso-white">
-              {pagesIncluded.toLocaleString()}
-            </p>
-          </div>
-        </div>
-        {overagePages > 0 && (
-          <p className="text-caso-red/70 text-xs mt-3">
-            {overagePages.toLocaleString()} pages over plan limit this period
+        {totalPages > 0 ? (
+          <>
+            <div className="space-y-3">
+              {Object.entries(SERVICE_RATES).map(([key, { label, rate }]) => {
+                const u = usageSummary[key];
+                if (!u || u.pages === 0) return null;
+                return (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-caso-slate">
+                      {label} pages:{" "}
+                      <span className="text-caso-white font-medium">
+                        {u.pages.toLocaleString()}
+                      </span>{" "}
+                      &times; ${rate.toFixed(2)}
+                    </span>
+                    <span className="text-caso-white font-medium">
+                      ${(u.cost / 100).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 pt-4 border-t border-caso-border flex items-center justify-between">
+              <span className="text-sm font-medium text-caso-slate">Total</span>
+              <span className="text-xl font-bold text-caso-white">
+                ${(totalCostCents / 100).toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+          </>
+        ) : (
+          <p className="text-caso-slate text-sm">
+            No usage recorded this billing period.
           </p>
         )}
       </div>
@@ -115,7 +205,14 @@ export default async function BillingPage() {
         </h2>
         <p className="text-caso-slate text-sm">
           Invoices are issued with Net 30/60 payment terms. Please reference your PO number when submitting payment.
-          Contact your account manager or email billing@casocomply.com for questions.
+          Contact your account manager or email{" "}
+          <a
+            href="mailto:billing@casocomply.com"
+            className="text-caso-blue underline decoration-caso-blue/30 transition-colors hover:text-caso-blue-bright"
+          >
+            billing@casocomply.com
+          </a>{" "}
+          for questions.
         </p>
       </div>
     </div>

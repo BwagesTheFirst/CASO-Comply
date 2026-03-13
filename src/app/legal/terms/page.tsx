@@ -215,9 +215,10 @@ export default function TermsOfServicePage() {
                 </li>
                 <li>
                   <strong className="text-caso-white">Payment</strong> —
-                  Payments are processed by Stripe. You agree to provide a
-                  valid payment method. All charges are non-refundable except
-                  as described below.
+                  Payments are processed via invoice with Net 30/45/60 payment
+                  terms. Purchase orders (POs) are accepted. All charges are
+                  based on actual page usage at the service level rate agreed
+                  upon in your order form.
                 </li>
                 <li>
                   <strong className="text-caso-white">Credit expiration</strong>{" "}
