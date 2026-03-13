@@ -2,6 +2,54 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSuperAdmin } from "../middleware";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+export async function POST(request: NextRequest) {
+  const user = await requireSuperAdmin();
+  if (!user) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { name, email, phone, organization, status, metadata } = body;
+
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    const admin = createAdminClient();
+
+    const { data: lead, error } = await admin
+      .from("leads")
+      .insert({
+        name: name || null,
+        email,
+        phone: phone || null,
+        organization: organization || null,
+        source: "manual",
+        status: status || "new",
+        metadata: metadata || {},
+      })
+      .select("*")
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Log activity
+    await admin.from("lead_activity").insert({
+      lead_id: lead.id,
+      action: "created",
+      details: { source: "manual" },
+      actor_id: user.id,
+    });
+
+    return NextResponse.json({ lead });
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+}
+
 export async function GET(request: NextRequest) {
   const user = await requireSuperAdmin();
   if (!user) {
