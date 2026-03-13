@@ -1178,21 +1178,22 @@ export default function Home() {
           {/* Client types strip */}
           <div className="mt-14 flex flex-wrap items-center justify-center gap-10">
             {[
-              "State Agencies",
-              "Universities",
-              "Medical Centers",
-              "Municipalities",
-              "Nonprofits",
-              "Construction",
-            ].map((name) => (
-              <div
-                key={name}
-                className="flex h-12 items-center rounded-lg border border-caso-border/50 bg-caso-navy-light/50 px-6"
+              { name: "State Agencies", href: "/solutions/government" },
+              { name: "Universities", href: "/solutions/higher-education" },
+              { name: "Medical Centers", href: "/solutions/enterprise" },
+              { name: "Municipalities", href: "/solutions/government" },
+              { name: "Nonprofits", href: "/solutions/enterprise" },
+              { name: "Construction", href: "/solutions/enterprise" },
+            ].map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="flex h-12 items-center rounded-lg border border-caso-border/50 bg-caso-navy-light/50 px-6 transition-colors hover:border-caso-blue/50 hover:bg-caso-navy-light"
               >
-                <span className="text-sm font-medium text-caso-slate/60">
-                  {name}
+                <span className="text-sm font-medium text-caso-slate">
+                  {item.name}
                 </span>
-              </div>
+              </a>
             ))}
           </div>
 
