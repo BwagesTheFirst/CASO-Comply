@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import MarketingLayout from "@/components/MarketingLayout";
+import PricingCalculator from "@/components/PricingCalculator";
 
 export const metadata: Metadata = {
   title: "Pricing — CASO Comply",
@@ -266,6 +267,11 @@ export default function PricingPage() {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Pricing Calculator */}
+          <div className="mx-auto mt-16 max-w-3xl">
+            <PricingCalculator />
           </div>
 
           {/* Custom Plan CTA */}

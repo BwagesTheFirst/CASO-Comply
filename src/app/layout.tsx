@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Raleway, Source_Sans_3 } from "next/font/google";
+import Analytics from "@/components/Analytics";
 import "./globals.css";
 
 const raleway = Raleway({
@@ -149,6 +150,7 @@ export default function RootLayout({
         </script>
       </head>
       <body className="font-[family-name:var(--font-body)] antialiased">
+        <Analytics />
         {children}
       </body>
     </html>
