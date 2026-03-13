@@ -1,129 +1,89 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import MarketingLayout from "@/components/MarketingLayout";
 
 export const metadata: Metadata = {
   title: "Pricing — CASO Comply",
   description:
-    "Simple, per-page pricing for AI-powered document accessibility remediation. Pay only for what you use — PDFs, Word documents, and Excel spreadsheets.",
+    "Simple, per-page pricing for AI-powered document accessibility remediation. Three service levels starting at $0.30/page. WCAG 2.1 AA, PDF/UA, and Section 508 compliance.",
 };
 
 const PLANS = [
   {
-    name: "Standard",
-    price: "$0.25",
+    level: "Level 1",
+    name: "Basic Accessibility",
+    price: "$0.30",
     period: "/page",
     description:
-      "Automated remediation with font-size heuristic tagging. Perfect for bulk document processing.",
+      "Automated tagging, structure, and reading order for standard PDF documents. Fast turnaround for bulk processing.",
     features: [
-      "PDF, Word & Excel support",
-      "WCAG 2.1 AA compliance",
-      "PDF/UA structure tagging",
-      "Automated tag assignment",
+      "Auto-tag structure (headings, lists, paragraphs)",
+      "Metadata cleanup & language tagging",
+      "Logical reading order correction",
+      "Before & after compliance scoring",
+      "Batch processing support",
       "Download remediated files",
-      "Usage dashboard",
     ],
-    cta: "Start Free Trial",
-    ctaHref: "/signup",
+    turnaround: "24-48 hours",
+    cta: "Get Started",
+    ctaHref: "/free-scan",
     featured: false,
   },
   {
-    name: "AI Verified",
-    price: "$0.35",
+    level: "Level 2",
+    name: "Enhanced Compliance",
+    price: "$1.80",
     period: "/page",
     description:
-      "Everything in Standard plus AI verification for heading hierarchy, reading order, and alt text.",
+      "AI-powered remediation with enhanced checks, alt text generation, and a detailed compliance report.",
     features: [
-      "Everything in Standard",
-      "AI-verified tag accuracy",
-      "Heading hierarchy validation",
-      "Reading order correction",
-      "Auto-generated alt text",
+      "Everything in Basic Accessibility",
+      "AI-generated alt text for images",
+      "AI-verified heading hierarchy",
+      "Complex table header association",
+      "Detailed compliance report",
+      "Remediation log & audit trail",
       "API access",
-      "Priority support",
     ],
-    cta: "Start Free Trial",
-    ctaHref: "/signup",
+    turnaround: "2-3 business days",
+    cta: "Get Started",
+    ctaHref: "/free-scan",
     featured: true,
   },
   {
-    name: "Human Review",
-    price: "$4.00",
+    level: "Level 3",
+    name: "Full Remediation",
+    price: "$12.00",
     period: "/page",
     description:
-      "For documents that need expert human review — complex layouts, low-scoring files, or compliance-critical content.",
+      "Complete remediation with expert human QA review and a Certificate of Compliance for regulated industries.",
     features: [
-      "Everything in AI Verified",
-      "Expert human accessibility review",
-      "Manual tag corrections",
-      "Compliance certification",
-      "Dedicated account manager",
+      "Everything in Enhanced Compliance",
+      "Expert human QA review",
+      "Certificate of Compliance",
+      "VPAT documentation",
+      "Priority processing",
+      "Dedicated account support",
       "Custom SLA",
     ],
+    turnaround: "3-5 business days",
     cta: "Contact Sales",
-    ctaHref: "mailto:sales@caso.com?subject=CASO%20Comply%20Human%20Review%20Inquiry",
+    ctaHref: "/contact",
     featured: false,
   },
 ];
 
+const VOLUME_DISCOUNTS = [
+  { range: "1 - 500 pages", discount: "Standard pricing" },
+  { range: "501 - 5,000 pages", discount: "10% discount" },
+  { range: "5,001 - 25,000 pages", discount: "15% discount" },
+  { range: "25,001+ pages", discount: "Custom pricing" },
+];
+
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-caso-navy text-caso-white">
-      {/* Skip link */}
-      <a href="#pricing-content" className="skip-link">
-        Skip to pricing content
-      </a>
-
-      {/* Nav */}
-      <nav
-        aria-label="Pricing navigation"
-        className="sticky top-0 z-40 border-b border-caso-border/50 bg-caso-navy/95 backdrop-blur-md"
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2"
-            aria-label="Back to CASO Comply home"
-          >
-            <Image
-              src="/caso-comply-logo-white.png"
-              alt="CASO Comply"
-              width={426}
-              height={80}
-              className="h-10 w-auto"
-              priority
-            />
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
-            >
-              Home
-            </Link>
-            <Link
-              href="/demo"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
-            >
-              Demo
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="ml-2 rounded-xl bg-caso-blue px-5 py-2.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
-            >
-              Sign Up
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      <main id="pricing-content" className="relative">
+    <MarketingLayout>
+      <div className="relative">
         {/* Background */}
         <div
           className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -141,9 +101,9 @@ export default function PricingPage() {
               <span className="text-gradient">pricing</span>
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-caso-slate">
-              Choose the plan that fits your organization. All plans include
-              full support for PDFs, Word documents, and Excel spreadsheets.
-              Start with a 14-day free trial.
+              Three service levels to match your document complexity. All plans
+              include WCAG 2.1 AA, PDF/UA, and Section 508 compliance. Volume
+              discounts available.
             </p>
           </div>
 
@@ -164,8 +124,13 @@ export default function PricingPage() {
                   </div>
                 )}
 
-                {/* Plan name */}
+                {/* Level */}
                 <div className="text-sm font-semibold uppercase tracking-wider text-caso-glacier">
+                  {plan.level}
+                </div>
+
+                {/* Plan name */}
+                <div className="mt-1 font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
                   {plan.name}
                 </div>
 
@@ -175,6 +140,11 @@ export default function PricingPage() {
                     {plan.price}
                   </span>
                   <span className="text-lg text-caso-slate">{plan.period}</span>
+                </div>
+
+                {/* Turnaround */}
+                <div className="mt-2 text-xs text-caso-slate">
+                  Turnaround: {plan.turnaround}
                 </div>
 
                 {/* Description */}
@@ -209,42 +179,60 @@ export default function PricingPage() {
                 </ul>
 
                 {/* CTA */}
-                {plan.name === "Enterprise" ? (
-                  <a
-                    href={plan.ctaHref}
-                    className="mt-8 block rounded-xl border border-caso-border bg-transparent px-6 py-3.5 text-center text-sm font-bold text-caso-white transition-all hover:border-caso-blue hover:bg-caso-navy-light"
-                  >
-                    {plan.cta}
-                  </a>
-                ) : (
-                  <Link
-                    href={plan.ctaHref}
-                    className={`mt-8 block rounded-xl px-6 py-3.5 text-center text-sm font-bold transition-all ${
-                      plan.featured
-                        ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
-                        : "border border-caso-border bg-transparent text-caso-white hover:border-caso-blue hover:bg-caso-navy-light"
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
-                )}
+                <Link
+                  href={plan.ctaHref}
+                  className={`mt-8 block rounded-xl px-6 py-3.5 text-center text-sm font-bold transition-all ${
+                    plan.featured
+                      ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                      : "border border-caso-border bg-transparent text-caso-white hover:border-caso-blue hover:bg-caso-navy-light"
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
               </div>
             ))}
           </div>
 
-          {/* Extra info */}
-          <div className="mx-auto mt-16 max-w-3xl">
+          {/* Volume Discounts */}
+          <div className="mx-auto mt-16 max-w-2xl">
+            <div className="rounded-2xl border border-caso-border bg-caso-navy-light/50 p-8">
+              <h2 className="text-center font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
+                Volume discounts
+              </h2>
+              <p className="mt-2 text-center text-sm text-caso-slate">
+                Processing large document libraries? We offer tiered discounts
+                for higher volumes.
+              </p>
+              <div className="mt-6 space-y-3">
+                {VOLUME_DISCOUNTS.map((tier) => (
+                  <div
+                    key={tier.range}
+                    className="flex items-center justify-between rounded-lg border border-caso-border/50 bg-caso-navy/50 px-4 py-3"
+                  >
+                    <span className="text-sm font-medium text-caso-white">
+                      {tier.range}
+                    </span>
+                    <span className="text-sm font-semibold text-caso-green">
+                      {tier.discount}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Custom Plan CTA */}
+          <div className="mx-auto mt-12 max-w-3xl">
             <div className="rounded-2xl border border-caso-border bg-caso-navy-light/50 p-8 text-center">
               <h2 className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white">
                 Need a custom plan?
               </h2>
               <p className="mt-3 text-sm text-caso-slate">
-                We offer volume discounts, on-premise deployment, and custom
-                SLAs for organizations with unique requirements. All plans
-                include WCAG 2.1 AA, PDF/UA, and Section 508 compliance.
+                We offer on-premise deployment, custom SLAs, and dedicated
+                support for organizations with unique requirements.
               </p>
-              <a
-                href="mailto:sales@caso.com?subject=CASO%20Comply%20Custom%20Plan%20Inquiry"
+              <Link
+                href="/contact"
                 className="mt-6 inline-flex items-center gap-2 rounded-xl bg-caso-blue px-8 py-3.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
               >
                 Talk to Sales
@@ -262,11 +250,11 @@ export default function PricingPage() {
                     d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
                   />
                 </svg>
-              </a>
+              </Link>
             </div>
           </div>
 
-          {/* FAQ-style notes */}
+          {/* Info Cards */}
           <div className="mx-auto mt-16 grid max-w-4xl gap-8 md:grid-cols-3">
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-caso-blue/10 text-caso-blue">
@@ -286,10 +274,11 @@ export default function PricingPage() {
                 </svg>
               </div>
               <h3 className="mt-4 font-[family-name:var(--font-display)] text-base font-bold text-caso-white">
-                14-Day Free Trial
+                Free Compliance Scan
               </h3>
               <p className="mt-2 text-sm text-caso-slate">
-                Try any plan free for 14 days. No credit card required to start.
+                Start with a free scan of your website to identify every
+                inaccessible document.
               </p>
             </div>
             <div className="text-center">
@@ -313,8 +302,8 @@ export default function PricingPage() {
                 All Document Types
               </h3>
               <p className="mt-2 text-sm text-caso-slate">
-                Every plan supports PDFs, Word documents (.docx), and Excel
-                spreadsheets (.xlsx).
+                PDFs today, with Word (.docx) and Excel (.xlsx) remediation
+                coming soon.
               </p>
             </div>
             <div className="text-center">
@@ -344,50 +333,7 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer
-        className="border-t border-caso-border/50 bg-caso-navy-light/50"
-        role="contentinfo"
-      >
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-4">
-              <Image
-                src="/caso-comply-logo-white.png"
-                alt="CASO Comply"
-                width={426}
-                height={80}
-                className="h-6 w-auto"
-              />
-              <span className="text-sm text-caso-slate">
-                &copy; {new Date().getFullYear()} CASO Document Management, Inc.
-              </span>
-            </div>
-            <div className="flex items-center gap-6">
-              <Link
-                href="/"
-                className="text-sm text-caso-slate hover:text-caso-white"
-              >
-                Home
-              </Link>
-              <Link
-                href="/demo"
-                className="text-sm text-caso-slate hover:text-caso-white"
-              >
-                Demo
-              </Link>
-              <a
-                href="mailto:sales@caso.com"
-                className="text-sm text-caso-slate hover:text-caso-white"
-              >
-                Contact
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </MarketingLayout>
   );
 }
