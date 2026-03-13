@@ -515,9 +515,12 @@ export default function Home() {
               </span>
             </Link>
 
-            {/* Office Remediation - Coming Soon */}
-            <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-glacier/10 text-caso-glacier/70">
+            {/* Office Remediation */}
+            <Link
+              href="/demo"
+              className="group rounded-2xl border border-caso-border bg-caso-navy-light/50 p-8 transition-all hover:border-caso-blue hover:shadow-lg hover:shadow-caso-blue/10"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-blue/20 text-caso-blue">
                 <svg
                   className="h-6 w-6"
                   viewBox="0 0 20 20"
@@ -527,20 +530,37 @@ export default function Home() {
                   <path d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5v-13z" />
                 </svg>
               </div>
-              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-glacier">
+              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-white group-hover:text-caso-blue">
                 Office Remediation
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-caso-slate">
                 Word, Excel, and PowerPoint accessibility remediation.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1 rounded-full border border-caso-border px-3 py-1 text-xs font-semibold text-caso-glacier">
-                Coming Soon
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-caso-blue-bright">
+                Learn more
+                <svg
+                  className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                  />
+                </svg>
               </span>
-            </div>
+            </Link>
 
-            {/* SiteScan - Coming Soon */}
-            <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-glacier/10 text-caso-glacier/70">
+            {/* SiteScan */}
+            <Link
+              href="/free-scan"
+              className="group rounded-2xl border border-caso-border bg-caso-navy-light/50 p-8 transition-all hover:border-caso-blue hover:shadow-lg hover:shadow-caso-blue/10"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-blue/20 text-caso-blue">
                 <svg
                   className="h-6 w-6"
                   viewBox="0 0 20 20"
@@ -554,17 +574,31 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-glacier">
+              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-white group-hover:text-caso-blue">
                 SiteScan
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-caso-slate">
                 Automated document inventory, scoring, and compliance
                 monitoring.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1 rounded-full border border-caso-border px-3 py-1 text-xs font-semibold text-caso-glacier">
-                Coming Soon
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-caso-blue-bright">
+                Learn more
+                <svg
+                  className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                  />
+                </svg>
               </span>
-            </div>
+            </Link>
           </div>
         </div>
       </section>

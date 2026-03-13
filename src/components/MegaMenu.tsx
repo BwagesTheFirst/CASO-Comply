@@ -94,26 +94,36 @@ export default function MegaMenu() {
                     </Link>
                   </li>
                   <li role="none">
-                    <span className="flex items-start gap-2 rounded-lg px-2 py-2 opacity-50 xl:px-3" aria-disabled="true">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-caso-glacier" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <Link
+                      href="/demo"
+                      role="menuitem"
+                      className="flex items-start gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-caso-navy-mid focus-visible:ring-2 focus-visible:ring-caso-blue xl:px-3"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-caso-blue" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5v-13z" />
                       </svg>
                       <div>
-                        <span className="block text-sm font-medium text-caso-slate">Office Remediation</span>
-                        <span className="block text-xs text-caso-slate">Coming Soon</span>
+                        <span className="block text-sm font-medium text-caso-white">Office Remediation</span>
+                        <span className="block text-xs text-caso-slate">Word, Excel & PowerPoint</span>
                       </div>
-                    </span>
+                    </Link>
                   </li>
                   <li role="none">
-                    <span className="flex items-start gap-2 rounded-lg px-2 py-2 opacity-50 xl:px-3" aria-disabled="true">
-                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-caso-glacier" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <Link
+                      href="/free-scan"
+                      role="menuitem"
+                      className="flex items-start gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-caso-navy-mid focus-visible:ring-2 focus-visible:ring-caso-blue xl:px-3"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <svg className="mt-0.5 h-4 w-4 shrink-0 text-caso-blue" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fillRule="evenodd" d="M9.965 3.236a1 1 0 01.842-.164l6 1.667a1 1 0 01.751.969v4.097a6 6 0 01-3.037 5.213l-3.515 2.007a1 1 0 01-.992 0L6.5 15.018A6 6 0 013.463 9.805V5.708a1 1 0 01.751-.969l6-1.667z" clipRule="evenodd" />
                       </svg>
                       <div>
-                        <span className="block text-sm font-medium text-caso-slate">SiteScan</span>
-                        <span className="block text-xs text-caso-slate">Coming Soon</span>
+                        <span className="block text-sm font-medium text-caso-white">SiteScan</span>
+                        <span className="block text-xs text-caso-slate">Document inventory & scoring</span>
                       </div>
-                    </span>
+                    </Link>
                   </li>
                 </ul>
               </div>
