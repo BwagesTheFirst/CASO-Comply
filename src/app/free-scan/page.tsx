@@ -309,7 +309,7 @@ export default function FreeScanPage() {
                       className="mb-1.5 block text-sm font-medium text-caso-slate"
                     >
                       Phone{" "}
-                      <span className="text-caso-slate/50">(optional)</span>
+                      <span className="text-caso-slate">(optional)</span>
                     </label>
                     <input
                       id="phone"
@@ -394,12 +394,12 @@ export default function FreeScanPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="mt-8 w-full rounded-xl bg-caso-blue px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25 disabled:cursor-not-allowed disabled:bg-caso-blue/40 disabled:text-caso-white/70"
+                  className="mt-8 w-full rounded-xl bg-caso-blue-deep px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25 disabled:cursor-not-allowed disabled:bg-caso-blue/40 disabled:text-caso-white/70"
                 >
                   {submitting ? "Submitting..." : "Request Free Scan"}
                 </button>
 
-                <p className="mt-4 text-center text-xs text-caso-slate/70">
+                <p className="mt-4 text-center text-xs text-caso-slate">
                   By submitting, you agree to our{" "}
                   <a
                     href="/legal/privacy"

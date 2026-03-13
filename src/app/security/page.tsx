@@ -100,7 +100,7 @@ const COMPLIANCE_ITEMS = [
     available: true,
   },
   {
-    name: "WCAG 2.1 AA",
+    name: "WCAG 2.2 AA",
     status: "Compliant",
     description:
       "Our platform is built to the same accessibility standards we help you achieve. We practice what we preach.",
@@ -132,6 +132,27 @@ const COMPLIANCE_ITEMS = [
     status: "Not Required",
     description:
       "Our Docker agent runs on your infrastructure, not our cloud. FedRAMP applies to cloud services — on-premise software falls under your existing ATO.",
+    available: true,
+  },
+  {
+    name: "EN 301 549",
+    status: "Supported",
+    description:
+      "European standard for digital accessibility, mandated across all EU member states.",
+    available: true,
+  },
+  {
+    name: "AODA",
+    status: "Supported",
+    description:
+      "Ontario's Accessibility for Ontarians with Disabilities Act, requiring WCAG conformance.",
+    available: true,
+  },
+  {
+    name: "DDA",
+    status: "Supported",
+    description:
+      "Australia's Disability Discrimination Act covers digital document accessibility.",
     available: true,
   },
 ];
@@ -236,7 +257,7 @@ export default function SecurityPage() {
             <Link href="/pricing" className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white">
               Pricing
             </Link>
-            <Link href="/signup" className="rounded-xl bg-caso-blue px-5 py-2 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25">
+            <Link href="/signup" className="rounded-xl bg-caso-blue-deep px-5 py-2 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25">
               Get Started
             </Link>
           </div>
@@ -268,7 +289,7 @@ export default function SecurityPage() {
             <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
               {[
                 { label: "SOC 2 Type II", sublabel: "Certified" },
-                { label: "WCAG 2.1 AA", sublabel: "Compliant" },
+                { label: "WCAG 2.2 AA", sublabel: "Compliant" },
                 { label: "Section 508", sublabel: "Conformant" },
                 { label: "TLS 1.2+", sublabel: "All Communications" },
               ].map((badge) => (
@@ -474,7 +495,7 @@ export default function SecurityPage() {
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <a
                 href="mailto:security@caso.com?subject=Security%20Review%20Request%20-%20CASO%20Comply"
-                className="rounded-xl bg-caso-blue px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                className="rounded-xl bg-caso-blue-deep px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
               >
                 Request Security Package
               </a>

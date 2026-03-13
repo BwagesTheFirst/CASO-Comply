@@ -233,7 +233,7 @@ export default function ADAGuidePage() {
 
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               <div className="rounded-2xl border border-caso-red/50 bg-caso-red/5 p-6">
-                <p className="text-xs font-semibold uppercase tracking-wider text-caso-red">
+                <p className="text-xs font-semibold uppercase tracking-wider text-red-400">
                   Deadline 1
                 </p>
                 <p className="mt-2 font-[family-name:var(--font-display)] text-2xl font-black text-caso-white">
@@ -246,7 +246,7 @@ export default function ADAGuidePage() {
                   </strong>
                   .
                 </p>
-                <p className="mt-4 rounded-lg bg-caso-red/10 px-3 py-2 text-xs font-semibold text-caso-red">
+                <p className="mt-4 rounded-lg bg-caso-red/10 px-3 py-2 text-xs font-semibold text-red-400">
                   Less than 2 months away
                 </p>
               </div>
@@ -751,7 +751,7 @@ export default function ADAGuidePage() {
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
                 href="/free-scan"
-                className="rounded-xl bg-caso-blue px-8 py-4 font-[family-name:var(--font-display)] text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                className="rounded-xl bg-caso-blue-deep px-8 py-4 font-[family-name:var(--font-display)] text-base font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
               >
                 Get a Free Compliance Scan
               </Link>

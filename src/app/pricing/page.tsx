@@ -119,7 +119,7 @@ export default function PricingPage() {
                 }`}
               >
                 {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-blue px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-caso-blue-deep px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
                     Most Popular
                   </div>
                 )}
@@ -183,7 +183,7 @@ export default function PricingPage() {
                   href={plan.ctaHref}
                   className={`mt-8 block rounded-xl px-6 py-3.5 text-center text-sm font-bold transition-all ${
                     plan.featured
-                      ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                      ? "bg-caso-blue-deep text-caso-white hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
                       : "border border-caso-border bg-transparent text-caso-white hover:border-caso-blue hover:bg-caso-navy-light"
                   }`}
                 >
@@ -233,7 +233,7 @@ export default function PricingPage() {
               </p>
               <Link
                 href="/contact"
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-caso-blue px-8 py-3.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-caso-blue-deep px-8 py-3.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
               >
                 Talk to Sales
                 <svg

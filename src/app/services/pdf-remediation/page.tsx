@@ -190,7 +190,7 @@ export default function PdfRemediationPage() {
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/contact"
-              className="inline-flex rounded-xl bg-caso-blue px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+              className="inline-flex rounded-xl bg-caso-blue-deep px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
             >
               Get Started
             </Link>
@@ -266,7 +266,7 @@ export default function PdfRemediationPage() {
                 }`}
               >
                 {tier.featured && (
-                  <span className="absolute -top-3 left-6 rounded-full bg-caso-blue px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
+                  <span className="absolute -top-3 left-6 rounded-full bg-caso-blue-deep px-4 py-1 text-xs font-bold uppercase tracking-wider text-caso-white">
                     Most Popular
                   </span>
                 )}
@@ -312,7 +312,7 @@ export default function PdfRemediationPage() {
                     href="/contact"
                     className={`block w-full rounded-xl px-6 py-3 text-center font-[family-name:var(--font-display)] text-sm font-bold transition-all ${
                       tier.featured
-                        ? "bg-caso-blue text-caso-white hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+                        ? "bg-caso-blue-deep text-caso-white hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
                         : "border border-caso-border text-caso-slate hover:border-caso-glacier hover:text-caso-white"
                     }`}
                   >
@@ -502,7 +502,7 @@ export default function PdfRemediationPage() {
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/contact"
-              className="inline-flex rounded-xl bg-caso-blue px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
+              className="inline-flex rounded-xl bg-caso-blue-deep px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue hover:shadow-lg hover:shadow-caso-blue/25"
             >
               Get Started
             </Link>
