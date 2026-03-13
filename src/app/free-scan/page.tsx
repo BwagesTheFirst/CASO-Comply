@@ -394,7 +394,7 @@ export default function FreeScanPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="mt-8 w-full rounded-xl bg-caso-blue px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-8 w-full rounded-xl bg-caso-blue px-8 py-4 font-[family-name:var(--font-display)] text-lg font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25 disabled:cursor-not-allowed disabled:bg-caso-blue/40 disabled:text-caso-white/70"
                 >
                   {submitting ? "Submitting..." : "Request Free Scan"}
                 </button>

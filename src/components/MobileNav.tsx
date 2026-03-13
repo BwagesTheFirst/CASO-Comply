@@ -101,7 +101,7 @@ export default function MobileNav() {
                 type="button"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close navigation menu"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-caso-slate hover:text-caso-white"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-caso-slate hover:text-caso-white focus-visible:ring-2 focus-visible:ring-caso-blue focus-visible:ring-offset-2 focus-visible:ring-offset-caso-navy"
               >
                 <svg
                   className="h-6 w-6"

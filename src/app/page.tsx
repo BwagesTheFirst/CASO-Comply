@@ -516,8 +516,8 @@ export default function Home() {
             </Link>
 
             {/* Office Remediation - Coming Soon */}
-            <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8 opacity-60">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-glacier/10 text-caso-glacier">
+            <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-glacier/10 text-caso-glacier/70">
                 <svg
                   className="h-6 w-6"
                   viewBox="0 0 20 20"
@@ -527,20 +527,20 @@ export default function Home() {
                   <path d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5v-13z" />
                 </svg>
               </div>
-              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-slate">
+              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-glacier">
                 Office Remediation
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-caso-slate">
                 Word, Excel, and PowerPoint accessibility remediation.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1 rounded-full border border-caso-border px-3 py-1 text-xs font-semibold text-caso-slate">
+              <span className="mt-4 inline-flex items-center gap-1 rounded-full border border-caso-border px-3 py-1 text-xs font-semibold text-caso-glacier">
                 Coming Soon
               </span>
             </div>
 
             {/* SiteScan - Coming Soon */}
-            <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8 opacity-60">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-glacier/10 text-caso-glacier">
+            <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-caso-glacier/10 text-caso-glacier/70">
                 <svg
                   className="h-6 w-6"
                   viewBox="0 0 20 20"
@@ -554,14 +554,14 @@ export default function Home() {
                   />
                 </svg>
               </div>
-              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-slate">
+              <h3 className="mt-4 font-[family-name:var(--font-display)] text-xl font-bold text-caso-glacier">
                 SiteScan
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-caso-slate">
                 Automated document inventory, scoring, and compliance
                 monitoring.
               </p>
-              <span className="mt-4 inline-flex items-center gap-1 rounded-full border border-caso-border px-3 py-1 text-xs font-semibold text-caso-slate">
+              <span className="mt-4 inline-flex items-center gap-1 rounded-full border border-caso-border px-3 py-1 text-xs font-semibold text-caso-glacier">
                 Coming Soon
               </span>
             </div>

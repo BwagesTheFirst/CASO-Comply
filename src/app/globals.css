@@ -278,4 +278,22 @@ body {
   .step-active {
     animation: none;
   }
+
+  .animate-pulse-urgent {
+    animation: none;
+  }
+
+  .animate-tick {
+    animation: none;
+  }
+
+  /* Disable Tailwind animate-ping on reduced motion */
+  .animate-ping {
+    animation: none;
+  }
+
+  /* Disable service card hover transform */
+  .service-card:hover {
+    transform: none;
+  }
 }

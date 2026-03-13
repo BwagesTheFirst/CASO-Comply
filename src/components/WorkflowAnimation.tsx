@@ -233,7 +233,9 @@ export default function WorkflowAnimation() {
     <div className="mx-auto max-w-5xl px-4">
       {/* SVG Diagram - Desktop */}
       <div className="hidden md:block">
-        <svg viewBox="0 0 900 400" className="w-full" aria-label="Workflow diagram showing how documents flow through CASO Comply">
+        <svg viewBox="0 0 900 400" className="w-full" role="img" aria-labelledby="workflow-title workflow-desc">
+          <title id="workflow-title">CASO Comply Remediation Workflow</title>
+          <desc id="workflow-desc">Documents flow through three service levels: Basic Accessibility ($0.30/page) auto-remediates and outputs files directly. Enhanced Compliance ($1.80/page) adds AI verification of tags and alt text. Full Remediation ($12.00/page) includes a scoring threshold check — documents passing above 70 go to output, while those below are sent to CASO API for expert human review in Acrobat before final output.</desc>
           <defs>
             <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="3" result="blur" />
