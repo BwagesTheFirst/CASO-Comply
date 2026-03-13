@@ -396,7 +396,7 @@ export default function SecurityPage() {
               <div className="rounded-2xl border border-caso-border/50 bg-caso-navy-light/30 p-8">
                 <p className="text-xs font-semibold uppercase tracking-wider text-caso-slate">Typical cloud platform</p>
                 <h3 className="mt-2 font-[family-name:var(--font-display)] text-xl font-bold text-caso-slate/70">Upload to their servers</h3>
-                <ul className="mt-6 space-y-3 text-sm text-caso-slate/60">
+                <ul className="mt-6 space-y-3 text-sm text-caso-slate">
                   {[
                     "Documents uploaded to vendor cloud",
                     "Files stored on third-party infrastructure",
