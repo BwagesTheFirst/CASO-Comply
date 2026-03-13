@@ -87,6 +87,40 @@ export default function AdminLeadsPage() {
   const [total, setTotal] = useState(0);
   const limit = 25;
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ name: "", email: "", phone: "", organization: "" });
+  const [addLoading, setAddLoading] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  async function handleAddLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (!addForm.email.trim()) {
+      setAddError("Email is required");
+      return;
+    }
+    setAddLoading(true);
+    setAddError("");
+    try {
+      const res = await fetch("/api/admin/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(addForm),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setAddError(data.error || "Failed to create lead");
+        return;
+      }
+      setShowAddModal(false);
+      setAddForm({ name: "", email: "", phone: "", organization: "" });
+      fetchLeads();
+    } catch {
+      setAddError("Failed to create lead");
+    } finally {
+      setAddLoading(false);
+    }
+  }
+
   const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
@@ -127,7 +161,96 @@ export default function AdminLeadsPage() {
             All form submissions and lead tracking
           </p>
         </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="rounded-lg bg-caso-blue-deep px-4 py-2 text-sm font-medium text-caso-white hover:bg-caso-blue transition-colors"
+        >
+          + Add Lead
+        </button>
       </div>
+
+      {/* Add Lead Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-md rounded-xl border border-caso-border bg-caso-navy-light p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-[family-name:var(--font-display)] text-lg font-bold text-caso-white">
+                Add Lead
+              </h2>
+              <button
+                onClick={() => { setShowAddModal(false); setAddError(""); }}
+                className="text-caso-slate hover:text-caso-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleAddLead} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-caso-slate mb-1">Name</label>
+                <input
+                  type="text"
+                  value={addForm.name}
+                  onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                  className="w-full rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white placeholder:text-caso-slate/50 focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-caso-slate mb-1">
+                  Email <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={addForm.email}
+                  onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
+                  className="w-full rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white placeholder:text-caso-slate/50 focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
+                  placeholder="john@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-caso-slate mb-1">Phone</label>
+                <input
+                  type="tel"
+                  value={addForm.phone}
+                  onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })}
+                  className="w-full rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white placeholder:text-caso-slate/50 focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-caso-slate mb-1">Organization</label>
+                <input
+                  type="text"
+                  value={addForm.organization}
+                  onChange={(e) => setAddForm({ ...addForm, organization: e.target.value })}
+                  className="w-full rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white placeholder:text-caso-slate/50 focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
+                  placeholder="Acme Corp"
+                />
+              </div>
+              {addError && (
+                <p className="text-sm text-red-400">{addError}</p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowAddModal(false); setAddError(""); }}
+                  className="flex-1 rounded-lg border border-caso-border px-4 py-2 text-sm font-medium text-caso-slate hover:text-caso-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={addLoading}
+                  className="flex-1 rounded-lg bg-caso-blue-deep px-4 py-2 text-sm font-medium text-caso-white hover:bg-caso-blue transition-colors disabled:opacity-40"
+                >
+                  {addLoading ? "Adding..." : "Add Lead"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       {stats && (
