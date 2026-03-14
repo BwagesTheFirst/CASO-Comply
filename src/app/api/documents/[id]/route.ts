@@ -287,6 +287,7 @@ export async function POST(
     if (document.service_level === "expert") {
       await admin.from("review_queue").insert({
         tenant_id: auth.tenantId,
+        document_id: id,
         filename: document.filename,
         original_path: document.storage_path,
         output_path: remediatedPath,
@@ -295,6 +296,12 @@ export async function POST(
         status: "pending",
         storage_path: document.storage_path,
       });
+
+      // Mark document as pending expert review
+      await admin
+        .from("documents")
+        .update({ review_status: "pending" })
+        .eq("id", id);
     }
 
     // Increment trial pages used if tenant is on trial

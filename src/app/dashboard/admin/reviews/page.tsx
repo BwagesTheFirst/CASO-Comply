@@ -39,6 +39,7 @@ export default function AdminReviewQueuePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [delivering, setDelivering] = useState<string | null>(null);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -106,6 +107,25 @@ export default function AdminReviewQueuePage() {
       }
     };
     input.click();
+  }
+
+  async function handleDeliver(id: string) {
+    setDelivering(id);
+    try {
+      const res = await fetch(`/api/admin/reviews/${id}/deliver`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        fetchReviews();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Delivery failed");
+      }
+    } catch {
+      setError("Delivery failed");
+    } finally {
+      setDelivering(null);
+    }
   }
 
   if (loading) {
@@ -240,6 +260,7 @@ export default function AdminReviewQueuePage() {
                   <th className="px-6 py-3 text-caso-slate font-medium">Status</th>
                   <th className="px-6 py-3 text-caso-slate font-medium">Completed</th>
                   <th className="px-6 py-3 text-caso-slate font-medium">Delivered</th>
+                  <th className="px-6 py-3 text-caso-slate font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -273,6 +294,17 @@ export default function AdminReviewQueuePage() {
                       {review.delivered_at
                         ? new Date(review.delivered_at).toLocaleDateString()
                         : "Waiting for agent"}
+                    </td>
+                    <td className="px-6 py-3">
+                      {review.status === "completed" && (
+                        <button
+                          onClick={() => handleDeliver(review.id)}
+                          disabled={delivering === review.id}
+                          className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-500 disabled:opacity-50 transition-colors"
+                        >
+                          {delivering === review.id ? "Delivering..." : "Deliver"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

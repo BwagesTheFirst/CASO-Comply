@@ -84,5 +84,13 @@ export async function POST(
     );
   }
 
+  // Sync review_status on linked document
+  if (review.document_id) {
+    await admin
+      .from("documents")
+      .update({ review_status: "completed" })
+      .eq("id", review.document_id);
+  }
+
   return NextResponse.json({ status: "completed", review_id: id });
 }

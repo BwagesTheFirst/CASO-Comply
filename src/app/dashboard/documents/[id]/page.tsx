@@ -15,6 +15,7 @@ interface DocumentDetail {
   remediated_path: string | null;
   status: string;
   service_level: string;
+  review_status: string | null;
   page_count: number | null;
   score_before: number | null;
   score_after: number | null;
@@ -363,6 +364,49 @@ export default function DocumentDetailPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Expert Review Status */}
+          {doc.review_status && (
+            <div className="rounded-xl border border-caso-border bg-caso-navy-light/50 p-6">
+              <h2 className="text-sm font-semibold text-caso-slate uppercase tracking-wider mb-4">
+                Expert Review
+              </h2>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`inline-block rounded-full border px-3 py-1 text-sm font-medium ${
+                    doc.review_status === "pending"
+                      ? "bg-caso-warm/10 text-caso-warm border-caso-warm/30"
+                      : doc.review_status === "in_review"
+                        ? "bg-caso-blue/10 text-caso-blue border-caso-blue/30"
+                        : doc.review_status === "completed"
+                          ? "bg-caso-green/10 text-caso-green border-caso-green/30"
+                          : "bg-caso-green/10 text-caso-green border-caso-green/30"
+                  }`}
+                >
+                  {doc.review_status === "pending"
+                    ? "Awaiting Expert Review"
+                    : doc.review_status === "in_review"
+                      ? "Under Expert Review"
+                      : doc.review_status === "completed"
+                        ? "Expert Review Complete"
+                        : "Expert Reviewed & Delivered"}
+                </span>
+              </div>
+              {doc.review_status === "completed" && doc.remediated_path && (
+                <div className="mt-4">
+                  <a
+                    href={`/api/documents/${doc.id}/download?type=remediated`}
+                    className="inline-flex items-center gap-2 rounded-lg border border-caso-green/30 bg-caso-green/5 px-4 py-2 text-sm font-medium text-caso-green hover:bg-caso-green/10 transition-colors"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Corrected Version
+                  </a>
+                </div>
+              )}
             </div>
           )}
 

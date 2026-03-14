@@ -12,6 +12,7 @@ type ReviewStatus = "pending" | "in_review" | "completed" | "delivered";
 interface ReviewRecord {
   id: string;
   tenant_id: string;
+  document_id: string | null;
   filename: string;
   original_path: string | null;
   output_path: string | null;
@@ -95,6 +96,7 @@ export default function ReviewDetailPage() {
   const [scoreAfter, setScoreAfter] = useState<number | null>(null);
   const [reviewerNotes, setReviewerNotes] = useState("");
   const [completeFile, setCompleteFile] = useState<File | null>(null);
+  const [deliverSuccess, setDeliverSuccess] = useState(false);
 
   const fetchReview = useCallback(async () => {
     try {
@@ -199,6 +201,26 @@ export default function ReviewDetailPage() {
       URL.revokeObjectURL(url);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Download failed");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleDeliver() {
+    setActionLoading("deliver");
+    setDeliverSuccess(false);
+    try {
+      const res = await fetch(`/api/admin/reviews/${reviewId}/deliver`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Failed" }));
+        throw new Error(data.error || "Failed to deliver review");
+      }
+      setDeliverSuccess(true);
+      await fetchReview();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to deliver review");
     } finally {
       setActionLoading(null);
     }
@@ -508,8 +530,69 @@ export default function ReviewDetailPage() {
                   {actionLoading === "release" ? "Releasing..." : "Release (Back to Pending)"}
                 </button>
               )}
+
+              {/* Deliver to Customer (only when completed) */}
+              {review.status === "completed" && (
+                <button
+                  onClick={handleDeliver}
+                  disabled={actionLoading === "deliver"}
+                  className="flex w-full items-center gap-2 rounded-lg bg-purple-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-purple-500 disabled:opacity-40 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 2L11 13" />
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                  </svg>
+                  {actionLoading === "deliver" ? "Delivering..." : "Deliver to Customer"}
+                </button>
+              )}
+
+              {deliverSuccess && (
+                <p className="text-sm text-caso-green font-medium">
+                  Successfully delivered to customer.
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Linked Document */}
+          {review.document_id && (
+            <div className="rounded-xl border border-caso-border bg-caso-navy-light/50 p-6">
+              <h2 className="text-sm font-semibold text-caso-slate uppercase tracking-wider mb-4">
+                Linked Document
+              </h2>
+              <Link
+                href={`/dashboard/documents/${review.document_id}`}
+                className="flex items-center gap-2 text-sm text-caso-blue hover:underline"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                View Customer Document
+              </Link>
+              <p className="mt-1 text-xs text-caso-slate font-mono">{review.document_id}</p>
+            </div>
+          )}
 
           {/* Timestamps */}
           <div className="rounded-xl border border-caso-border bg-caso-navy-light/50 p-6">
