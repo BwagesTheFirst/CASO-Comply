@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteText, setDeleteText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -71,6 +72,28 @@ export default function SettingsPage() {
       setError("Failed to save settings");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (deleteText !== "DELETE") return;
+    setDeleting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/tenants/settings", { method: "DELETE" });
+
+      if (res.ok) {
+        // Account deleted — redirect to home page
+        window.location.href = "/";
+      } else {
+        const data = await res.json();
+        setError(data.error ?? "Failed to delete account");
+      }
+    } catch {
+      setError("Failed to delete account");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -279,10 +302,11 @@ export default function SettingsPage() {
                 Cancel
               </button>
               <button
-                disabled={deleteText !== "DELETE"}
+                onClick={handleDelete}
+                disabled={deleteText !== "DELETE" || deleting}
                 className="rounded-lg bg-caso-red px-4 py-2 text-sm font-semibold text-white hover:bg-caso-red-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
-                Permanently Delete
+                {deleting ? "Deleting..." : "Permanently Delete"}
               </button>
             </div>
           </div>

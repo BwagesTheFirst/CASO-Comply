@@ -51,12 +51,33 @@ export async function PUT(
   // Fetch current invoice to detect status transitions
   const { data: current } = await admin
     .from("invoices")
-    .select("status")
+    .select("status, sent_at")
     .eq("id", id)
     .single();
 
   if (!current) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+  }
+
+  // Validate status transitions
+  if (body.status !== undefined && body.status !== current.status) {
+    const validTransitions: Record<string, string[]> = {
+      draft: ["sent", "cancelled"],
+      sent: ["paid", "overdue", "cancelled"],
+      overdue: ["paid", "cancelled"],
+      paid: ["cancelled"],
+      cancelled: [],
+    };
+
+    const allowed = validTransitions[current.status] || [];
+    if (!allowed.includes(body.status)) {
+      return NextResponse.json(
+        {
+          error: `Cannot transition from "${current.status}" to "${body.status}". Allowed: ${allowed.join(", ") || "none"}`,
+        },
+        { status: 400 }
+      );
+    }
   }
 
   // Build update object with only allowed fields
@@ -78,7 +99,7 @@ export async function PUT(
   if (body.due_date !== undefined) update.due_date = body.due_date;
 
   // Status transition side effects
-  if (body.status === "sent" && current.status !== "sent") {
+  if (body.status === "sent" && current.status !== "sent" && !current.sent_at) {
     update.sent_at = new Date().toISOString();
   }
   if (body.status === "paid" && current.status !== "paid") {

@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -35,9 +35,31 @@ export async function GET(
     return NextResponse.json({ error: "Review not found" }, { status: 404 });
   }
 
+  // Determine which file to serve based on ?type= query parameter
+  const url = new URL(request.url);
+  const fileType = url.searchParams.get("type") || "original";
+
+  let storagePath: string | null = null;
+  switch (fileType) {
+    case "corrected":
+      storagePath = review.corrected_path || review.output_path || review.storage_path;
+      break;
+    case "output":
+      storagePath = review.output_path || review.storage_path;
+      break;
+    case "original":
+    default:
+      storagePath = review.storage_path;
+      break;
+  }
+
+  if (!storagePath) {
+    return NextResponse.json({ error: "No file path available" }, { status: 404 });
+  }
+
   const { data: fileData, error } = await admin.storage
     .from("review-files")
-    .download(review.storage_path);
+    .download(storagePath);
 
   if (error || !fileData) {
     return NextResponse.json({ error: "File not found in storage" }, { status: 404 });
@@ -47,7 +69,7 @@ export async function GET(
   return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${review.filename}"`,
+      "Content-Disposition": `inline; filename="${review.filename}"`,
     },
   });
 }

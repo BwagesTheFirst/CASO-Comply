@@ -40,7 +40,13 @@ interface Invoice {
   updated_at: string;
 }
 
-const STATUS_OPTIONS = ["draft", "sent", "paid", "overdue", "cancelled"];
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  draft: ["draft", "sent", "cancelled"],
+  sent: ["sent", "paid", "overdue", "cancelled"],
+  overdue: ["overdue", "paid", "cancelled"],
+  paid: ["paid", "cancelled"],
+  cancelled: ["cancelled"],
+};
 const PAYMENT_TERMS_OPTIONS = ["Net 30", "Net 45", "Net 60", "Due on Receipt"];
 
 function statusBadgeClass(status: string): string {
@@ -256,6 +262,15 @@ export default function AdminInvoiceDetailPage() {
               Mark as Sent
             </button>
           )}
+          {invoice.status === "sent" && (
+            <button
+              onClick={() => quickStatusChange("overdue")}
+              disabled={saving}
+              className="rounded-lg bg-caso-red/80 px-4 py-2 text-sm font-semibold text-white hover:bg-caso-red disabled:opacity-50 transition-colors"
+            >
+              Mark as Overdue
+            </button>
+          )}
           {(invoice.status === "sent" || invoice.status === "overdue") && (
             <button
               onClick={() => quickStatusChange("paid")}
@@ -263,6 +278,15 @@ export default function AdminInvoiceDetailPage() {
               className="rounded-lg bg-caso-green px-4 py-2 text-sm font-semibold text-white hover:bg-caso-green/80 disabled:opacity-50 transition-colors"
             >
               Mark as Paid
+            </button>
+          )}
+          {invoice.status !== "cancelled" && invoice.status !== "paid" && (
+            <button
+              onClick={() => quickStatusChange("cancelled")}
+              disabled={saving}
+              className="rounded-lg border border-caso-red/50 px-4 py-2 text-sm font-medium text-caso-red hover:bg-caso-red/10 disabled:opacity-50 transition-colors"
+            >
+              Cancel
             </button>
           )}
           <button
@@ -469,7 +493,7 @@ export default function AdminInvoiceDetailPage() {
               onChange={(e) => setEditStatus(e.target.value)}
               className="w-full rounded-lg border border-caso-border bg-caso-navy px-4 py-2.5 text-caso-white focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue transition-colors text-sm"
             >
-              {STATUS_OPTIONS.map((s) => (
+              {(VALID_TRANSITIONS[invoice.status] || [invoice.status]).map((s) => (
                 <option key={s} value={s}>
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </option>

@@ -566,7 +566,7 @@ export default function ReviewDetailPage() {
       {/* ── Tag Inspector Modal ────────────────────────────────────────── */}
       {showEditor && (
         <PdfViewer
-          downloadUrl={`/api/admin/reviews/${reviewId}/download`}
+          downloadUrl={`/api/admin/reviews/${reviewId}/download?type=${review.corrected_path ? "corrected" : review.output_path ? "output" : "original"}`}
           tagAssignments={tagAssignments}
           pageDimensions={[
             ...(review.page_count

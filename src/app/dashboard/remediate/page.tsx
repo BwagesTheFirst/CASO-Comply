@@ -37,13 +37,8 @@ const SERVICE_LEVELS = [
   },
 ] as const;
 
-const ACCEPTED_EXTENSIONS = [".pdf", ".docx", ".xlsx", ".pptx"];
-const ACCEPTED_MIME_TYPES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-];
+const ACCEPTED_EXTENSIONS = [".pdf"];
+const ACCEPTED_MIME_TYPES = ["application/pdf"];
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 function formatFileSize(bytes: number): string {
@@ -73,7 +68,7 @@ export default function RemediatePage() {
     );
     const hasValidMime = ACCEPTED_MIME_TYPES.includes(file.type);
     if (!hasValidExt && !hasValidMime) {
-      return `"${file.name}" is not a supported file type. Accepted: PDF, DOCX, XLSX, PPTX.`;
+      return `"${file.name}" is not a supported file type. Only PDF files are accepted.`;
     }
     if (file.size > MAX_FILE_SIZE) {
       return `"${file.name}" exceeds the 50MB file size limit.`;
@@ -290,7 +285,7 @@ export default function RemediatePage() {
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,.docx,.xlsx,.pptx"
+            accept=".pdf,application/pdf"
             multiple
             onChange={handleFileChange}
             className="hidden"
@@ -336,7 +331,7 @@ export default function RemediatePage() {
               </p>
             </div>
             <p className="text-[11px] text-caso-slate/60">
-              PDF, DOCX, XLSX, PPTX accepted. Max 50MB per file.
+              PDF files only. Max 50MB per file.
             </p>
           </div>
 

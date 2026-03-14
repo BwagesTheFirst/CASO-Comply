@@ -67,6 +67,7 @@ export default function AdminInvoicesPage() {
   const [search, setSearch] = useState("");
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const limit = 20;
 
   // Generate modal
@@ -133,6 +134,24 @@ export default function AdminInvoicesPage() {
       setGenResult("Failed to generate invoices");
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function quickStatusChange(invoiceId: string, newStatus: string) {
+    setUpdatingId(invoiceId);
+    try {
+      const res = await fetch(`/api/admin/invoices/${invoiceId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        fetchInvoices();
+      }
+    } catch {
+      // Error updating
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -311,12 +330,32 @@ export default function AdminInvoicesPage() {
                       {inv.po_number || "-"}
                     </td>
                     <td className="px-6 py-3">
-                      <Link
-                        href={`/dashboard/admin/invoices/${inv.id}`}
-                        className="text-caso-blue hover:text-caso-blue-bright text-sm font-medium transition-colors"
-                      >
-                        View
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/admin/invoices/${inv.id}`}
+                          className="text-caso-blue hover:text-caso-blue-bright text-sm font-medium transition-colors"
+                        >
+                          View
+                        </Link>
+                        {inv.status === "draft" && (
+                          <button
+                            onClick={() => quickStatusChange(inv.id, "sent")}
+                            disabled={updatingId === inv.id}
+                            className="text-xs text-caso-slate hover:text-caso-blue disabled:opacity-50 transition-colors"
+                          >
+                            {updatingId === inv.id ? "..." : "Send"}
+                          </button>
+                        )}
+                        {(inv.status === "sent" || inv.status === "overdue") && (
+                          <button
+                            onClick={() => quickStatusChange(inv.id, "paid")}
+                            disabled={updatingId === inv.id}
+                            className="text-xs text-caso-slate hover:text-caso-green disabled:opacity-50 transition-colors"
+                          >
+                            {updatingId === inv.id ? "..." : "Paid"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
