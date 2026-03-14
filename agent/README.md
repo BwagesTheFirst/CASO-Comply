@@ -23,14 +23,14 @@ services:
     image: bwages/caso-comply-agent:latest
     environment:
       # REQUIRED: Your license key from https://casocomply.com/dashboard/api-keys
-      - CASO_LICENSE_KEY=caso_ak_your_key_here
+      - CASO_LICENSE_KEY=caso_ak_PASTE_YOUR_KEY_HERE
 
       # REQUIRED: Set a strong password for the web dashboard
-      - CASO_ADMIN_PASSWORD=your-secure-password
+      - CASO_ADMIN_PASSWORD=CHANGE_ME_TO_A_SECURE_PASSWORD
 
       # Processing mode: local | hybrid | cloud
       #   local  — Everything on-premise. Nothing leaves your network.
-      #   hybrid — Local remediation + AI verification via Gemini (recommended).
+      #   hybrid — Local remediation + AI verification powered by CASO cloud (recommended).
       #   cloud  — Upload to CASO cloud for processing.
       - CASO_MODE=hybrid
 
@@ -42,7 +42,7 @@ services:
       # Mount your document folders here
       - ./documents:/data/documents
       # Where remediated (fixed) PDFs are saved
-      - ./remediated:/data/output
+      - ./remediated:/data/remediated
       # Persistent data (scan history, settings)
       - caso-data:/app/data
     restart: unless-stopped
@@ -71,7 +71,7 @@ Drop PDF files into the `./documents` folder. The agent scans automatically on t
 | Mode | What happens | Data leaves network? | Best for |
 |------|-------------|---------------------|----------|
 | `local` | Full on-premise remediation | No | HIPAA, air-gapped environments |
-| `hybrid` | Local remediation + Gemini AI verification | Page images only (no text/PDFs) | Recommended for most orgs |
+| `hybrid` | Local remediation + AI verification powered by CASO cloud | Page images only (no text/PDFs) | Recommended for most orgs |
 | `cloud` | Upload to CASO cloud API | Yes | Fast setup, non-sensitive docs |
 
 ## Configuration
@@ -112,30 +112,6 @@ When HIPAA mode is enabled:
 - Filenames are hashed in all log messages
 - API endpoints require authentication
 - CORS is restricted to localhost only
-
-### Hybrid Mode with Gemini AI
-
-For AI-powered quality verification in hybrid mode, you need a Gemini API key:
-
-```yaml
-environment:
-  - CASO_MODE=hybrid
-  - CASO_GEMINI_API_KEY=your-gemini-api-key
-```
-
-Get a free Gemini API key at [https://aistudio.google.com/apikey](https://aistudio.google.com/apikey).
-
-For Google Cloud environments, you can use Vertex AI instead:
-
-```yaml
-environment:
-  - CASO_GEMINI_PROVIDER=vertex
-  - CASO_GCP_PROJECT=your-gcp-project-id
-  - CASO_GCP_LOCATION=us-central1
-  - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-credentials.json
-volumes:
-  - ./gcp-credentials.json:/app/gcp-credentials.json:ro
-```
 
 ## Dashboard
 

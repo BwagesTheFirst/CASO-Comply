@@ -48,9 +48,20 @@ class LicenseClient:
                         data.get("features", {}),
                     )
                     return data.get("valid", False)
-                else:
-                    logger.warning("License validation failed: %d", resp.status_code)
+                elif resp.status_code in (401, 403):
+                    logger.error(
+                        "License explicitly rejected by server (HTTP %d) — "
+                        "key is invalid, revoked, or account is inactive",
+                        resp.status_code,
+                    )
                     return False
+                else:
+                    logger.warning(
+                        "License validation returned unexpected status %d — "
+                        "treating as network issue, allowing grace period",
+                        resp.status_code,
+                    )
+                    return True
         except Exception:
             logger.warning("Could not reach license server — running in offline mode")
             return True

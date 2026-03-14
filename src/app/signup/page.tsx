@@ -119,56 +119,118 @@ export default function SignupPage() {
               </div>
             </div>
             <h2 className="font-[family-name:var(--font-display)] text-xl font-bold text-caso-white mb-2">
-              Check your email
+              Account created
             </h2>
             <p className="text-caso-slate text-sm mb-6">
-              We sent a confirmation link to{" "}
-              <span className="text-caso-white font-medium">{email}</span>.
-              Click the link to activate your account.
+              Follow these steps to get started.
             </p>
 
-            {apiKey && (
-              <div className="mb-6 rounded-lg border border-caso-yellow/30 bg-caso-yellow/5 p-4 text-left">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg
-                    className="h-5 w-5 text-caso-yellow flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <p className="text-sm font-semibold text-caso-yellow">
-                    Save this license key now — you will not see it again
+            {/* Sequential steps */}
+            <ol className="text-left space-y-4 mb-6">
+              {/* Step 1: Save API key */}
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">
+                  1
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-caso-white">
+                    Save your license key
+                  </p>
+                  {apiKey ? (
+                    <div className="mt-2 rounded-lg border border-caso-yellow/30 bg-caso-yellow/5 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg
+                          className="h-4 w-4 text-caso-yellow flex-shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          aria-hidden="true"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <p className="text-xs font-semibold text-caso-yellow">
+                          Copy this now — you will not see it again
+                        </p>
+                      </div>
+                      <div className="relative">
+                        <code
+                          id="api-key-display"
+                          className="block w-full rounded-md bg-caso-navy border border-caso-border px-3 py-2.5 pr-20 text-sm text-caso-white font-mono break-all select-all"
+                        >
+                          {apiKey}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={handleCopyKey}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-caso-border/50 px-3 py-1 text-xs font-medium text-caso-slate hover:text-caso-white hover:bg-caso-border transition-colors"
+                        >
+                          {copied ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-caso-slate text-xs mt-1">
+                      You can find your key later on the API Keys page in your
+                      dashboard.
+                    </p>
+                  )}
+                </div>
+              </li>
+
+              {/* Step 2: Verify email */}
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">
+                  2
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-caso-white">
+                    Check your email for a verification link
+                  </p>
+                  <p className="text-caso-slate text-xs mt-1">
+                    We sent a confirmation link to{" "}
+                    <span className="text-caso-white font-medium">{email}</span>.
+                    Click it to activate your account.
                   </p>
                 </div>
-                <p className="text-caso-slate text-xs mb-3">
-                  You will need this key to configure the CASO Comply Docker
-                  agent. Store it somewhere safe.
-                </p>
-                <div className="relative">
-                  <code
-                    id="api-key-display"
-                    className="block w-full rounded-md bg-caso-navy border border-caso-border px-3 py-2.5 pr-20 text-sm text-caso-white font-mono break-all select-all"
-                  >
-                    {apiKey}
-                  </code>
-                  <button
-                    type="button"
-                    onClick={handleCopyKey}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-caso-border/50 px-3 py-1 text-xs font-medium text-caso-slate hover:text-caso-white hover:bg-caso-border transition-colors"
-                  >
-                    {copied ? "Copied!" : "Copy"}
-                  </button>
+              </li>
+
+              {/* Step 3: Log in */}
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">
+                  3
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-caso-white">
+                    Log in to your dashboard
+                  </p>
+                  <p className="text-caso-slate text-xs mt-1">
+                    After verifying your email, sign in to access your dashboard
+                    and API keys.
+                  </p>
                 </div>
-              </div>
-            )}
+              </li>
+
+              {/* Step 4: Set up agent */}
+              <li className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">
+                  4
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-caso-white">
+                    Set up your Docker agent
+                  </p>
+                  <p className="text-caso-slate text-xs mt-1">
+                    Follow the Getting Started guide in your dashboard to
+                    install and configure the CASO Comply agent.
+                  </p>
+                </div>
+              </li>
+            </ol>
 
             <Link
               href="/login"

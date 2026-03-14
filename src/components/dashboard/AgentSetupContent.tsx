@@ -59,7 +59,7 @@ const MODES = [
     value: "hybrid",
     label: "Hybrid (Recommended)",
     description:
-      "Local remediation with AI quality verification via Gemini. Only page images are sent for review — no text or PDFs leave your network.",
+      "Local remediation + AI verification powered by CASO cloud. Only page images are sent for review — no text or PDFs leave your network.",
   },
   {
     value: "cloud",
@@ -124,12 +124,6 @@ const envVars = [
     defaultVal: "false",
     description: "Enable HIPAA compliance (hashes filenames, restricts CORS)",
   },
-  {
-    name: "CASO_GEMINI_API_KEY",
-    required: "Hybrid only",
-    defaultVal: "\u2014",
-    description: "Gemini API key for AI verification (hybrid mode)",
-  },
 ];
 
 const tiers = [
@@ -165,20 +159,20 @@ services:
     image: bwages/caso-comply-agent:latest
     environment:
       # REQUIRED: Your license key from the API Keys page
-      - CASO_LICENSE_KEY=YOUR_LICENSE_KEY_HERE
+      - CASO_LICENSE_KEY=caso_ak_PASTE_YOUR_KEY_HERE
       # REQUIRED: Set a strong password for the dashboard
-      - CASO_ADMIN_PASSWORD=YOUR_SECURE_PASSWORD
+      - CASO_ADMIN_PASSWORD=CHANGE_ME_TO_A_SECURE_PASSWORD
       # Processing mode
       - CASO_MODE=${selectedMode}
       # Scan schedule (default: every hour)
-      - CASO_CRON=0 * * * *${selectedMode === "hybrid" ? "\n      # Gemini API key for AI verification (get one at https://aistudio.google.com/apikey)\n      # - CASO_GEMINI_API_KEY=your-gemini-key" : ""}${selectedMode === "local" ? "\n      # Disable telemetry for air-gapped environments\n      - CASO_PHONE_HOME=false" : ""}
+      - CASO_CRON=0 * * * *${selectedMode === "local" ? "\n      # Disable telemetry for air-gapped environments\n      - CASO_PHONE_HOME=false" : ""}
     ports:
       - "9090:9090"
     volumes:
       # Your document folder → agent scans this for PDFs
       - ./documents:/data/documents
       # Remediated output folder
-      - ./remediated:/data/output
+      - ./remediated:/data/remediated
       # Persistent data (scan history, database)
       - caso-data:/app/data
     restart: unless-stopped
@@ -309,7 +303,7 @@ volumes:
                 <p className="text-caso-slate text-xs">
                   Replace{" "}
                   <code className="text-caso-warm font-mono">
-                    YOUR_LICENSE_KEY_HERE
+                    caso_ak_PASTE_YOUR_KEY_HERE
                   </code>{" "}
                   with your full API key from the{" "}
                   <a
@@ -327,7 +321,7 @@ volumes:
                 <p className="text-caso-slate text-xs">
                   Replace{" "}
                   <code className="text-caso-warm font-mono">
-                    YOUR_SECURE_PASSWORD
+                    CHANGE_ME_TO_A_SECURE_PASSWORD
                   </code>{" "}
                   with a strong password. This protects the agent dashboard at
                   port 9090.
@@ -370,7 +364,12 @@ volumes:
               >
                 http://localhost:9090
               </a>{" "}
-              to access the dashboard.
+              to access the agent dashboard. When prompted to log in, enter the
+              password you set in{" "}
+              <code className="text-caso-green font-mono">
+                CASO_ADMIN_PASSWORD
+              </code>
+              . No username is required &mdash; leave it blank or enter anything.
             </p>
           </div>
 

@@ -8,9 +8,9 @@
 # cloud   → PDFs uploaded to CASO cloud for processing ($0.10/page)
 #           Fastest setup. Best for public/non-sensitive docs.
 #
-# hybrid  → Remediation runs locally. Only page images are sent
-#           to Gemini AI for quality verification ($0.20/page).
-#           PDFs and text never leave your network.
+# hybrid  → Remediation runs locally. AI verification is handled
+#           by CASO cloud — no setup needed ($0.20/page).
+#           Only page images are sent; PDFs and text never leave your network.
 #
 # local   → Everything runs on-premise. Nothing leaves your
 #           network. Requires Enterprise license.
@@ -60,20 +60,6 @@ watch: true
 # ── Performance ──────────────────────────────────────────────
 # Number of PDFs to process simultaneously
 max_workers: 1
-
-# ── AI Verification (hybrid mode only) ──────────────────────
-# Gemini API key for multimodal quality verification
-# Get one at https://aistudio.google.com/apikey
-gemini_api_key: ""
-
-# ── Gemini Provider ──────────────────────────────────────────
-# Which Gemini API endpoint to use:
-#   standard → Google AI Studio (default). Uses gemini_api_key above.
-#   vertex   → Vertex AI on Google Cloud. Auth via GOOGLE_APPLICATION_CREDENTIALS
-#              env var (service account JSON). No API key needed.
-# gemini_provider: standard
-# gcp_project: ""           # Required when gemini_provider is "vertex"
-# gcp_location: us-central1 # GCP region for Vertex AI
 
 # ── HIPAA Mode ──────────────────────────────────────────────
 # When enabled:

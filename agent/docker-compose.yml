@@ -14,12 +14,12 @@ services:
     environment:
       # ── REQUIRED ──
       # Your license key from https://casocomply.com/dashboard/api-keys
-      - CASO_LICENSE_KEY=caso_ak_REPLACE_WITH_YOUR_KEY
+      - CASO_LICENSE_KEY=caso_ak_PASTE_YOUR_KEY_HERE
       # Dashboard login password — CHANGE THIS to something secure
-      - CASO_ADMIN_PASSWORD=REPLACE_WITH_SECURE_PASSWORD
+      - CASO_ADMIN_PASSWORD=CHANGE_ME_TO_A_SECURE_PASSWORD
       # ── Processing Mode ──
       # local  = everything on-premise, nothing leaves your network
-      # hybrid = local remediation + AI quality verification (recommended)
+      # hybrid = local remediation + AI verification powered by CASO cloud (recommended)
       # cloud  = upload to CASO cloud for processing
       - CASO_MODE=hybrid
       # ── Schedule ──
@@ -35,13 +35,6 @@ services:
       # - CASO_PURGE_REMEDIATED_HOURS=168
       # - CASO_PURGE_DB_PATHS_DAYS=90
       # - CASO_CLEANUP_ON_STARTUP=true
-      # ── Gemini AI Verification (for hybrid mode) ──
-      # - CASO_GEMINI_API_KEY=your-gemini-api-key
-      # ── Vertex AI Gemini (alternative to API key) ──
-      # - CASO_GEMINI_PROVIDER=vertex
-      # - CASO_GCP_PROJECT=your-gcp-project-id
-      # - CASO_GCP_LOCATION=us-central1
-      # - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-credentials.json
     ports:
       - "9090:9090"
     volumes:
@@ -52,8 +45,6 @@ services:
       - ./remediated:/data/output
       # Persistent data (scan history, settings)
       - caso-data:/app/data
-      # ── GCP credentials for Vertex AI (uncomment if using CASO_GEMINI_PROVIDER=vertex) ──
-      # - ./gcp-credentials.json:/app/gcp-credentials.json:ro
     restart: unless-stopped
 
 volumes:

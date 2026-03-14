@@ -23,14 +23,49 @@ export default async function DashboardOverview() {
 
   if (!membership) {
     return (
-      <div className="text-caso-white">
-        <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold mb-4">
-          No Tenant Found
-        </h1>
-        <p className="text-caso-slate">
-          Your account is not associated with any organization. Please contact
-          support.
-        </p>
+      <div className="max-w-lg mx-auto mt-12 text-center">
+        <div className="rounded-xl bg-caso-navy-light border border-caso-border p-8">
+          <div className="mb-4 flex justify-center">
+            <div className="rounded-full bg-caso-warm/10 p-3">
+              <svg
+                className="h-8 w-8 text-caso-warm"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-caso-white mb-2">
+            No Tenant Found
+          </h1>
+          <p className="text-caso-slate text-sm mb-6">
+            Your account setup may still be in progress. This usually resolves
+            within a few seconds.
+          </p>
+          <a
+            href="/dashboard"
+            className="inline-block rounded-lg bg-caso-blue-deep px-6 py-2.5 text-sm font-semibold text-white hover:bg-caso-blue transition-colors"
+          >
+            Refresh Page
+          </a>
+          <p className="text-caso-slate text-xs mt-6">
+            If this persists, contact{" "}
+            <a
+              href="mailto:support@casocomply.com"
+              className="text-caso-blue hover:text-caso-blue-bright"
+            >
+              support@casocomply.com
+            </a>
+          </p>
+        </div>
       </div>
     );
   }

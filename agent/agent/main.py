@@ -141,13 +141,19 @@ async def main():
         logger.error("=" * 60)
         sys.exit(1)
 
-    if config.admin_password in ("", "caso-admin", "changeme", "REPLACE_WITH_SECURE_PASSWORD"):
-        logger.warning("=" * 60)
-        logger.warning("INSECURE ADMIN PASSWORD")
-        logger.warning("=" * 60)
-        logger.warning("Your CASO_ADMIN_PASSWORD is set to a default value.")
-        logger.warning("Please set a strong, unique password in docker-compose.yml.")
-        logger.warning("=" * 60)
+    _default_passwords = ("", "caso-admin", "changeme", "REPLACE_WITH_SECURE_PASSWORD", "password", "admin", "YOUR_SECURE_PASSWORD")
+    if config.admin_password in _default_passwords:
+        logger.error("=" * 60)
+        logger.error("INSECURE ADMIN PASSWORD — AGENT WILL NOT START")
+        logger.error("=" * 60)
+        logger.error("Your CASO_ADMIN_PASSWORD is set to a default value.")
+        logger.error("")
+        logger.error("To fix this:")
+        logger.error("  1. Open your docker-compose.yml")
+        logger.error("  2. Set CASO_ADMIN_PASSWORD to a strong, unique password")
+        logger.error("  3. Restart: docker compose up -d")
+        logger.error("=" * 60)
+        sys.exit(1)
 
     if config.hipaa_mode:
         logger.info("HIPAA mode ACTIVE — no filenames, PDFs, or usage data will be sent to cloud")
