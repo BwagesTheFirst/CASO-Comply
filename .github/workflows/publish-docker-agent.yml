@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: casocomply/comply-agent
+  IMAGE_NAME: bwages/caso-comply-agent
 
 jobs:
   build-and-push:

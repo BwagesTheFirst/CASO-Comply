@@ -20,7 +20,7 @@ mkdir caso-agent && cd caso-agent
 version: "3.8"
 services:
   caso-agent:
-    image: casocomply/comply-agent:latest
+    image: bwages/caso-comply-agent:latest
     environment:
       # REQUIRED: Your license key from https://casocomply.com/dashboard/api-keys
       - CASO_LICENSE_KEY=caso_ak_your_key_here
