@@ -113,7 +113,7 @@ export async function PUT(
   const body = await request.json();
 
   // Only allow updating specific fields
-  const allowedFields = ["status", "plan_id", "trial_ends_at"];
+  const allowedFields = ["status", "plan_id", "trial_ends_at", "trial_pages_limit", "trial_pages_used"];
   const updates: Record<string, unknown> = {};
 
   for (const field of allowedFields) {

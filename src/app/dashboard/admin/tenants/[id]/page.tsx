@@ -43,6 +43,8 @@ interface Tenant {
   status: string;
   billing_email: string | null;
   trial_ends_at: string | null;
+  trial_pages_limit: number | null;
+  trial_pages_used: number | null;
   created_at: string;
   plan: Plan | null;
   members: Member[];
@@ -101,6 +103,8 @@ export default function AdminTenantDetailPage() {
   const [editStatus, setEditStatus] = useState("");
   const [editPlanId, setEditPlanId] = useState("");
   const [editTrialEndsAt, setEditTrialEndsAt] = useState("");
+  const [editTrialPagesLimit, setEditTrialPagesLimit] = useState<number>(10);
+  const [editTrialPagesUsed, setEditTrialPagesUsed] = useState<number>(0);
 
   const fetchTenant = useCallback(async () => {
     setLoading(true);
@@ -117,6 +121,8 @@ export default function AdminTenantDetailPage() {
             ? data.tenant.trial_ends_at.split("T")[0]
             : ""
         );
+        setEditTrialPagesLimit(data.tenant.trial_pages_limit ?? 10);
+        setEditTrialPagesUsed(data.tenant.trial_pages_used ?? 0);
         // If the API returned plans, use them; otherwise keep known plans
         if (data.plans) {
           setPlans(data.plans);
@@ -140,9 +146,11 @@ export default function AdminTenantDetailPage() {
     setError(null);
     setSuccess(null);
     try {
-      const body: Record<string, string | null> = {
+      const body: Record<string, string | number | null> = {
         status: editStatus,
         plan_id: editPlanId || null,
+        trial_pages_limit: editTrialPagesLimit,
+        trial_pages_used: editTrialPagesUsed,
       };
       if (editStatus === "trial" && editTrialEndsAt) {
         body.trial_ends_at = editTrialEndsAt;
@@ -325,6 +333,52 @@ export default function AdminTenantDetailPage() {
                 />
               </div>
             )}
+            <div>
+              <label
+                htmlFor="edit-trial-pages-limit"
+                className="block text-sm font-medium text-caso-slate mb-1.5"
+              >
+                Trial Pages Limit
+              </label>
+              <input
+                id="edit-trial-pages-limit"
+                type="number"
+                min={0}
+                value={editTrialPagesLimit}
+                onChange={(e) => setEditTrialPagesLimit(Number(e.target.value))}
+                className="w-full rounded-lg border border-caso-border bg-caso-navy px-4 py-2.5 text-caso-white focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue transition-colors text-sm"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="edit-trial-pages-used"
+                className="block text-sm font-medium text-caso-slate mb-1.5"
+              >
+                Trial Pages Used
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="edit-trial-pages-used"
+                  type="number"
+                  min={0}
+                  value={editTrialPagesUsed}
+                  onChange={(e) => setEditTrialPagesUsed(Number(e.target.value))}
+                  className="flex-1 rounded-lg border border-caso-border bg-caso-navy px-4 py-2.5 text-caso-white focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue transition-colors text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setEditTrialPagesUsed(0)}
+                  className="rounded-lg border border-caso-border px-3 py-2.5 text-xs font-medium text-caso-slate hover:text-caso-white hover:border-caso-blue transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+              {editTrialPagesUsed >= editTrialPagesLimit && (
+                <p className="text-xs text-caso-warm mt-1">
+                  Limit reached — uploads are disabled for this tenant
+                </p>
+              )}
+            </div>
           </div>
           <button
             onClick={handleSave}
