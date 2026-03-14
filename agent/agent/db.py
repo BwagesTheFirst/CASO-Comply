@@ -1,6 +1,8 @@
 # agent/agent/db.py
 from __future__ import annotations
 
+import os
+
 import aiosqlite
 
 SCHEMA = """
@@ -57,6 +59,7 @@ class Database:
 
     async def init(self):
         self._db = await aiosqlite.connect(self._path)
+        os.chmod(str(self._path), 0o600)
         self._db.row_factory = aiosqlite.Row
         # Check if old 'pdfs' table exists and migrate
         cursor = await self._db.execute(

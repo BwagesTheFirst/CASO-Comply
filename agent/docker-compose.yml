@@ -46,6 +46,11 @@ services:
       # Persistent data (scan history, settings)
       - caso-data:/app/data
     restart: unless-stopped
+    mem_limit: 2g
+    memswap_limit: 2g
+    pids_limit: 256
+    cap_drop:
+      - ALL
 
 volumes:
   caso-data:

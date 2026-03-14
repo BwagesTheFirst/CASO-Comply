@@ -1,9 +1,11 @@
 # agent/agent/api.py
 from __future__ import annotations
 
+import ipaddress
 import os
 import secrets
 import time
+from collections import defaultdict
 from pathlib import Path
 
 import yaml
@@ -21,6 +23,20 @@ BROWSE_ROOT = "/data"
 _active_tokens: dict[str, float] = {}
 
 TOKEN_LIFETIME = 86400  # 24 hours
+
+# Rate limiting for failed login attempts
+# Maps IP -> list of failed attempt timestamps
+_failed_login_attempts: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT_MAX_ATTEMPTS = 5
+RATE_LIMIT_WINDOW = 300  # 5 minutes
+
+# Trusted proxy networks for X-Forwarded-For
+_TRUSTED_PROXY_NETWORKS = [
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+]
 
 
 class LoginRequest(BaseModel):
@@ -62,23 +78,58 @@ def _require_auth(authorization: str | None):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 
+def _is_trusted_proxy(ip: str) -> bool:
+    """Check if an IP is from a known local/proxy network."""
+    try:
+        addr = ipaddress.ip_address(ip)
+        return any(addr in net for net in _TRUSTED_PROXY_NETWORKS)
+    except ValueError:
+        return False
+
+
 def _get_client_ip(request: Request) -> str:
-    """Extract client IP from request."""
+    """Extract client IP from request, only trusting X-Forwarded-For from trusted proxies."""
+    direct_ip = request.client.host if request.client else "unknown"
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
+    if forwarded and _is_trusted_proxy(direct_ip):
         return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    return direct_ip
+
+
+def _check_rate_limit(ip: str):
+    """Raise 429 if IP has exceeded failed login attempts within the window."""
+    now = time.time()
+    cutoff = now - RATE_LIMIT_WINDOW
+    # Clean up old entries for this IP
+    _failed_login_attempts[ip] = [
+        t for t in _failed_login_attempts[ip] if t > cutoff
+    ]
+    if len(_failed_login_attempts[ip]) >= RATE_LIMIT_MAX_ATTEMPTS:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many failed login attempts. Try again later.",
+        )
+
+
+def _record_failed_login(ip: str):
+    """Record a failed login attempt for rate limiting."""
+    _failed_login_attempts[ip].append(time.time())
+
+
+def _clear_failed_logins(ip: str):
+    """Clear failed login attempts on successful auth."""
+    _failed_login_attempts.pop(ip, None)
 
 
 def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
     app = FastAPI(title="CASO Comply Agent", version="0.1.0")
 
-    # In HIPAA mode, restrict CORS to localhost only
-    cors_origins = (
-        ["http://localhost:*", "http://127.0.0.1:*"]
-        if config.hipaa_mode
-        else ["*"]
-    )
+    # CORS: always restrict to localhost by default; allow override via env var
+    custom_origins = os.environ.get("CASO_CORS_ORIGINS")
+    if custom_origins:
+        cors_origins = [o.strip() for o in custom_origins.split(",") if o.strip()]
+    else:
+        cors_origins = ["http://localhost:*", "http://127.0.0.1:*"]
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
@@ -89,27 +140,27 @@ def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
     # Store scheduler on app state for access in endpoints
     app.state.scheduler = scheduler
 
-    # --- Helper: conditionally require auth in HIPAA mode ---
+    # --- Unauthenticated liveness probe (Docker HEALTHCHECK only) ---
 
-    def _hipaa_auth(authorization: str | None):
-        """In HIPAA mode, require auth; otherwise allow public access."""
-        if config.hipaa_mode:
-            _require_auth(authorization)
+    @app.get("/health")
+    async def liveness():
+        return {"status": "ok"}
 
-    # --- Public read-only endpoints (auth-gated in HIPAA mode) ---
+    # --- All /api/* endpoints require auth ---
 
     @app.get("/api/health")
-    async def health():
-        return {"status": "ok", "mode": config.mode, "hipaa_mode": config.hipaa_mode}
+    async def api_health(authorization: str | None = Header(default=None)):
+        _require_auth(authorization)
+        return {"status": "ok"}
 
     @app.get("/api/stats")
     async def stats(authorization: str | None = Header(default=None)):
-        _hipaa_auth(authorization)
+        _require_auth(authorization)
         return await db.get_stats()
 
     @app.get("/api/config")
     async def get_config(authorization: str | None = Header(default=None)):
-        _hipaa_auth(authorization)
+        _require_auth(authorization)
         return {
             "mode": config.mode,
             "scan_paths": config.scan_paths,
@@ -128,28 +179,35 @@ def create_app(config: AgentConfig, db: Database, scheduler=None) -> FastAPI:
         limit: int = 100, offset: int = 0,
         authorization: str | None = Header(default=None),
     ):
-        _hipaa_auth(authorization)
+        _require_auth(authorization)
         return await db.get_all(limit=limit, offset=offset)
 
     @app.get("/api/pdfs/pending")
     async def pending_pdfs(authorization: str | None = Header(default=None)):
-        _hipaa_auth(authorization)
+        _require_auth(authorization)
         return await db.get_pending()
 
     @app.post("/api/scan/trigger")
-    async def trigger_scan(request: Request):
+    async def trigger_scan(
+        request: Request,
+        authorization: str | None = Header(default=None),
+    ):
+        _require_auth(authorization)
         ip = _get_client_ip(request)
         await db.add_audit_log("scan_triggered", "Manual scan triggered", ip)
         return {"message": "Scan triggered"}
 
-    # --- Auth endpoint ---
+    # --- Auth endpoint (rate limited) ---
 
     @app.post("/api/auth")
     async def authenticate(body: LoginRequest, request: Request):
         ip = _get_client_ip(request)
+        _check_rate_limit(ip)
         if body.password != config.admin_password:
+            _record_failed_login(ip)
             await db.add_audit_log("login_failed", "Invalid password attempt", ip)
             raise HTTPException(status_code=401, detail="Invalid password")
+        _clear_failed_logins(ip)
         token = secrets.token_hex(32)
         _active_tokens[token] = time.time() + TOKEN_LIFETIME
         await db.add_audit_log("login_success", "Admin authenticated", ip)

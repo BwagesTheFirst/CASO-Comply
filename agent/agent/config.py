@@ -35,7 +35,7 @@ class AgentConfig:
     phone_home: bool = True
     caso_api_url: str = "https://caso-comply-api.onrender.com"
     local_port: int = 9090
-    admin_password: str = "caso-admin"
+    admin_password: str = ""
     hipaa_mode: bool = False
     gemini_provider: str = "standard"
     gcp_project: str = ""

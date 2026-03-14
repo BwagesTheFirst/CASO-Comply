@@ -5,4 +5,12 @@ tests/
 .pytest_cache/
 .git/
 .gitignore
+*.env
+.env*
+*.log
+*.tmp
+.vscode/
+.idea/
+build/
+dist/
 # trigger build

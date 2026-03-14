@@ -141,16 +141,26 @@ async def main():
         logger.error("=" * 60)
         sys.exit(1)
 
-    _default_passwords = ("", "caso-admin", "changeme", "REPLACE_WITH_SECURE_PASSWORD", "password", "admin", "YOUR_SECURE_PASSWORD")
-    if config.admin_password in _default_passwords:
+    _known_defaults = (
+        "caso-admin", "changeme", "REPLACE_WITH_SECURE_PASSWORD",
+        "password", "admin", "YOUR_SECURE_PASSWORD",
+        "CHANGE_ME_TO_A_SECURE_PASSWORD",
+    )
+    _pw = config.admin_password
+    if not _pw or len(_pw) < 8 or _pw in _known_defaults:
         logger.error("=" * 60)
         logger.error("INSECURE ADMIN PASSWORD — AGENT WILL NOT START")
         logger.error("=" * 60)
-        logger.error("Your CASO_ADMIN_PASSWORD is set to a default value.")
+        if not _pw:
+            logger.error("CASO_ADMIN_PASSWORD is not set.")
+        elif len(_pw) < 8:
+            logger.error("CASO_ADMIN_PASSWORD is too short (minimum 8 characters).")
+        else:
+            logger.error("CASO_ADMIN_PASSWORD is set to a known default value.")
         logger.error("")
         logger.error("To fix this:")
         logger.error("  1. Open your docker-compose.yml")
-        logger.error("  2. Set CASO_ADMIN_PASSWORD to a strong, unique password")
+        logger.error("  2. Set CASO_ADMIN_PASSWORD to a strong, unique password (8+ chars)")
         logger.error("  3. Restart: docker compose up -d")
         logger.error("=" * 60)
         sys.exit(1)
