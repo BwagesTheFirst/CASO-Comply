@@ -473,7 +473,7 @@ export default function CompetitorsPage() {
             </p>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
-                href="/#scan"
+                href="/free-scan"
                 className="rounded-xl bg-caso-blue px-8 py-4 text-base font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
               >
                 Get Free Site Audit

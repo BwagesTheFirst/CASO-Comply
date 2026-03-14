@@ -66,37 +66,31 @@ export default function SetupPage() {
           {/* Desktop Nav */}
           <div className="hidden items-center gap-1 lg:flex">
             <a
-              href="/#how-it-works"
+              href="/services/pdf-remediation"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
               How It Works
             </a>
             <a
-              href="/#pricing"
-              className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
-            >
-              Service Levels
-            </a>
-            <a
-              href="/#pricing"
+              href="/pricing"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
               Pricing
             </a>
             <a
-              href="/#enterprise"
+              href="/solutions/enterprise"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
               Enterprise
             </a>
             <a
-              href="/#partners"
+              href="/about"
               className="rounded-lg px-4 py-2 text-sm font-medium text-caso-slate transition-colors hover:bg-caso-navy-light hover:text-caso-white"
             >
-              Partners
+              About
             </a>
             <a
-              href="/#scan"
+              href="/free-scan"
               className="ml-4 rounded-xl bg-caso-blue px-5 py-2.5 text-sm font-bold text-caso-white transition-all hover:bg-caso-blue-bright hover:shadow-lg hover:shadow-caso-blue/25"
             >
               Free Site Audit
@@ -199,7 +193,7 @@ export default function SetupPage() {
                     </strong>{" "}
                     &mdash;{" "}
                     <a
-                      href="/#scan"
+                      href="/free-scan"
                       className="text-caso-glacier underline decoration-caso-glacier/30 underline-offset-2 hover:text-caso-blue hover:decoration-caso-blue/50"
                     >
                       get one with a free site audit
@@ -861,7 +855,7 @@ services:
               <ul className="mt-4 space-y-3" role="list">
                 <li>
                   <a
-                    href="/#how-it-works"
+                    href="/services/pdf-remediation"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     How It Works
@@ -869,15 +863,7 @@ services:
                 </li>
                 <li>
                   <a
-                    href="/#pricing"
-                    className="text-sm text-caso-slate hover:text-caso-white"
-                  >
-                    Service Levels
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/#pricing"
+                    href="/pricing"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Pricing
@@ -885,7 +871,7 @@ services:
                 </li>
                 <li>
                   <a
-                    href="/#scan"
+                    href="/free-scan"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Free Site Audit
@@ -932,10 +918,10 @@ services:
                 </li>
                 <li>
                   <a
-                    href="/#partners"
+                    href="/about"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
-                    Partner Program
+                    About CASO
                   </a>
                 </li>
               </ul>
@@ -949,15 +935,15 @@ services:
               <ul className="mt-4 space-y-3" role="list">
                 <li>
                   <a
-                    href="/accessibility"
+                    href="/security"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
-                    Accessibility Statement
+                    Security
                   </a>
                 </li>
                 <li>
                   <a
-                    href="/privacy"
+                    href="/legal/privacy"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Privacy Policy
@@ -965,7 +951,7 @@ services:
                 </li>
                 <li>
                   <a
-                    href="/terms"
+                    href="/legal/terms"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Terms of Service
