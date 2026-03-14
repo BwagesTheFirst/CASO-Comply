@@ -72,6 +72,7 @@ export default async function DashboardOverview() {
   const trialDaysLeft = trialEndsAt
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
+  const trialPagesUsed = tenant?.trial_pages_used ?? 0;
 
   function usageBarColor(pct: number) {
     if (pct >= 100) return "bg-caso-red";
@@ -99,22 +100,43 @@ export default async function DashboardOverview() {
         <div className="rounded-xl bg-caso-warm/10 border border-caso-warm/30 px-6 py-4 flex items-center justify-between">
           <div>
             <p className="text-caso-warm font-semibold text-sm">
-              Trial Period
+              {trialPagesUsed >= (tenant?.trial_pages_limit ?? 10) ? "Trial Limit Reached" : "Trial Period"}
             </p>
             <p className="text-caso-slate text-sm mt-0.5">
-              Your trial ends in{" "}
-              <span className="text-caso-white font-medium">
-                {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""}
-              </span>
-              . Upgrade to keep your access.
+              {trialPagesUsed >= (tenant?.trial_pages_limit ?? 10) ? (
+                <>
+                  You&apos;ve used all your trial pages. Contact{" "}
+                  <a href="mailto:sales@casocomply.com" className="text-caso-blue hover:underline">
+                    sales@casocomply.com
+                  </a>{" "}
+                  to continue.
+                </>
+              ) : (
+                <>
+                  Your trial ends in{" "}
+                  <span className="text-caso-white font-medium">
+                    {trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""}
+                  </span>
+                  . Upgrade to keep your access.
+                </>
+              )}
             </p>
           </div>
-          <Link
-            href="/dashboard/billing"
-            className="rounded-lg bg-caso-warm px-4 py-2 text-sm font-semibold text-caso-navy hover:bg-caso-warm-dark transition-colors whitespace-nowrap"
-          >
-            Upgrade Now
-          </Link>
+          {trialPagesUsed >= (tenant?.trial_pages_limit ?? 10) ? (
+            <a
+              href="mailto:sales@casocomply.com"
+              className="rounded-lg bg-caso-warm px-4 py-2 text-sm font-semibold text-caso-navy hover:bg-caso-warm-dark transition-colors whitespace-nowrap"
+            >
+              Contact Sales
+            </a>
+          ) : (
+            <Link
+              href="/dashboard/billing"
+              className="rounded-lg bg-caso-warm px-4 py-2 text-sm font-semibold text-caso-navy hover:bg-caso-warm-dark transition-colors whitespace-nowrap"
+            >
+              Upgrade Now
+            </Link>
+          )}
         </div>
       )}
 

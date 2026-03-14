@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface UploadFile {
@@ -8,6 +8,13 @@ interface UploadFile {
   file: File;
   name: string;
   size: number;
+}
+
+interface TrialState {
+  status: string | null;
+  trial_pages_used: number;
+  trial_pages_limit: number;
+  loading: boolean;
 }
 
 const SERVICE_LEVELS = [
@@ -51,6 +58,16 @@ function generateId(): string {
   return Math.random().toString(36).slice(2, 11);
 }
 
+function formatBatchName(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const mo = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const h = String(now.getHours()).padStart(2, "0");
+  const mi = String(now.getMinutes()).padStart(2, "0");
+  return `Batch ${y}-${mo}-${d} ${h}:${mi}`;
+}
+
 export default function RemediatePage() {
   const router = useRouter();
   const [serviceLevel, setServiceLevel] = useState("enhanced");
@@ -61,6 +78,45 @@ export default function RemediatePage() {
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
+
+  const [trial, setTrial] = useState<TrialState>({
+    status: null,
+    trial_pages_used: 0,
+    trial_pages_limit: 10,
+    loading: true,
+  });
+
+  // Fetch trial status on mount
+  useEffect(() => {
+    async function fetchTrialStatus() {
+      try {
+        const res = await fetch("/api/tenants/settings");
+        if (res.ok) {
+          const data = await res.json();
+          const tenant = data.tenant;
+          setTrial({
+            status: tenant.status ?? null,
+            trial_pages_used: tenant.trial_pages_used ?? 0,
+            trial_pages_limit: tenant.trial_pages_limit ?? 10,
+            loading: false,
+          });
+        } else {
+          setTrial((prev) => ({ ...prev, loading: false }));
+        }
+      } catch {
+        setTrial((prev) => ({ ...prev, loading: false }));
+      }
+    }
+    fetchTrialStatus();
+  }, []);
+
+  const trialExhausted =
+    !trial.loading &&
+    trial.status === "trial" &&
+    trial.trial_pages_used >= trial.trial_pages_limit;
+
+  const dropZoneDisabled = uploading || trialExhausted;
+  const serviceLevelLocked = files.length > 0;
 
   const validateFile = useCallback((file: File): string | null => {
     const hasValidExt = ACCEPTED_EXTENSIONS.some((ext) =>
@@ -81,6 +137,7 @@ export default function RemediatePage() {
 
   const addFiles = useCallback(
     (newFiles: FileList | File[]) => {
+      if (trialExhausted) return;
       setError(null);
       const toAdd: UploadFile[] = [];
       for (const file of Array.from(newFiles)) {
@@ -99,7 +156,7 @@ export default function RemediatePage() {
       }
       setFiles((prev) => [...prev, ...toAdd]);
     },
-    [files, validateFile]
+    [files, validateFile, trialExhausted]
   );
 
   const removeFile = useCallback((id: string) => {
@@ -133,11 +190,11 @@ export default function RemediatePage() {
       e.stopPropagation();
       setIsDragOver(false);
       dragCounter.current = 0;
-      if (e.dataTransfer.files.length > 0) {
+      if (!dropZoneDisabled && e.dataTransfer.files.length > 0) {
         addFiles(e.dataTransfer.files);
       }
     },
-    [addFiles]
+    [addFiles, dropZoneDisabled]
   );
 
   const handleFileChange = useCallback(
@@ -156,48 +213,54 @@ export default function RemediatePage() {
   const estimatedCost = ((estimatedPages * selectedLevel.priceCents) / 100).toFixed(2);
 
   async function handleSubmit() {
-    if (files.length === 0) return;
+    if (files.length === 0 || trialExhausted) return;
     setUploading(true);
     setError(null);
     setUploadProgress(0);
 
     try {
-      const documentIds: string[] = [];
-      let uploaded = 0;
-
-      // Phase 1: Upload all files
+      // Build FormData for batch API
+      const formData = new FormData();
+      formData.append("name", formatBatchName());
+      formData.append("service_level", serviceLevel);
       for (const uploadFile of files) {
-        const formData = new FormData();
-        formData.append("file", uploadFile.file);
-        formData.append("service_level", serviceLevel);
-
-        const res = await fetch("/api/documents", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({ error: "Upload failed" }));
-          throw new Error(data.error || `Failed to upload "${uploadFile.name}"`);
-        }
-
-        const data = await res.json();
-        if (data.document?.id) {
-          documentIds.push(data.document.id);
-        }
-
-        uploaded += 1;
-        setUploadProgress(Math.round((uploaded / files.length) * 100));
+        formData.append("files", uploadFile.file);
       }
 
-      // Phase 2: Fire-and-forget remediation trigger for each uploaded doc
-      for (const docId of documentIds) {
-        fetch(`/api/documents/${docId}`, { method: "POST" }).catch(() => {
-          // Remediation failures are handled in the document detail view
-        });
+      setUploadProgress(10);
+
+      const res = await fetch("/api/documents/batch", {
+        method: "POST",
+        body: formData,
+      });
+
+      setUploadProgress(70);
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(data.error || "Failed to create batch");
       }
 
-      router.push("/dashboard/documents");
+      const data = await res.json();
+      const batchId = data.batch?.id;
+
+      if (!batchId) {
+        throw new Error("No batch ID returned");
+      }
+
+      setUploadProgress(80);
+
+      // Fire-and-forget: trigger processing
+      fetch(`/api/documents/batch/${batchId}/process`, { method: "POST" }).catch(
+        () => {
+          // Processing failures are handled in the batch detail view
+        }
+      );
+
+      setUploadProgress(100);
+
+      // Redirect to batch detail page
+      router.push(`/dashboard/documents/batch/${batchId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
       setUploading(false);
@@ -216,6 +279,25 @@ export default function RemediatePage() {
         </p>
       </div>
 
+      {/* Trial exhausted banner */}
+      {trialExhausted && (
+        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-5">
+          <p className="text-sm font-semibold text-yellow-400">
+            You&apos;ve used all {trial.trial_pages_limit} trial pages. Your remediated
+            documents are still available to download.
+          </p>
+          <p className="mt-2 text-sm text-caso-slate">
+            Ready to continue?{" "}
+            <a
+              href="mailto:sales@casocomply.com"
+              className="text-caso-blue underline underline-offset-2 hover:text-caso-blue-bright"
+            >
+              Contact sales@casocomply.com
+            </a>
+          </p>
+        </div>
+      )}
+
       {/* Step 1: Service Level Selection */}
       <div>
         <h2 className="text-sm font-semibold text-caso-slate uppercase tracking-wider mb-4">
@@ -224,16 +306,17 @@ export default function RemediatePage() {
         <div className="grid gap-4 sm:grid-cols-3">
           {SERVICE_LEVELS.map((level) => {
             const isSelected = serviceLevel === level.key;
+            const isDisabled = uploading || serviceLevelLocked || trialExhausted;
             return (
               <button
                 key={level.key}
-                onClick={() => setServiceLevel(level.key)}
-                disabled={uploading}
+                onClick={() => !isDisabled && setServiceLevel(level.key)}
+                disabled={isDisabled}
                 className={`relative rounded-xl border-2 p-5 text-left transition-all ${
                   isSelected
                     ? "border-caso-blue bg-caso-blue/5 shadow-[0_0_20px_rgba(46,163,242,0.1)]"
                     : "border-caso-border bg-caso-navy-light/50 hover:border-caso-blue/40"
-                } ${uploading ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
+                } ${isDisabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}`}
               >
                 {level.badge && (
                   <span className="absolute -top-2.5 right-3 rounded-full bg-caso-blue px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
@@ -264,6 +347,11 @@ export default function RemediatePage() {
             );
           })}
         </div>
+        {serviceLevelLocked && !trialExhausted && (
+          <p className="mt-2 text-xs text-caso-slate">
+            Clear files to change service level.
+          </p>
+        )}
       </div>
 
       {/* Step 2: Upload Files */}
@@ -275,11 +363,11 @@ export default function RemediatePage() {
         {/* Drop zone */}
         <div
           role="button"
-          tabIndex={uploading ? -1 : 0}
+          tabIndex={dropZoneDisabled ? -1 : 0}
           aria-label="Upload files. Click or drag and drop."
-          aria-disabled={uploading}
+          aria-disabled={dropZoneDisabled}
           className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 transition-all duration-300 ${
-            uploading
+            dropZoneDisabled
               ? "cursor-not-allowed border-caso-border/30 bg-caso-navy-light/20 opacity-60"
               : isDragOver
                 ? "border-caso-blue bg-caso-blue/10 shadow-[0_0_40px_rgba(46,163,242,0.15)]"
@@ -289,9 +377,9 @@ export default function RemediatePage() {
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          onClick={() => !uploading && inputRef.current?.click()}
+          onClick={() => !dropZoneDisabled && inputRef.current?.click()}
           onKeyDown={(e) => {
-            if ((e.key === "Enter" || e.key === " ") && !uploading) {
+            if ((e.key === "Enter" || e.key === " ") && !dropZoneDisabled) {
               e.preventDefault();
               inputRef.current?.click();
             }
@@ -306,7 +394,7 @@ export default function RemediatePage() {
             className="hidden"
             aria-hidden="true"
             tabIndex={-1}
-            disabled={uploading}
+            disabled={dropZoneDisabled}
           />
 
           <div className="flex flex-col items-center gap-4 text-center">
@@ -480,7 +568,7 @@ export default function RemediatePage() {
 
             <button
               onClick={handleSubmit}
-              disabled={uploading || files.length === 0}
+              disabled={uploading || files.length === 0 || trialExhausted}
               className="mt-5 w-full rounded-lg bg-caso-blue-deep px-6 py-3 text-sm font-semibold text-caso-white hover:bg-caso-blue transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {uploading

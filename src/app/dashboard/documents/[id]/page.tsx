@@ -122,6 +122,13 @@ function issueCategory(item: IssueItem | CheckItem): string {
 
 const CATEGORY_ORDER = ["Structure", "Navigation", "Text", "Images", "Tables", "Forms", "General"];
 
+interface TrialStatus {
+  isTrial: boolean;
+  trialPagesUsed: number;
+  trialPagesLimit: number;
+  limitReached: boolean;
+}
+
 export default function DocumentDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -131,6 +138,33 @@ export default function DocumentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [reprocessing, setReprocessing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
+
+  // Fetch trial status
+  useEffect(() => {
+    async function fetchTrialStatus() {
+      try {
+        const res = await fetch("/api/tenants/settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        const tenant = data.tenant;
+        if (tenant) {
+          const isTrial = tenant.status === "trial";
+          const used = tenant.trial_pages_used ?? 0;
+          const limit = tenant.trial_pages_limit ?? 10;
+          setTrialStatus({
+            isTrial,
+            trialPagesUsed: used,
+            trialPagesLimit: limit,
+            limitReached: isTrial && used >= limit,
+          });
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    fetchTrialStatus();
+  }, []);
 
   const fetchDocument = useCallback(async () => {
     try {
@@ -602,28 +636,54 @@ export default function DocumentDetailPage() {
                 </a>
               )}
               {doc.status === "queued" && (
-                <button
-                  onClick={handleReprocess}
-                  disabled={reprocessing}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-caso-blue px-3 py-2.5 text-sm font-semibold text-caso-white hover:bg-caso-blue-bright transition-colors disabled:opacity-40"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
-                  </svg>
-                  {reprocessing ? "Starting..." : "Start Remediation"}
-                </button>
+                trialStatus?.limitReached ? (
+                  <div className="w-full rounded-lg border border-caso-warm/30 bg-caso-warm/5 px-3 py-2.5 text-center">
+                    <p className="text-sm font-medium text-caso-warm">Trial page limit reached</p>
+                    <p className="text-xs text-caso-slate mt-1">
+                      Contact{" "}
+                      <a href="mailto:sales@casocomply.com" className="text-caso-blue hover:underline">
+                        sales@casocomply.com
+                      </a>{" "}
+                      to continue.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleReprocess}
+                    disabled={reprocessing}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-caso-blue px-3 py-2.5 text-sm font-semibold text-caso-white hover:bg-caso-blue-bright transition-colors disabled:opacity-40"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                    </svg>
+                    {reprocessing ? "Starting..." : "Start Remediation"}
+                  </button>
+                )
               )}
               {doc.status === "failed" && (
-                <button
-                  onClick={handleReprocess}
-                  disabled={reprocessing}
-                  className="flex w-full items-center gap-2 rounded-lg border border-caso-border px-3 py-2 text-sm text-caso-slate hover:text-caso-white hover:border-caso-blue transition-colors disabled:opacity-40"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  {reprocessing ? "Processing..." : "Re-process"}
-                </button>
+                trialStatus?.limitReached ? (
+                  <div className="w-full rounded-lg border border-caso-warm/30 bg-caso-warm/5 px-3 py-2.5 text-center">
+                    <p className="text-sm font-medium text-caso-warm">Trial page limit reached</p>
+                    <p className="text-xs text-caso-slate mt-1">
+                      Contact{" "}
+                      <a href="mailto:sales@casocomply.com" className="text-caso-blue hover:underline">
+                        sales@casocomply.com
+                      </a>{" "}
+                      to continue.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleReprocess}
+                    disabled={reprocessing}
+                    className="flex w-full items-center gap-2 rounded-lg border border-caso-border px-3 py-2 text-sm text-caso-slate hover:text-caso-white hover:border-caso-blue transition-colors disabled:opacity-40"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {reprocessing ? "Processing..." : "Re-process"}
+                  </button>
+                )
               )}
               <button
                 onClick={handleDelete}

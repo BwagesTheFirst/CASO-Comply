@@ -28,6 +28,26 @@ interface Stats {
   failed: number;
 }
 
+interface Batch {
+  id: string;
+  name: string;
+  service_level: string;
+  status: string;
+  total_files: number;
+  completed_files: number;
+  failed_files: number;
+  total_pages: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TrialStatus {
+  isTrial: boolean;
+  trialPagesUsed: number;
+  trialPagesLimit: number;
+  limitReached: boolean;
+}
+
 const STATUS_OPTIONS = ["all", "queued", "processing", "completed", "failed"];
 const SERVICE_LEVEL_OPTIONS = ["all", "standard", "enhanced", "expert"];
 
@@ -41,6 +61,8 @@ function statusBadgeClass(status: string): string {
       return "bg-caso-green/10 text-caso-green border-caso-green/30";
     case "failed":
       return "bg-caso-red/10 text-caso-red border-caso-red/30";
+    case "pending":
+      return "bg-caso-slate/10 text-caso-slate border-caso-slate/30";
     default:
       return "bg-caso-slate/10 text-caso-slate border-caso-slate/30";
   }
@@ -73,6 +95,7 @@ function scoreColor(score: number | null): string {
 }
 
 export default function DocumentsPage() {
+  const [activeTab, setActiveTab] = useState<"documents" | "batches">("documents");
   const [documents, setDocuments] = useState<Document[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +107,42 @@ export default function DocumentsPage() {
   const [total, setTotal] = useState(0);
   const [processingAll, setProcessingAll] = useState(false);
   const limit = 25;
+
+  // Batches state
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [batchesLoading, setBatchesLoading] = useState(false);
+  const [batchPage, setBatchPage] = useState(1);
+  const [batchTotalPages, setBatchTotalPages] = useState(1);
+  const [batchTotal, setBatchTotal] = useState(0);
+
+  // Trial status
+  const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
+
+  // Fetch trial status
+  useEffect(() => {
+    async function fetchTrialStatus() {
+      try {
+        const res = await fetch("/api/tenants/settings");
+        if (!res.ok) return;
+        const data = await res.json();
+        const tenant = data.tenant;
+        if (tenant) {
+          const isTrial = tenant.status === "trial";
+          const used = tenant.trial_pages_used ?? 0;
+          const limit = tenant.trial_pages_limit ?? 10;
+          setTrialStatus({
+            isTrial,
+            trialPagesUsed: used,
+            trialPagesLimit: limit,
+            limitReached: isTrial && used >= limit,
+          });
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    fetchTrialStatus();
+  }, []);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -116,8 +175,10 @@ export default function DocumentsPage() {
   }, [page, statusFilter, serviceLevelFilter, search]);
 
   useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+    if (activeTab === "documents") {
+      fetchDocuments();
+    }
+  }, [fetchDocuments, activeTab]);
 
   // Fetch stats separately (one-time, unfiltered count)
   useEffect(() => {
@@ -125,8 +186,6 @@ export default function DocumentsPage() {
       try {
         const res = await fetch("/api/documents?limit=1");
         if (!res.ok) return;
-        const data = await res.json();
-        // Try to compute stats from a quick all-docs query
         const allRes = await fetch("/api/documents?limit=1000");
         if (!allRes.ok) return;
         const allData = await allRes.json();
@@ -145,6 +204,33 @@ export default function DocumentsPage() {
     fetchStats();
   }, []);
 
+  // Fetch batches
+  const fetchBatches = useCallback(async () => {
+    setBatchesLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: batchPage.toString(),
+        limit: "20",
+      });
+      const res = await fetch(`/api/documents/batch?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch batches");
+      const data = await res.json();
+      setBatches(data.batches || []);
+      setBatchTotal(data.pagination?.total ?? 0);
+      setBatchTotalPages(data.pagination?.total_pages ?? 1);
+    } catch {
+      setBatches([]);
+    } finally {
+      setBatchesLoading(false);
+    }
+  }, [batchPage]);
+
+  useEffect(() => {
+    if (activeTab === "batches") {
+      fetchBatches();
+    }
+  }, [fetchBatches, activeTab]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -154,11 +240,13 @@ export default function DocumentsPage() {
             Documents
           </h1>
           <p className="mt-1 text-sm text-caso-slate">
-            {total} document{total !== 1 ? "s" : ""} total
+            {activeTab === "documents"
+              ? `${total} document${total !== 1 ? "s" : ""} total`
+              : `${batchTotal} batch${batchTotal !== 1 ? "es" : ""} total`}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {stats && stats.queued > 0 && (
+          {activeTab === "documents" && stats && stats.queued > 0 && !trialStatus?.limitReached && (
             <button
               onClick={async () => {
                 setProcessingAll(true);
@@ -197,192 +285,326 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      {stats && stats.total > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <StatCard label="Total" value={stats.total} />
-          <StatCard label="Queued" value={stats.queued} className="text-caso-slate" />
-          <StatCard label="Processing" value={stats.processing} className="text-caso-blue" />
-          <StatCard label="Completed" value={stats.completed} className="text-caso-green" />
-          <StatCard label="Failed" value={stats.failed} className="text-caso-red" />
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <input
-          type="text"
-          placeholder="Search filenames..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white placeholder:text-caso-slate/50 focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white focus:border-caso-blue focus:outline-none"
+      {/* Tab Navigation */}
+      <div className="flex gap-1 rounded-lg bg-caso-navy-light/50 p-1 w-fit border border-caso-border">
+        <button
+          onClick={() => setActiveTab("documents")}
+          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "documents"
+              ? "bg-caso-blue-deep text-caso-white"
+              : "text-caso-slate hover:text-caso-white"
+          }`}
         >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === "all" ? "All Statuses" : s.charAt(0).toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </select>
-        <select
-          value={serviceLevelFilter}
-          onChange={(e) => {
-            setServiceLevelFilter(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white focus:border-caso-blue focus:outline-none"
+          All Documents
+        </button>
+        <button
+          onClick={() => setActiveTab("batches")}
+          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === "batches"
+              ? "bg-caso-blue-deep text-caso-white"
+              : "text-caso-slate hover:text-caso-white"
+          }`}
         >
-          {SERVICE_LEVEL_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s === "all" ? "All Levels" : s.charAt(0).toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </select>
+          Batches
+        </button>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-caso-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-caso-border bg-caso-navy-light/50">
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Filename</th>
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Service Level</th>
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Status</th>
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Score</th>
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Pages</th>
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Date</th>
-              <th className="px-4 py-3 text-left font-medium text-caso-slate">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-caso-slate">
-                  Loading...
-                </td>
-              </tr>
-            ) : documents.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-12 text-center">
-                  <p className="text-caso-slate">
-                    No documents yet. Upload your first document to get started.
-                  </p>
-                  <Link
-                    href="/dashboard/remediate"
-                    className="mt-3 inline-block text-sm text-caso-blue hover:underline"
-                  >
-                    Upload Documents
-                  </Link>
-                </td>
-              </tr>
-            ) : (
-              documents.map((doc) => (
-                <tr
-                  key={doc.id}
-                  className="border-b border-caso-border/50 hover:bg-caso-navy-light/30 transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/dashboard/documents/${doc.id}`}
-                      className="font-medium text-caso-white hover:text-caso-blue transition-colors"
-                    >
-                      {doc.filename}
-                    </Link>
-                    <div className="text-xs text-caso-slate">{formatFileSize(doc.file_size)}</div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${serviceLevelBadgeClass(doc.service_level)}`}
-                    >
-                      {doc.service_level}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${statusBadgeClass(doc.status)}`}
-                    >
-                      {doc.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {doc.score_before !== null || doc.score_after !== null ? (
-                      <span className="text-xs">
-                        <span className={scoreColor(doc.score_before)}>
-                          {doc.score_before !== null ? `${doc.score_before}%` : "--"}
-                        </span>
-                        <span className="text-caso-slate mx-1">→</span>
-                        <span className={scoreColor(doc.score_after)}>
-                          {doc.score_after !== null ? `${doc.score_after}%` : "--"}
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-xs text-caso-slate">--</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-caso-slate">
-                    {doc.page_count ?? "--"}
-                  </td>
-                  <td className="px-4 py-3 text-caso-slate">
-                    {new Date(doc.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/dashboard/documents/${doc.id}`}
-                        className="rounded-lg border border-caso-border px-2.5 py-1 text-xs text-caso-slate hover:text-caso-white hover:border-caso-blue transition-colors"
-                      >
-                        View
-                      </Link>
-                      {doc.status === "completed" && doc.remediated_path && (
-                        <a
-                          href={`/api/documents/${doc.id}/download?type=remediated`}
-                          className="rounded-lg border border-caso-border px-2.5 py-1 text-xs text-caso-slate hover:text-caso-green hover:border-caso-green transition-colors"
-                        >
-                          Download
-                        </a>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {activeTab === "documents" ? (
+        <>
+          {/* Stats Cards */}
+          {stats && stats.total > 0 && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              <StatCard label="Total" value={stats.total} />
+              <StatCard label="Queued" value={stats.queued} className="text-caso-slate" />
+              <StatCard label="Processing" value={stats.processing} className="text-caso-blue" />
+              <StatCard label="Completed" value={stats.completed} className="text-caso-green" />
+              <StatCard label="Failed" value={stats.failed} className="text-caso-red" />
+            </div>
+          )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-caso-slate">
-            Showing {(page - 1) * limit + 1}–{Math.min(page * limit, total)} of {total}
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="rounded-lg border border-caso-border px-3 py-1.5 text-sm text-caso-slate hover:text-caso-white disabled:opacity-30"
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3">
+            <input
+              type="text"
+              placeholder="Search filenames..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white placeholder:text-caso-slate/50 focus:border-caso-blue focus:outline-none focus:ring-1 focus:ring-caso-blue"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white focus:border-caso-blue focus:outline-none"
             >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-              className="rounded-lg border border-caso-border px-3 py-1.5 text-sm text-caso-slate hover:text-caso-white disabled:opacity-30"
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "all" ? "All Statuses" : s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
+            <select
+              value={serviceLevelFilter}
+              onChange={(e) => {
+                setServiceLevelFilter(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-lg border border-caso-border bg-caso-navy px-3 py-2 text-sm text-caso-white focus:border-caso-blue focus:outline-none"
             >
-              Next
-            </button>
+              {SERVICE_LEVEL_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "all" ? "All Levels" : s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto rounded-xl border border-caso-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-caso-border bg-caso-navy-light/50">
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Filename</th>
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Service Level</th>
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Status</th>
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Score</th>
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Pages</th>
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Date</th>
+                  <th className="px-4 py-3 text-left font-medium text-caso-slate">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-caso-slate">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : documents.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-12 text-center">
+                      <p className="text-caso-slate">
+                        No documents yet. Upload your first document to get started.
+                      </p>
+                      <Link
+                        href="/dashboard/remediate"
+                        className="mt-3 inline-block text-sm text-caso-blue hover:underline"
+                      >
+                        Upload Documents
+                      </Link>
+                    </td>
+                  </tr>
+                ) : (
+                  documents.map((doc) => (
+                    <tr
+                      key={doc.id}
+                      className="border-b border-caso-border/50 hover:bg-caso-navy-light/30 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/documents/${doc.id}`}
+                          className="font-medium text-caso-white hover:text-caso-blue transition-colors"
+                        >
+                          {doc.filename}
+                        </Link>
+                        <div className="text-xs text-caso-slate">{formatFileSize(doc.file_size)}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${serviceLevelBadgeClass(doc.service_level)}`}
+                        >
+                          {doc.service_level}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${statusBadgeClass(doc.status)}`}
+                        >
+                          {doc.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {doc.score_before !== null || doc.score_after !== null ? (
+                          <span className="text-xs">
+                            <span className={scoreColor(doc.score_before)}>
+                              {doc.score_before !== null ? `${doc.score_before}%` : "--"}
+                            </span>
+                            <span className="text-caso-slate mx-1">&rarr;</span>
+                            <span className={scoreColor(doc.score_after)}>
+                              {doc.score_after !== null ? `${doc.score_after}%` : "--"}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-caso-slate">--</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-caso-slate">
+                        {doc.page_count ?? "--"}
+                      </td>
+                      <td className="px-4 py-3 text-caso-slate">
+                        {new Date(doc.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/dashboard/documents/${doc.id}`}
+                            className="rounded-lg border border-caso-border px-2.5 py-1 text-xs text-caso-slate hover:text-caso-white hover:border-caso-blue transition-colors"
+                          >
+                            View
+                          </Link>
+                          {doc.status === "completed" && doc.remediated_path && (
+                            <a
+                              href={`/api/documents/${doc.id}/download?type=remediated`}
+                              className="rounded-lg border border-caso-border px-2.5 py-1 text-xs text-caso-slate hover:text-caso-green hover:border-caso-green transition-colors"
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-caso-slate">
+                Showing {(page - 1) * limit + 1}&ndash;{Math.min(page * limit, total)} of {total}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="rounded-lg border border-caso-border px-3 py-1.5 text-sm text-caso-slate hover:text-caso-white disabled:opacity-30"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                  className="rounded-lg border border-caso-border px-3 py-1.5 text-sm text-caso-slate hover:text-caso-white disabled:opacity-30"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Batches Tab */
+        <>
+          {batchesLoading ? (
+            <div className="py-12 text-center text-caso-slate">Loading batches...</div>
+          ) : batches.length === 0 ? (
+            <div className="rounded-xl border border-caso-border bg-caso-navy-light/50 py-12 text-center">
+              <p className="text-caso-slate">No batches yet.</p>
+              <Link
+                href="/dashboard/remediate"
+                className="mt-3 inline-block text-sm text-caso-blue hover:underline"
+              >
+                Upload Documents
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-caso-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-caso-border bg-caso-navy-light/50">
+                    <th className="px-4 py-3 text-left font-medium text-caso-slate">Batch Name</th>
+                    <th className="px-4 py-3 text-left font-medium text-caso-slate">Service Level</th>
+                    <th className="px-4 py-3 text-left font-medium text-caso-slate">Files</th>
+                    <th className="px-4 py-3 text-left font-medium text-caso-slate">Status</th>
+                    <th className="px-4 py-3 text-left font-medium text-caso-slate">Date</th>
+                    <th className="px-4 py-3 text-left font-medium text-caso-slate">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {batches.map((batch) => (
+                    <tr
+                      key={batch.id}
+                      className="border-b border-caso-border/50 hover:bg-caso-navy-light/30 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/documents/batch/${batch.id}`}
+                          className="font-medium text-caso-white hover:text-caso-blue transition-colors"
+                        >
+                          {batch.name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${serviceLevelBadgeClass(batch.service_level)}`}
+                        >
+                          {batch.service_level}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-caso-slate">
+                        <span className="text-caso-white font-medium">{batch.completed_files}</span>
+                        <span className="text-caso-slate">/{batch.total_files}</span>
+                        {batch.failed_files > 0 && (
+                          <span className="ml-1 text-caso-red text-xs">({batch.failed_files} failed)</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${statusBadgeClass(batch.status)}`}
+                        >
+                          {batch.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-caso-slate">
+                        {new Date(batch.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/documents/batch/${batch.id}`}
+                          className="rounded-lg border border-caso-border px-2.5 py-1 text-xs text-caso-slate hover:text-caso-white hover:border-caso-blue transition-colors"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Batch Pagination */}
+          {batchTotalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-caso-slate">
+                Showing {(batchPage - 1) * 20 + 1}&ndash;{Math.min(batchPage * 20, batchTotal)} of {batchTotal}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setBatchPage(Math.max(1, batchPage - 1))}
+                  disabled={batchPage === 1}
+                  className="rounded-lg border border-caso-border px-3 py-1.5 text-sm text-caso-slate hover:text-caso-white disabled:opacity-30"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setBatchPage(Math.min(batchTotalPages, batchPage + 1))}
+                  disabled={batchPage === batchTotalPages}
+                  className="rounded-lg border border-caso-border px-3 py-1.5 text-sm text-caso-slate hover:text-caso-white disabled:opacity-30"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
