@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Live Demo — CASO Comply",
+  title: "Document Accessibility Demo — CASO Comply",
   description:
-    "Try CASO Comply's document accessibility remediation live. Upload a PDF and watch it transform into a fully accessible, WCAG 2.1 AA compliant document in real time.",
+    "See CASO Comply in action — upload a PDF and watch our AI analyze, score, and remediate it for WCAG 2.1 AA, PDF/UA, and Section 508 compliance in real time.",
   openGraph: {
-    title: "Live Demo — CASO Comply",
+    title: "Document Accessibility Demo — CASO Comply",
     description:
-      "Try CASO Comply's document accessibility remediation live. Upload a PDF and watch it transform into a fully accessible, WCAG 2.1 AA compliant document in real time.",
+      "See CASO Comply in action — upload a PDF and watch our AI analyze, score, and remediate it for WCAG 2.1 AA, PDF/UA, and Section 508 compliance in real time.",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "CASO Comply" }],
   },
   alternates: {

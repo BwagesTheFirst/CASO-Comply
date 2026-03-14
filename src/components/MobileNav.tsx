@@ -4,12 +4,17 @@ import { useState, useEffect, useRef } from "react";
 
 const NAV_LINKS = [
   { href: "/services/pdf-remediation", label: "PDF Remediation" },
+  { href: "/services/section-508-compliance", label: "Section 508 Compliance" },
+  { href: "/services/accessibility-audit", label: "Accessibility Audit" },
   { href: "/solutions/government", label: "Government" },
+  { href: "/solutions/municipal", label: "Municipal" },
   { href: "/solutions/higher-education", label: "Higher Education" },
+  { href: "/solutions/k-12-education", label: "K-12 Education" },
   { href: "/solutions/enterprise", label: "Enterprise" },
   { href: "/solutions/states", label: "All 51 States" },
   { href: "/pricing", label: "Pricing" },
   { href: "/resources/ada-title-ii-guide", label: "ADA Title II Guide" },
+  { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
   { href: "/login", label: "Login" },

@@ -100,7 +100,7 @@ export default function MarketingLayout({
         </div>
 
         <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-6">
             {/* Company */}
             <div>
               <Image
@@ -182,10 +182,67 @@ export default function MarketingLayout({
                 </li>
                 <li>
                   <Link
+                    href="/services/section-508-compliance"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Section 508 Compliance
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/services/accessibility-audit"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Accessibility Audit
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/free-scan"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Free Compliance Scan
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-caso-glacier">
+                Resources
+              </h3>
+              <ul className="mt-4 space-y-3" role="list">
+                <li>
+                  <Link
+                    href="/resources/wcag-21-aa-guide"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    WCAG 2.1 AA Guide
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/resources/pdf-ua-guide"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    PDF/UA Guide
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/resources/ada-compliance-checklist"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    ADA Compliance Checklist
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Blog
                   </Link>
                 </li>
               </ul>
@@ -227,6 +284,14 @@ export default function MarketingLayout({
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Security
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Blog
                   </Link>
                 </li>
               </ul>

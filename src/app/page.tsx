@@ -1161,7 +1161,7 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-4 text-xs text-caso-slate/70">
+                <p className="mt-4 text-xs text-caso-slate">
                   Ideal for: {mode.ideal}
                 </p>
                 <Link
@@ -1269,7 +1269,7 @@ export default function Home() {
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151C7.546 6.068 5.983 8.789 5.983 11h4v10H0z" />
                 </svg>
                 <blockquote className="mt-3">
-                  <p className="text-sm leading-relaxed text-gray-200 italic">
+                  <p className="text-sm leading-relaxed text-caso-slate italic">
                     &ldquo;{t.quote}&rdquo;
                   </p>
                   <footer className="mt-5 flex items-center gap-3 border-t border-white/10 pt-5">
