@@ -10,7 +10,7 @@
 version: "3.8"
 services:
   caso-agent:
-    image: caso/comply-agent:latest
+    image: casocomply/comply-agent:latest
     environment:
       # ── REQUIRED ──
       # Your license key from https://casocomply.com/dashboard/api-keys

@@ -162,7 +162,7 @@ export default function AgentSetupContent() {
   const dockerComposeYml = `version: "3.8"
 services:
   caso-agent:
-    image: caso/comply-agent:latest
+    image: casocomply/comply-agent:latest
     environment:
       # REQUIRED: Your license key from the API Keys page
       - CASO_LICENSE_KEY=YOUR_LICENSE_KEY_HERE
