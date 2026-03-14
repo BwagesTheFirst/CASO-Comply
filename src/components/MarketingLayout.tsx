@@ -240,26 +240,18 @@ export default function MarketingLayout({
               <ul className="mt-4 space-y-3" role="list">
                 <li>
                   <Link
+                    href="/solutions/states/california"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    California
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     href="/solutions/states/florida"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Florida
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/solutions/states/illinois"
-                    className="text-sm text-caso-slate hover:text-caso-white"
-                  >
-                    Illinois
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/solutions/states/minnesota"
-                    className="text-sm text-caso-slate hover:text-caso-white"
-                  >
-                    Minnesota
                   </Link>
                 </li>
                 <li>
@@ -272,26 +264,18 @@ export default function MarketingLayout({
                 </li>
                 <li>
                   <Link
-                    href="/solutions/states/north-dakota"
-                    className="text-sm text-caso-slate hover:text-caso-white"
-                  >
-                    North Dakota
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/solutions/states/south-carolina"
-                    className="text-sm text-caso-slate hover:text-caso-white"
-                  >
-                    South Carolina
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     href="/solutions/states/texas"
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Texas
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states"
+                    className="text-sm font-semibold text-caso-blue hover:text-caso-blue-bright"
+                  >
+                    All 51 States &rarr;
                   </Link>
                 </li>
               </ul>

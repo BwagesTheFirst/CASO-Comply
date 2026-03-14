@@ -192,13 +192,16 @@ export default function MegaMenu() {
                   </h4>
                   <ul className="mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5" role="list">
                     {[
+                      { href: "/solutions/states/california", label: "California" },
+                      { href: "/solutions/states/colorado", label: "Colorado" },
                       { href: "/solutions/states/florida", label: "Florida" },
                       { href: "/solutions/states/illinois", label: "Illinois" },
-                      { href: "/solutions/states/minnesota", label: "Minnesota" },
+                      { href: "/solutions/states/maryland", label: "Maryland" },
                       { href: "/solutions/states/new-york", label: "New York" },
-                      { href: "/solutions/states/north-dakota", label: "North Dakota" },
-                      { href: "/solutions/states/south-carolina", label: "South Carolina" },
+                      { href: "/solutions/states/pennsylvania", label: "Pennsylvania" },
                       { href: "/solutions/states/texas", label: "Texas" },
+                      { href: "/solutions/states/virginia", label: "Virginia" },
+                      { href: "/solutions/states/washington", label: "Washington" },
                     ].map((state) => (
                       <li key={state.href} role="none">
                         <Link
@@ -211,6 +214,16 @@ export default function MegaMenu() {
                         </Link>
                       </li>
                     ))}
+                    <li role="none">
+                      <Link
+                        href="/solutions/states"
+                        role="menuitem"
+                        className="block rounded px-2 py-1 text-xs font-semibold text-caso-blue transition-colors hover:bg-caso-navy-mid hover:text-caso-blue-bright focus-visible:ring-2 focus-visible:ring-caso-blue"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        All 51 States &rarr;
+                      </Link>
+                    </li>
                   </ul>
                 </div>
               </div>
