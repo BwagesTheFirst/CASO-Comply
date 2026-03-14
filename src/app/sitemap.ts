@@ -18,5 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/demo`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/security`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/competitors`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/solutions/states/florida`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/solutions/states/illinois`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/solutions/states/minnesota`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/solutions/states/new-york`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/solutions/states/north-dakota`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/solutions/states/south-carolina`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/solutions/states/texas`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
   ];
 }

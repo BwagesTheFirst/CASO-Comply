@@ -184,6 +184,35 @@ export default function MegaMenu() {
                     </Link>
                   </li>
                 </ul>
+
+                {/* By State */}
+                <div className="mt-4 border-t border-caso-border/50 pt-3">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-caso-glacier/70">
+                    By State
+                  </h4>
+                  <ul className="mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5" role="list">
+                    {[
+                      { href: "/solutions/states/florida", label: "Florida" },
+                      { href: "/solutions/states/illinois", label: "Illinois" },
+                      { href: "/solutions/states/minnesota", label: "Minnesota" },
+                      { href: "/solutions/states/new-york", label: "New York" },
+                      { href: "/solutions/states/north-dakota", label: "North Dakota" },
+                      { href: "/solutions/states/south-carolina", label: "South Carolina" },
+                      { href: "/solutions/states/texas", label: "Texas" },
+                    ].map((state) => (
+                      <li key={state.href} role="none">
+                        <Link
+                          href={state.href}
+                          role="menuitem"
+                          className="block rounded px-2 py-1 text-xs text-caso-slate transition-colors hover:bg-caso-navy-mid hover:text-caso-white focus-visible:ring-2 focus-visible:ring-caso-blue"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {state.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
 
               {/* Resources Column */}

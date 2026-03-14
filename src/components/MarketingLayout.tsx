@@ -100,7 +100,7 @@ export default function MarketingLayout({
         </div>
 
         <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
             {/* Company */}
             <div>
               <Image
@@ -227,6 +227,71 @@ export default function MarketingLayout({
                     className="text-sm text-caso-slate hover:text-caso-white"
                   >
                     Security
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* State Compliance */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-caso-glacier">
+                State Compliance
+              </h3>
+              <ul className="mt-4 space-y-3" role="list">
+                <li>
+                  <Link
+                    href="/solutions/states/florida"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Florida
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states/illinois"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Illinois
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states/minnesota"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Minnesota
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states/new-york"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    New York
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states/north-dakota"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    North Dakota
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states/south-carolina"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    South Carolina
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/solutions/states/texas"
+                    className="text-sm text-caso-slate hover:text-caso-white"
+                  >
+                    Texas
                   </Link>
                 </li>
               </ul>
