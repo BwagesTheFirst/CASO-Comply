@@ -290,6 +290,28 @@ async def license_usage(
     )
     update_last_used(auth_ctx["api_key_id"])
 
+    # Increment trial_pages_used if tenant is on trial
+    try:
+        from auth import _get_supabase
+        sb = _get_supabase()
+        tenant_row = (
+            sb.table("tenants")
+            .select("status, trial_pages_used")
+            .eq("id", auth_ctx["tenant_id"])
+            .limit(1)
+            .execute()
+        )
+        if tenant_row.data and (tenant_row.data[0].get("status") or "").lower() == "trial":
+            current_used = tenant_row.data[0].get("trial_pages_used") or 0
+            sb.table("tenants").update(
+                {"trial_pages_used": current_used + body.pages_processed}
+            ).eq("id", auth_ctx["tenant_id"]).execute()
+    except Exception:
+        logger.exception(
+            "Failed to increment trial_pages_used for tenant %s",
+            auth_ctx["tenant_id"],
+        )
+
     pages_remaining = max(
         0, usage["pages_included"] - usage["pages_used"]
     ) if usage["pages_included"] >= 0 and usage["pages_used"] >= 0 else -1

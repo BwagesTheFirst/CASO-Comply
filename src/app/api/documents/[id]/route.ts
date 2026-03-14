@@ -98,7 +98,7 @@ export async function POST(
   // Enforce trial page limits
   const { data: tenant } = await admin
     .from("tenants")
-    .select("status, trial_pages_used, trial_pages_limit")
+    .select("status, trial_pages_used, trial_pages_limit, trial_ends_at")
     .eq("id", auth.tenantId)
     .single();
 
@@ -112,6 +112,20 @@ export async function POST(
         error: "Trial page limit exceeded. Please upgrade to continue processing documents.",
         trial_pages_used: tenant.trial_pages_used,
         trial_pages_limit: tenant.trial_pages_limit,
+      },
+      { status: 403 }
+    );
+  }
+
+  if (
+    tenant?.status === "trial" &&
+    tenant.trial_ends_at &&
+    new Date(tenant.trial_ends_at) < new Date()
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Your trial has expired. Contact sales@casocomply.com to continue processing documents.",
       },
       { status: 403 }
     );

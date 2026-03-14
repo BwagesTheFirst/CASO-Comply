@@ -250,7 +250,7 @@ def enforce_tenant_access(tenant_id: str, required_scope: str | None = None) -> 
         result = (
             sb.table("tenants")
             .select(
-                "id, name, status, trial_ends_at, plan_id, "
+                "id, name, status, trial_ends_at, trial_pages_used, trial_pages_limit, plan_id, "
                 "subscription_plans(id, name, pages_included, features, overage_rate_cents, "
                 "standard_rate_cents, ai_verified_rate_cents, human_review_rate_cents, "
                 "review_score_threshold)"
@@ -316,6 +316,18 @@ def enforce_tenant_access(tenant_id: str, required_scope: str | None = None) -> 
                     trial_ends_at,
                     tenant_id,
                 )
+
+        # Check trial page limit
+        trial_pages_used = tenant.get("trial_pages_used") or 0
+        trial_pages_limit = tenant.get("trial_pages_limit")
+        if trial_pages_limit is not None and trial_pages_used >= trial_pages_limit:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    f"Trial page limit reached ({trial_pages_used} of {trial_pages_limit} "
+                    "pages used). Contact sales@casocomply.com to upgrade."
+                ),
+            )
 
     # ---- 4. Check required feature / scope ----
     features = plan.get("features") or {}

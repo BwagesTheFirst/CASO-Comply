@@ -12,6 +12,8 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -59,6 +61,11 @@ export default function SignupPage() {
           const body = await res.json();
           console.error("Tenant provisioning failed:", body);
           // Don't block signup — tenant can be provisioned later
+        } else {
+          const body = await res.json();
+          if (body.apiKey) {
+            setApiKey(body.apiKey);
+          }
         }
       } catch (err) {
         console.error("Tenant provisioning error:", err);
@@ -69,10 +76,29 @@ export default function SignupPage() {
     setLoading(false);
   }
 
+  async function handleCopyKey() {
+    if (!apiKey) return;
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback: select the text in the code block
+      const el = document.getElementById("api-key-display");
+      if (el) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+    }
+  }
+
   if (success) {
     return (
       <div className="min-h-screen bg-caso-navy flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full max-w-lg text-center">
           <div className="bg-caso-navy-light border border-caso-border rounded-xl p-8 shadow-lg">
             <div className="mb-4 flex justify-center">
               <div className="rounded-full bg-caso-green/10 p-3">
@@ -100,9 +126,53 @@ export default function SignupPage() {
               <span className="text-caso-white font-medium">{email}</span>.
               Click the link to activate your account.
             </p>
+
+            {apiKey && (
+              <div className="mb-6 rounded-lg border border-caso-yellow/30 bg-caso-yellow/5 p-4 text-left">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    className="h-5 w-5 text-caso-yellow flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="text-sm font-semibold text-caso-yellow">
+                    Save this license key now — you will not see it again
+                  </p>
+                </div>
+                <p className="text-caso-slate text-xs mb-3">
+                  You will need this key to configure the CASO Comply Docker
+                  agent. Store it somewhere safe.
+                </p>
+                <div className="relative">
+                  <code
+                    id="api-key-display"
+                    className="block w-full rounded-md bg-caso-navy border border-caso-border px-3 py-2.5 pr-20 text-sm text-caso-white font-mono break-all select-all"
+                  >
+                    {apiKey}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={handleCopyKey}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-caso-border/50 px-3 py-1 text-xs font-medium text-caso-slate hover:text-caso-white hover:bg-caso-border transition-colors"
+                  >
+                    {copied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <Link
               href="/login"
-              className="inline-block rounded-lg bg-caso-blue px-6 py-2.5 text-sm font-semibold text-white hover:bg-caso-blue-bright transition-colors"
+              className="inline-block rounded-lg bg-caso-blue-deep px-6 py-2.5 text-sm font-semibold text-white hover:bg-caso-blue transition-colors"
             >
               Go to login
             </Link>

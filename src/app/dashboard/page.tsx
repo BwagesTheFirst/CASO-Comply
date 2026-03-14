@@ -118,6 +118,48 @@ export default async function DashboardOverview() {
         </div>
       )}
 
+      {/* Getting Started — trial users only */}
+      {isTrial && (
+        <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-caso-white mb-1">
+            Getting Started
+          </h2>
+          <p className="text-caso-slate text-sm mb-5">
+            Complete these steps to start remediating documents.
+          </p>
+          <ol className="space-y-3">
+            {/* Step 1 — always done */}
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-green/20 text-caso-green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </span>
+              <span className="text-sm text-caso-slate line-through">Create your account</span>
+            </li>
+            {/* Step 2 */}
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">2</span>
+              <Link href="/dashboard/api-keys" className="text-sm text-caso-white hover:text-caso-blue transition-colors">
+                Save your API key <span className="text-caso-blue">&rarr;</span>
+              </Link>
+            </li>
+            {/* Step 3 */}
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">3</span>
+              <Link href="/dashboard/agent" className="text-sm text-caso-white hover:text-caso-blue transition-colors">
+                Set up Docker agent <span className="text-caso-blue">&rarr;</span>
+              </Link>
+            </li>
+            {/* Step 4 */}
+            <li className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-caso-blue/20 text-caso-blue text-xs font-bold">4</span>
+              <Link href="/dashboard/remediate" className="text-sm text-caso-white hover:text-caso-blue transition-colors">
+                Process your first document <span className="text-caso-blue">&rarr;</span>
+              </Link>
+            </li>
+          </ol>
+        </div>
+      )}
+
       {/* Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* Usage Summary */}
@@ -200,6 +242,18 @@ export default async function DashboardOverview() {
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
               </svg>
               View API Keys
+            </Link>
+            <Link
+              href="/dashboard/agent"
+              className="flex items-center gap-3 rounded-lg bg-white/5 border border-caso-border px-4 py-3 text-sm font-medium text-caso-slate hover:text-caso-white hover:bg-white/10 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                <line x1="6" y1="6" x2="6.01" y2="6" />
+                <line x1="6" y1="18" x2="6.01" y2="18" />
+              </svg>
+              Agent Setup
             </Link>
           </div>
         </div>

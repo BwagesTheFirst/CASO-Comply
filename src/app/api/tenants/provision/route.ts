@@ -72,6 +72,7 @@ export async function POST(request: Request) {
       .from("subscription_plans")
       .select("id")
       .eq("is_active", true)
+      .order("monthly_price_cents", { ascending: true })
       .limit(1)
       .single();
 
