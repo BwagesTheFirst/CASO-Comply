@@ -3,7 +3,7 @@
 # cron scheduling, and a local dashboard on port 9090.
 
 # Pin to specific digest for supply chain security
-FROM python:3.12.8-slim@sha256:2b0079146a74e23bf4ae8f6a28e1b484c6292f29c052c7f14b3b1e3eb34831ac
+FROM python:3.12.8-slim@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0
 
 # System deps for PDF processing and health checks
 RUN apt-get update && apt-get install -y --no-install-recommends \
