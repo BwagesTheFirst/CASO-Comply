@@ -1,24 +1,33 @@
 # CASO Comply Agent — On-Premise Document Remediation
 #
 # SETUP:
-#   1. Edit the volume mounts below to point at your document folders
-#   2. Set your admin password
-#   3. Run: docker-compose up -d
-#   4. Open http://localhost:9090 to access the dashboard
+#   1. Replace CASO_LICENSE_KEY with your key from https://casocomply.com/dashboard/api-keys
+#   2. Set a strong CASO_ADMIN_PASSWORD for the web dashboard
+#   3. Edit the volume mounts below to point at your document folders
+#   4. Run: docker compose up -d
+#   5. Open http://localhost:9090 to access the dashboard
 #
 version: "3.8"
 services:
   caso-agent:
     image: caso/comply-agent:latest
     environment:
-      # Admin password for the web dashboard
-      - CASO_ADMIN_PASSWORD=changeme
-      # Processing mode: local (on-premise), hybrid (local + AI verify), cloud (API)
-      - CASO_MODE=local
-      # Disable phone-home telemetry (set to true to enable usage reporting)
-      - CASO_PHONE_HOME=false
-      # Scan schedule (default: every hour)
+      # ── REQUIRED ──
+      # Your license key from https://casocomply.com/dashboard/api-keys
+      - CASO_LICENSE_KEY=caso_ak_REPLACE_WITH_YOUR_KEY
+      # Dashboard login password — CHANGE THIS to something secure
+      - CASO_ADMIN_PASSWORD=REPLACE_WITH_SECURE_PASSWORD
+      # ── Processing Mode ──
+      # local  = everything on-premise, nothing leaves your network
+      # hybrid = local remediation + AI quality verification (recommended)
+      # cloud  = upload to CASO cloud for processing
+      - CASO_MODE=hybrid
+      # ── Schedule ──
+      # Scan schedule (default: every hour). Use cron format.
       - CASO_CRON=0 * * * *
+      # ── Optional ──
+      # Disable phone-home telemetry (set to true to enable usage reporting)
+      # - CASO_PHONE_HOME=false
       # ── HIPAA Mode (uncomment to enable) ──
       # - CASO_HIPAA_MODE=true
       # ── Data Retention / Auto-Purge (uncomment to enable) ──
@@ -26,7 +35,9 @@ services:
       # - CASO_PURGE_REMEDIATED_HOURS=168
       # - CASO_PURGE_DB_PATHS_DAYS=90
       # - CASO_CLEANUP_ON_STARTUP=true
-      # ── Vertex AI Gemini (uncomment to use instead of API key) ──
+      # ── Gemini AI Verification (for hybrid mode) ──
+      # - CASO_GEMINI_API_KEY=your-gemini-api-key
+      # ── Vertex AI Gemini (alternative to API key) ──
       # - CASO_GEMINI_PROVIDER=vertex
       # - CASO_GCP_PROJECT=your-gcp-project-id
       # - CASO_GCP_LOCATION=us-central1

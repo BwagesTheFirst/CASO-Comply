@@ -127,6 +127,28 @@ async def main():
 
     logger.info("CASO Comply Agent starting (mode=%s)", config.mode)
 
+    if not config.license_key:
+        logger.error("=" * 60)
+        logger.error("MISSING LICENSE KEY")
+        logger.error("=" * 60)
+        logger.error("CASO_LICENSE_KEY is required but not set.")
+        logger.error("")
+        logger.error("To get your license key:")
+        logger.error("  1. Sign in at https://casocomply.com")
+        logger.error("  2. Go to Dashboard → API Keys")
+        logger.error("  3. Generate a new key (starts with caso_ak_)")
+        logger.error("  4. Set CASO_LICENSE_KEY in your docker-compose.yml")
+        logger.error("=" * 60)
+        sys.exit(1)
+
+    if config.admin_password in ("", "caso-admin", "changeme", "REPLACE_WITH_SECURE_PASSWORD"):
+        logger.warning("=" * 60)
+        logger.warning("INSECURE ADMIN PASSWORD")
+        logger.warning("=" * 60)
+        logger.warning("Your CASO_ADMIN_PASSWORD is set to a default value.")
+        logger.warning("Please set a strong, unique password in docker-compose.yml.")
+        logger.warning("=" * 60)
+
     if config.hipaa_mode:
         logger.info("HIPAA mode ACTIVE — no filenames, PDFs, or usage data will be sent to cloud")
         if (config.purge_originals_after_hours == 0
@@ -158,7 +180,19 @@ async def main():
         enabled=config.phone_home,
     )
     if not await license_client.validate():
-        logger.error("License validation failed. Exiting.")
+        logger.error("=" * 60)
+        logger.error("LICENSE VALIDATION FAILED")
+        logger.error("=" * 60)
+        logger.error("Your CASO_LICENSE_KEY is invalid or your account is inactive.")
+        logger.error("")
+        logger.error("To fix this:")
+        logger.error("  1. Go to https://casocomply.com/dashboard/api-keys")
+        logger.error("  2. Generate a new API key (starts with caso_ak_)")
+        logger.error("  3. Update CASO_LICENSE_KEY in your docker-compose.yml")
+        logger.error("  4. Restart: docker compose up -d")
+        logger.error("")
+        logger.error("If the problem persists, contact support@casocomply.com")
+        logger.error("=" * 60)
         sys.exit(1)
 
     processor = Processor(config=config, db=db, license_client=license_client)

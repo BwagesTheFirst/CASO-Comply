@@ -1,7 +1,7 @@
 # ============================================================
 # CASO Comply Agent — Configuration
 # ============================================================
-# Full docs: https://caso-comply.vercel.app/setup
+# Full docs: https://casocomply.com/dashboard/agent
 # ============================================================
 
 # ── Processing Mode ──────────────────────────────────────────
@@ -17,7 +17,7 @@
 mode: hybrid
 
 # ── License ──────────────────────────────────────────────────
-# Get your key at https://caso-comply.vercel.app
+# Get your key at https://casocomply.com/dashboard/api-keys
 license_key: ""
 
 # ── What to Scan ─────────────────────────────────────────────

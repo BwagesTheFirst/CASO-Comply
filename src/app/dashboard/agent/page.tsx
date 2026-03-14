@@ -108,34 +108,48 @@ export default async function AgentSetupPage() {
         </p>
       </div>
 
-      {/* Your API Key */}
+      {/* Your License Key */}
       <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
         <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-caso-white mb-4">
-          Your API Key
+          Your License Key
         </h2>
         {activeKey ? (
-          <div className="flex items-center gap-3 mb-3">
-            <code className="rounded-lg bg-caso-navy border border-caso-border px-3 py-2 text-sm text-caso-green font-mono">
-              {activeKey.key_prefix}...
-            </code>
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-caso-green/10 text-caso-green">
-              Active
-            </span>
-          </div>
+          <>
+            <div className="flex items-center gap-3 mb-3">
+              <code className="rounded-lg bg-caso-navy border border-caso-border px-3 py-2 text-sm text-caso-green font-mono">
+                {activeKey.key_prefix}...
+              </code>
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-caso-green/10 text-caso-green">
+                Active
+              </span>
+            </div>
+            <div className="flex items-start gap-2 rounded-lg bg-caso-warm/5 border border-caso-warm/20 px-3 py-2 mb-3">
+              <span className="text-caso-warm text-sm mt-0.5">!</span>
+              <p className="text-caso-slate text-xs">
+                The full key is only shown once when created. If you don&apos;t have
+                it saved, generate a new one below.
+              </p>
+            </div>
+          </>
         ) : (
-          <p className="text-caso-warm text-sm mb-3">
-            No active API key found. Create one before setting up the agent.
-          </p>
+          <div className="flex items-start gap-2 rounded-lg bg-caso-red/5 border border-caso-red/20 px-3 py-2 mb-3">
+            <span className="text-caso-red text-sm mt-0.5">!</span>
+            <p className="text-caso-slate text-xs">
+              No active API key found. You must create one before setting up the
+              agent.
+            </p>
+          </div>
         )}
         <Link
           href="/dashboard/api-keys"
-          className="text-sm text-caso-blue hover:text-caso-blue-bright transition-colors"
+          className="inline-block rounded-lg bg-caso-blue-deep px-4 py-2 text-sm font-medium text-caso-white hover:bg-caso-blue transition-colors"
         >
-          Manage API Keys &rarr;
+          {activeKey ? "Generate New Key" : "Create API Key"}
         </Link>
-        <p className="text-caso-slate/60 text-xs mt-2">
-          You will need your full API key for the setup below. If you have lost
-          it, create a new one.
+        <p className="text-caso-slate text-xs mt-3">
+          You&apos;ll need the full key (starts with{" "}
+          <code className="text-caso-green font-mono">caso_ak_</code>) for the
+          setup below. Copy it immediately — it cannot be viewed again.
         </p>
       </div>
 

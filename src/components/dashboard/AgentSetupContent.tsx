@@ -27,7 +27,7 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
     <div className="relative rounded-lg bg-caso-navy border border-caso-border overflow-hidden">
       {language && (
         <div className="px-4 py-1.5 border-b border-caso-border">
-          <span className="text-xs text-caso-slate/60 font-mono">{language}</span>
+          <span className="text-xs text-caso-slate font-mono">{language}</span>
         </div>
       )}
       <CopyButton text={code} />
@@ -40,26 +40,97 @@ function CodeBlock({ code, language }: { code: string; language?: string }) {
   );
 }
 
-const dockerPullCommand = `docker pull caso/comply-agent:latest`;
+function StepNumber({ num }: { num: number }) {
+  return (
+    <span className="flex items-center justify-center w-7 h-7 rounded-full bg-caso-blue/10 text-caso-blue text-sm font-bold">
+      {num}
+    </span>
+  );
+}
 
-const dockerComposeYml = `version: "3.8"
-services:
-  caso-agent:
-    image: caso/comply-agent:latest
-    environment:
-      - CASO_LICENSE_KEY=YOUR_API_KEY_HERE
-      - CASO_SCAN_PATHS=/data/input
-      - CASO_OUTPUT_DIR=/data/remediated
-      - CASO_CRON=0 2 * * *
-    volumes:
-      - ./documents:/data/input
-      - ./remediated:/data/remediated
-      - ./agent-data:/data
-    ports:
-      - "9090:9090"
-    restart: unless-stopped`;
+const MODES = [
+  {
+    value: "local",
+    label: "Local (Air-Gapped)",
+    description:
+      "Everything runs on-premise. No data leaves your network. Best for HIPAA, classified, or air-gapped environments.",
+  },
+  {
+    value: "hybrid",
+    label: "Hybrid (Recommended)",
+    description:
+      "Local remediation with AI quality verification via Gemini. Only page images are sent for review — no text or PDFs leave your network.",
+  },
+  {
+    value: "cloud",
+    label: "Cloud",
+    description:
+      "PDFs are uploaded to the CASO cloud API for processing. Fastest setup for non-sensitive documents.",
+  },
+];
 
-const dockerComposeUpCommand = `docker-compose up -d`;
+const envVars = [
+  {
+    name: "CASO_LICENSE_KEY",
+    required: "Yes",
+    defaultVal: "\u2014",
+    description: "Your license key from the dashboard",
+  },
+  {
+    name: "CASO_ADMIN_PASSWORD",
+    required: "Yes",
+    defaultVal: "\u2014",
+    description: "Password for the agent web dashboard",
+  },
+  {
+    name: "CASO_MODE",
+    required: "No",
+    defaultVal: "hybrid",
+    description: "Processing mode: local, hybrid, or cloud",
+  },
+  {
+    name: "CASO_CRON",
+    required: "No",
+    defaultVal: "0 * * * *",
+    description: "Cron schedule for automatic scans",
+  },
+  {
+    name: "CASO_SCAN_PATHS",
+    required: "No",
+    defaultVal: "/data/documents",
+    description: "Comma-separated folder paths to scan",
+  },
+  {
+    name: "CASO_OUTPUT_DIR",
+    required: "No",
+    defaultVal: "/data/remediated",
+    description: "Where remediated files are saved",
+  },
+  {
+    name: "CASO_OUTPUT_MODE",
+    required: "No",
+    defaultVal: "suffix",
+    description: "Output naming: suffix, overwrite, or directory",
+  },
+  {
+    name: "CASO_MAX_WORKERS",
+    required: "No",
+    defaultVal: "1",
+    description: "Number of PDFs to process simultaneously",
+  },
+  {
+    name: "CASO_HIPAA_MODE",
+    required: "No",
+    defaultVal: "false",
+    description: "Enable HIPAA compliance (hashes filenames, restricts CORS)",
+  },
+  {
+    name: "CASO_GEMINI_API_KEY",
+    required: "Hybrid only",
+    defaultVal: "\u2014",
+    description: "Gemini API key for AI verification (hybrid mode)",
+  },
+];
 
 const tiers = [
   {
@@ -85,123 +156,240 @@ const tiers = [
   },
 ];
 
-const envVars = [
-  {
-    name: "CASO_LICENSE_KEY",
-    required: "Yes",
-    defaultVal: "\u2014",
-    description: "Your API key from the dashboard",
-  },
-  {
-    name: "CASO_SCAN_PATHS",
-    required: "No",
-    defaultVal: "/data/input",
-    description: "Comma-separated folder paths to scan",
-  },
-  {
-    name: "CASO_OUTPUT_DIR",
-    required: "No",
-    defaultVal: "/data/remediated",
-    description: "Where remediated files are saved",
-  },
-  {
-    name: "CASO_OUTPUT_MODE",
-    required: "No",
-    defaultVal: "directory",
-    description: "How to name output: suffix, overwrite, directory",
-  },
-  {
-    name: "CASO_CRON",
-    required: "No",
-    defaultVal: "0 2 * * *",
-    description: "Cron schedule for automatic scans",
-  },
-  {
-    name: "CASO_MAX_WORKERS",
-    required: "No",
-    defaultVal: "1",
-    description: "Parallel processing threads",
-  },
-];
-
 export default function AgentSetupContent() {
+  const [selectedMode, setSelectedMode] = useState("hybrid");
+
+  const dockerComposeYml = `version: "3.8"
+services:
+  caso-agent:
+    image: caso/comply-agent:latest
+    environment:
+      # REQUIRED: Your license key from the API Keys page
+      - CASO_LICENSE_KEY=YOUR_LICENSE_KEY_HERE
+      # REQUIRED: Set a strong password for the dashboard
+      - CASO_ADMIN_PASSWORD=YOUR_SECURE_PASSWORD
+      # Processing mode
+      - CASO_MODE=${selectedMode}
+      # Scan schedule (default: every hour)
+      - CASO_CRON=0 * * * *${selectedMode === "hybrid" ? "\n      # Gemini API key for AI verification (get one at https://aistudio.google.com/apikey)\n      # - CASO_GEMINI_API_KEY=your-gemini-key" : ""}${selectedMode === "local" ? "\n      # Disable telemetry for air-gapped environments\n      - CASO_PHONE_HOME=false" : ""}
+    ports:
+      - "9090:9090"
+    volumes:
+      # Your document folder → agent scans this for PDFs
+      - ./documents:/data/documents
+      # Remediated output folder
+      - ./remediated:/data/output
+      # Persistent data (scan history, database)
+      - caso-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  caso-data:`;
+
   return (
     <>
+      {/* Mode Selection */}
+      <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
+        <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-caso-white mb-2">
+          Choose a Processing Mode
+        </h2>
+        <p className="text-caso-slate text-sm mb-5">
+          Select how you want documents processed. This affects what data (if
+          any) leaves your network.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {MODES.map((mode) => (
+            <button
+              key={mode.value}
+              onClick={() => setSelectedMode(mode.value)}
+              className={`rounded-xl border p-4 text-left transition-colors ${
+                selectedMode === mode.value
+                  ? "border-caso-blue bg-caso-blue/5"
+                  : "border-caso-border hover:border-caso-blue/40"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className={`w-3 h-3 rounded-full border-2 ${
+                    selectedMode === mode.value
+                      ? "border-caso-blue bg-caso-blue"
+                      : "border-caso-slate"
+                  }`}
+                />
+                <span className="text-sm font-semibold text-caso-white">
+                  {mode.label}
+                </span>
+              </div>
+              <p className="text-caso-slate text-xs leading-relaxed">
+                {mode.description}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Quick Start */}
       <div className="rounded-xl bg-caso-navy-light border border-caso-border p-6">
         <h2 className="font-[family-name:var(--font-display)] text-lg font-semibold text-caso-white mb-6">
-          Quick Start
+          Setup Instructions
         </h2>
 
         <div className="space-y-6">
-          {/* Step 1 */}
+          {/* Step 1: Prerequisites */}
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-caso-blue/10 text-caso-blue text-sm font-bold">
-                1
-              </span>
+              <StepNumber num={1} />
               <h3 className="text-sm font-medium text-caso-white">
-                Pull the image
+                Prerequisites
               </h3>
             </div>
-            <CodeBlock code={dockerPullCommand} language="bash" />
+            <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
+              <ul className="text-sm text-caso-slate space-y-1.5">
+                <li>
+                  <strong className="text-caso-white">Docker</strong> installed
+                  and running (
+                  <a
+                    href="https://docs.docker.com/get-docker/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-caso-blue hover:text-caso-blue-bright"
+                  >
+                    Install Docker
+                  </a>
+                  )
+                </li>
+                <li>
+                  <strong className="text-caso-white">Docker Compose</strong>{" "}
+                  v2+ (included with Docker Desktop)
+                </li>
+                <li>
+                  Your{" "}
+                  <strong className="text-caso-white">CASO license key</strong>{" "}
+                  from the{" "}
+                  <a
+                    href="/dashboard/api-keys"
+                    className="text-caso-blue hover:text-caso-blue-bright"
+                  >
+                    API Keys page
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          {/* Step 2 */}
+          {/* Step 2: Create project folder */}
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-caso-blue/10 text-caso-blue text-sm font-bold">
-                2
-              </span>
+              <StepNumber num={2} />
               <h3 className="text-sm font-medium text-caso-white">
-                Create a config file{" "}
+                Create a project folder
+              </h3>
+            </div>
+            <CodeBlock
+              code="mkdir caso-agent && cd caso-agent\nmkdir -p documents remediated"
+              language="bash"
+            />
+          </div>
+
+          {/* Step 3: docker-compose.yml */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <StepNumber num={3} />
+              <h3 className="text-sm font-medium text-caso-white">
+                Save this as{" "}
                 <code className="text-caso-slate font-mono text-xs">
                   docker-compose.yml
                 </code>
               </h3>
             </div>
             <CodeBlock code={dockerComposeYml} language="yaml" />
-            <p className="text-caso-slate/60 text-xs mt-2">
-              Replace <code className="text-caso-warm font-mono">YOUR_API_KEY_HERE</code>{" "}
-              with your full API key.
-            </p>
+            <div className="mt-3 space-y-2">
+              <div className="flex items-start gap-2 rounded-lg bg-caso-warm/5 border border-caso-warm/20 px-3 py-2">
+                <span className="text-caso-warm text-sm mt-0.5">!</span>
+                <p className="text-caso-slate text-xs">
+                  Replace{" "}
+                  <code className="text-caso-warm font-mono">
+                    YOUR_LICENSE_KEY_HERE
+                  </code>{" "}
+                  with your full API key from the{" "}
+                  <a
+                    href="/dashboard/api-keys"
+                    className="text-caso-blue hover:text-caso-blue-bright"
+                  >
+                    API Keys page
+                  </a>
+                  . The key starts with{" "}
+                  <code className="text-caso-green font-mono">caso_ak_</code>.
+                </p>
+              </div>
+              <div className="flex items-start gap-2 rounded-lg bg-caso-warm/5 border border-caso-warm/20 px-3 py-2">
+                <span className="text-caso-warm text-sm mt-0.5">!</span>
+                <p className="text-caso-slate text-xs">
+                  Replace{" "}
+                  <code className="text-caso-warm font-mono">
+                    YOUR_SECURE_PASSWORD
+                  </code>{" "}
+                  with a strong password. This protects the agent dashboard at
+                  port 9090.
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Step 3 */}
+          {/* Step 4: Start */}
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-caso-blue/10 text-caso-blue text-sm font-bold">
-                3
-              </span>
+              <StepNumber num={4} />
               <h3 className="text-sm font-medium text-caso-white">
                 Start the agent
               </h3>
             </div>
-            <CodeBlock code={dockerComposeUpCommand} language="bash" />
+            <CodeBlock code="docker compose up -d" language="bash" />
           </div>
 
-          {/* Step 4 */}
+          {/* Step 5: Verify */}
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-caso-blue/10 text-caso-blue text-sm font-bold">
-                4
-              </span>
+              <StepNumber num={5} />
               <h3 className="text-sm font-medium text-caso-white">
-                View the dashboard
+                Verify it&apos;s running
+              </h3>
+            </div>
+            <CodeBlock code="curl http://localhost:9090/health" language="bash" />
+            <p className="text-caso-slate text-xs mt-2">
+              You should get a JSON response with{" "}
+              <code className="text-caso-green font-mono">
+                {`{"status":"ok"}`}
+              </code>
+              . Then open{" "}
+              <a
+                href="http://localhost:9090"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-caso-blue hover:text-caso-blue-bright font-mono"
+              >
+                http://localhost:9090
+              </a>{" "}
+              to access the dashboard.
+            </p>
+          </div>
+
+          {/* Step 6: Add documents */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <StepNumber num={6} />
+              <h3 className="text-sm font-medium text-caso-white">
+                Add documents
               </h3>
             </div>
             <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
               <p className="text-sm text-caso-slate">
-                Open{" "}
-                <a
-                  href="http://localhost:9090"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-caso-blue hover:text-caso-blue-bright transition-colors font-mono"
-                >
-                  http://localhost:9090
-                </a>{" "}
-                in your browser
+                Drop PDF files into the{" "}
+                <code className="text-caso-green font-mono">./documents</code>{" "}
+                folder. The agent scans automatically on schedule, or click{" "}
+                <strong className="text-caso-white">Run Scan Now</strong> in the
+                dashboard. Remediated files appear in{" "}
+                <code className="text-caso-green font-mono">./remediated</code>.
               </p>
             </div>
           </div>
@@ -214,7 +402,8 @@ export default function AgentSetupContent() {
           Pricing Tiers
         </h2>
         <p className="text-caso-slate text-sm mb-4">
-          Your plan determines how the agent processes documents. The agent reads your plan automatically from your API key.
+          Your plan determines how the agent processes documents. The agent reads
+          your plan automatically from your license key.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {tiers.map((tier) => (
@@ -282,7 +471,9 @@ export default function AgentSetupContent() {
                       {v.defaultVal}
                     </code>
                   </td>
-                  <td className="px-6 py-3 text-caso-slate">{v.description}</td>
+                  <td className="px-6 py-3 text-caso-slate">
+                    {v.description}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -312,7 +503,17 @@ export default function AgentSetupContent() {
               View Logs
             </h3>
             <CodeBlock
-              code="docker-compose logs -f caso-agent"
+              code="docker compose logs -f caso-agent"
+              language="bash"
+            />
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium text-caso-white mb-2">
+              Trigger Manual Scan
+            </h3>
+            <CodeBlock
+              code="curl -X POST http://localhost:9090/api/scan"
               language="bash"
             />
           </div>
@@ -324,11 +525,36 @@ export default function AgentSetupContent() {
             <div className="space-y-3">
               <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
                 <p className="text-sm font-medium text-caso-white mb-1">
-                  Agent fails to start
+                  &quot;License validation failed. Exiting.&quot;
                 </p>
                 <p className="text-caso-slate text-xs">
-                  Verify your <code className="text-caso-green font-mono">CASO_LICENSE_KEY</code> is
-                  correct and active. Check that port 9090 is not already in use.
+                  Your{" "}
+                  <code className="text-caso-green font-mono">
+                    CASO_LICENSE_KEY
+                  </code>{" "}
+                  is invalid or your account is inactive. Generate a new key from
+                  the{" "}
+                  <a
+                    href="/dashboard/api-keys"
+                    className="text-caso-blue hover:text-caso-blue-bright"
+                  >
+                    API Keys page
+                  </a>
+                  . Make sure the full key is pasted (starts with{" "}
+                  <code className="text-caso-green font-mono">caso_ak_</code>).
+                </p>
+              </div>
+              <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
+                <p className="text-sm font-medium text-caso-white mb-1">
+                  Container starts then immediately stops
+                </p>
+                <p className="text-caso-slate text-xs">
+                  Check logs with{" "}
+                  <code className="text-caso-green font-mono">
+                    docker compose logs caso-agent
+                  </code>
+                  . The most common cause is a missing or invalid license key.
+                  The agent validates your key on startup and exits if it fails.
                 </p>
               </div>
               <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
@@ -337,8 +563,15 @@ export default function AgentSetupContent() {
                 </p>
                 <p className="text-caso-slate text-xs">
                   Ensure your input directory is mounted correctly and contains
-                  supported files (.pdf, .docx, .xlsx, .pptx). Check that <code className="text-caso-green font-mono">CASO_SCAN_PATHS</code>{" "}
-                  matches your volume mount.
+                  PDF files. Check that the volume mount in docker-compose.yml
+                  maps to{" "}
+                  <code className="text-caso-green font-mono">
+                    /data/documents
+                  </code>{" "}
+                  inside the container. Try a manual scan:{" "}
+                  <code className="text-caso-green font-mono">
+                    curl -X POST http://localhost:9090/api/scan
+                  </code>
                 </p>
               </div>
               <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
@@ -349,18 +582,21 @@ export default function AgentSetupContent() {
                   The container runs as a non-root user. Ensure the host
                   directories have appropriate write permissions:{" "}
                   <code className="text-caso-green font-mono">
-                    chmod 777 ./remediated ./agent-data
+                    chmod 755 ./remediated
                   </code>
                 </p>
               </div>
               <div className="rounded-lg bg-caso-navy border border-caso-border px-4 py-3">
                 <p className="text-sm font-medium text-caso-white mb-1">
-                  Low scores after remediation
+                  Port 9090 already in use
                 </p>
                 <p className="text-caso-slate text-xs">
-                  Some documents with complex layouts may score below 60 after
-                  automated remediation. Consider upgrading to the Human Review
-                  tier for expert review of these files.
+                  Change the port mapping in docker-compose.yml to a different
+                  port, e.g.{" "}
+                  <code className="text-caso-green font-mono">
+                    &quot;8080:9090&quot;
+                  </code>
+                  , then access the dashboard at http://localhost:8080.
                 </p>
               </div>
             </div>
