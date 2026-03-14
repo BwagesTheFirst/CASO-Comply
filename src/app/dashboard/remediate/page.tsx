@@ -162,7 +162,10 @@ export default function RemediatePage() {
     setUploadProgress(0);
 
     try {
+      const documentIds: string[] = [];
       let uploaded = 0;
+
+      // Phase 1: Upload all files
       for (const uploadFile of files) {
         const formData = new FormData();
         formData.append("file", uploadFile.file);
@@ -178,8 +181,20 @@ export default function RemediatePage() {
           throw new Error(data.error || `Failed to upload "${uploadFile.name}"`);
         }
 
+        const data = await res.json();
+        if (data.document?.id) {
+          documentIds.push(data.document.id);
+        }
+
         uploaded += 1;
         setUploadProgress(Math.round((uploaded / files.length) * 100));
+      }
+
+      // Phase 2: Fire-and-forget remediation trigger for each uploaded doc
+      for (const docId of documentIds) {
+        fetch(`/api/documents/${docId}`, { method: "POST" }).catch(() => {
+          // Remediation failures are handled in the document detail view
+        });
       }
 
       router.push("/dashboard/documents");

@@ -53,6 +53,8 @@ export async function POST(request: Request) {
         slug,
         status: "trial",
         trial_ends_at: trialEndsAt,
+        trial_pages_limit: 10,
+        trial_pages_used: 0,
       })
       .select("id")
       .single();
@@ -65,22 +67,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Look up the Starter plan
+    // Assign the default plan directly on the tenant
     const { data: plan } = await admin
       .from("subscription_plans")
       .select("id")
-      .eq("name", "Starter")
+      .eq("is_active", true)
+      .limit(1)
       .single();
 
-    // Assign the plan if found
     if (plan) {
-      await admin.from("tenant_subscriptions").insert({
-        tenant_id: tenant.id,
-        plan_id: plan.id,
-        status: "trialing",
-        current_period_start: new Date().toISOString(),
-        current_period_end: trialEndsAt,
-      });
+      await admin
+        .from("tenants")
+        .update({ plan_id: plan.id })
+        .eq("id", tenant.id);
     }
 
     // Create tenant_member record (owner)

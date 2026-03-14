@@ -601,7 +601,19 @@ export default function DocumentDetailPage() {
                   Download Certificate
                 </a>
               )}
-              {(doc.status === "queued" || doc.status === "failed") && (
+              {doc.status === "queued" && (
+                <button
+                  onClick={handleReprocess}
+                  disabled={reprocessing}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-caso-blue px-3 py-2.5 text-sm font-semibold text-caso-white hover:bg-caso-blue-bright transition-colors disabled:opacity-40"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                  </svg>
+                  {reprocessing ? "Starting..." : "Start Remediation"}
+                </button>
+              )}
+              {doc.status === "failed" && (
                 <button
                   onClick={handleReprocess}
                   disabled={reprocessing}

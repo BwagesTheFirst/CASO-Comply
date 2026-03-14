@@ -82,6 +82,7 @@ export default function DocumentsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [processingAll, setProcessingAll] = useState(false);
   const limit = 25;
 
   const fetchDocuments = useCallback(async () => {
@@ -156,12 +157,44 @@ export default function DocumentsPage() {
             {total} document{total !== 1 ? "s" : ""} total
           </p>
         </div>
-        <Link
-          href="/dashboard/remediate"
-          className="rounded-lg bg-caso-blue-deep px-4 py-2 text-sm font-medium text-caso-white hover:bg-caso-blue transition-colors"
-        >
-          + Upload Documents
-        </Link>
+        <div className="flex items-center gap-3">
+          {stats && stats.queued > 0 && (
+            <button
+              onClick={async () => {
+                setProcessingAll(true);
+                try {
+                  const res = await fetch("/api/documents?status=queued&limit=100");
+                  if (res.ok) {
+                    const data = await res.json();
+                    const queued = data.documents || [];
+                    for (const doc of queued) {
+                      fetch(`/api/documents/${doc.id}`, { method: "POST" }).catch(() => {});
+                    }
+                    // Refresh after a short delay to show status change
+                    setTimeout(() => {
+                      fetchDocuments();
+                      setProcessingAll(false);
+                    }, 2000);
+                  } else {
+                    setProcessingAll(false);
+                  }
+                } catch {
+                  setProcessingAll(false);
+                }
+              }}
+              disabled={processingAll}
+              className="rounded-lg border border-caso-blue/50 bg-caso-blue/10 px-4 py-2 text-sm font-medium text-caso-blue hover:bg-caso-blue/20 transition-colors disabled:opacity-40"
+            >
+              {processingAll ? "Starting..." : `Process ${stats.queued} Queued`}
+            </button>
+          )}
+          <Link
+            href="/dashboard/remediate"
+            className="rounded-lg bg-caso-blue-deep px-4 py-2 text-sm font-medium text-caso-white hover:bg-caso-blue transition-colors"
+          >
+            + Upload Documents
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}

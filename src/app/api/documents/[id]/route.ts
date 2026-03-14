@@ -98,14 +98,14 @@ export async function POST(
   // Enforce trial page limits
   const { data: tenant } = await admin
     .from("tenants")
-    .select("subscription_status, trial_pages_used, trial_pages_limit")
+    .select("status, trial_pages_used, trial_pages_limit")
     .eq("id", auth.tenantId)
     .single();
 
   if (
-    tenant?.subscription_status === "trialing" &&
+    tenant?.status === "trial" &&
     tenant.trial_pages_limit != null &&
-    tenant.trial_pages_used >= tenant.trial_pages_limit
+    (tenant.trial_pages_used ?? 0) >= tenant.trial_pages_limit
   ) {
     return NextResponse.json(
       {
@@ -305,7 +305,7 @@ export async function POST(
     }
 
     // Increment trial pages used if tenant is on trial
-    if (tenant?.subscription_status === "trialing") {
+    if (tenant?.status === "trial") {
       await admin
         .from("tenants")
         .update({
