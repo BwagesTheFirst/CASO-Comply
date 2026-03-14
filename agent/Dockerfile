@@ -2,7 +2,7 @@
 # On-premise PDF accessibility remediation with folder watching,
 # cron scheduling, and a local dashboard on port 9090.
 
-FROM python:3.12-slim
+FROM python:3.12.8-slim
 
 # System deps for PDF and Office processing
 RUN apt-get update && apt-get install -y --no-install-recommends \

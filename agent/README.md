@@ -70,9 +70,43 @@ Drop PDF files into the `./documents` folder. The agent scans automatically on t
 
 | Mode | What happens | Data leaves network? | Best for |
 |------|-------------|---------------------|----------|
-| `local` | Full on-premise remediation | No | HIPAA, air-gapped environments |
-| `hybrid` | Local remediation + AI verification powered by CASO cloud | Page images only (no text/PDFs) | Recommended for most orgs |
-| `cloud` | Upload to CASO cloud API | Yes | Fast setup, non-sensitive docs |
+| `local` | Full on-premise remediation | License check only (no document data) | HIPAA, air-gapped, Zero Trust environments |
+| `hybrid` | Local remediation + CASO AI verification | Page images only (no full PDFs or text) | Recommended — balances quality + privacy |
+| `cloud` | Upload to CASO cloud for processing | Yes (full documents) | Fast setup, non-sensitive documents |
+
+## Network Requirements
+
+The agent's network needs depend on the processing mode:
+
+| Mode | Outbound connections required | Data sent externally |
+|------|------------------------------|---------------------|
+| `local` | `caso-comply-api.onrender.com` (license validation + usage telemetry only) | No documents or content. Only license check and page count telemetry. |
+| `hybrid` | `caso-comply-api.onrender.com` (license + AI verification) | Page images sent to CASO cloud for AI quality verification. No full PDFs or extracted text. |
+| `cloud` | `caso-comply-api.onrender.com` (full processing) | Full PDF documents uploaded for cloud processing. |
+
+### Firewall Whitelist
+
+If your network requires explicit egress rules, allow outbound HTTPS (port 443) to:
+
+- `caso-comply-api.onrender.com` — CASO API (required for all modes except fully air-gapped)
+
+### Air-Gapped / Zero Trust Environments
+
+For networks with no outbound internet access, use local mode with telemetry disabled:
+
+```yaml
+environment:
+  - CASO_MODE=local
+  - CASO_PHONE_HOME=false
+```
+
+In this configuration:
+- No network connections are made
+- License validation is skipped (offline grace period)
+- All processing happens entirely on-premise
+- No usage data, metadata, or documents leave your network
+
+**Note:** Air-gapped mode requires periodic online license validation (at least once every 30 days) or a pre-validated offline license. Contact sales@casocomply.com for offline licensing.
 
 ## Configuration
 
@@ -90,12 +124,12 @@ All settings can be configured via environment variables in `docker-compose.yml`
 | `CASO_OUTPUT_DIR` | No | `/data/remediated` | Where remediated files are saved |
 | `CASO_OUTPUT_MODE` | No | `suffix` | Output naming: `suffix`, `overwrite`, or `directory` |
 | `CASO_MAX_WORKERS` | No | `1` | Number of PDFs to process simultaneously |
-| `CASO_PHONE_HOME` | No | `true` | Send usage telemetry (required for license validation) |
+| `CASO_PHONE_HOME` | No | `true` | Send usage telemetry to CASO cloud. Reports page counts and processing status only — never document content. Set to `false` for air-gapped networks (requires offline license). |
 | `CASO_HIPAA_MODE` | No | `false` | Enable HIPAA compliance mode (see below) |
 
-### HIPAA Mode
+### HIPAA & Compliance Mode
 
-For healthcare and sensitive document environments:
+For healthcare, government, and environments handling sensitive documents (PII, PHI, FERPA data):
 
 ```yaml
 environment:
@@ -108,10 +142,33 @@ environment:
 ```
 
 When HIPAA mode is enabled:
-- No filenames, PDFs, or usage data are sent to CASO cloud
-- Filenames are hashed in all log messages
-- API endpoints require authentication
-- CORS is restricted to localhost only
+- **No data leaves your network** — all processing is 100% on-premise
+- **No telemetry** — phone-home is automatically disabled
+- **Filenames are hashed** in all log output (no PII in logs)
+- **API endpoints require authentication** — no unauthenticated access
+- **CORS restricted** to localhost only
+- **Automatic data purge** — original and remediated files are deleted on schedule
+- **Database paths scrubbed** — file path references removed after configured retention period
+
+### Compliance Certifications
+
+| Standard | Status | Notes |
+|----------|--------|-------|
+| HIPAA | Supported | Local mode + HIPAA config = no PHI exposure |
+| Section 508 | Full compliance | Output PDFs meet Section 508 requirements |
+| WCAG 2.1 AA | Full compliance | Remediated documents meet WCAG 2.1 AA |
+| PDF/UA (ISO 14289) | Full compliance | Tagged structure meets PDF/UA standard |
+| FERPA | Supported | Local mode keeps student records on-premise |
+| FedRAMP | In progress | Contact sales@casocomply.com for status |
+
+### Privacy Impact Assessment (PIA) Summary
+
+For agencies requiring a PIA, key facts:
+- In local/HIPAA mode, **zero document data** is transmitted externally
+- Only license validation occurs over the network (can be disabled)
+- No cloud storage of customer documents in local mode
+- All processing uses open-source tools (veraPDF, pikepdf) running locally
+- Audit trail maintained in local SQLite database
 
 ## Dashboard
 

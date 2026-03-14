@@ -53,19 +53,19 @@ const MODES = [
     value: "local",
     label: "Local (Air-Gapped)",
     description:
-      "Everything runs on-premise. No data leaves your network. Best for HIPAA, classified, or air-gapped environments.",
+      "Everything on-premise. No document data leaves your network. Recommended for HIPAA, FERPA, and government environments. Enable CASO_HIPAA_MODE=true for enhanced privacy controls including log scrubbing and automatic data purge.",
   },
   {
     value: "hybrid",
     label: "Hybrid (Recommended)",
     description:
-      "Local remediation + AI verification powered by CASO cloud. Only page images are sent for review — no text or PDFs leave your network.",
+      "Local remediation + AI verification powered by CASO cloud. Page images are sent for quality checks — no full PDFs or extracted text leave your network.",
   },
   {
     value: "cloud",
     label: "Cloud",
     description:
-      "PDFs are uploaded to the CASO cloud API for processing. Fastest setup for non-sensitive documents.",
+      "Documents uploaded to CASO cloud for full processing. Fastest setup for non-sensitive documents.",
   },
 ];
 
@@ -122,7 +122,8 @@ const envVars = [
     name: "CASO_HIPAA_MODE",
     required: "No",
     defaultVal: "false",
-    description: "Enable HIPAA compliance (hashes filenames, restricts CORS)",
+    description:
+      "Enable HIPAA compliance mode — hashes filenames in logs, restricts CORS to localhost, disables telemetry, and enables automatic data purge scheduling. Recommended for HIPAA, FERPA, and government environments.",
   },
 ];
 
