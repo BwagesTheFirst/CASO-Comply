@@ -27,12 +27,14 @@ interface ProfitabilityData {
     render_total_cents: number;
     storage_total_cents: number;
   };
-  tenants: TenantRow[];
+  per_tenant: TenantRow[];
   fixed_costs: {
-    supabase: number;
-    render: number;
-    vercel: number;
-    total: number;
+    monthly_total_cents: number;
+    breakdown: {
+      supabase_db_cents: number;
+      render_cents: number;
+      vercel_cents: number;
+    };
   };
 }
 
@@ -92,7 +94,18 @@ export default function ProfitabilityPage() {
         throw new Error(`Failed to fetch profitability data (${res.status})`);
       }
       const json = await res.json();
-      setData(json);
+      // Normalize: ensure summary has defaults if null
+      const defaultSummary = {
+        total_revenue_cents: 0, total_cost_cents: 0, total_margin_cents: 0,
+        margin_percent: 0, total_documents: 0, total_pages: 0,
+        avg_cost_per_page_cents: 0, avg_revenue_per_page_cents: 0,
+        gemini_total_cents: 0, render_total_cents: 0, storage_total_cents: 0,
+      };
+      setData({
+        summary: json.summary ? { ...defaultSummary, ...json.summary } : defaultSummary,
+        per_tenant: json.per_tenant || [],
+        fixed_costs: json.fixed_costs || { monthly_total_cents: 0, breakdown: { supabase_db_cents: 0, render_cents: 0, vercel_cents: 0 } },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -310,7 +323,7 @@ export default function ProfitabilityPage() {
                   <tr className="border-b border-caso-border/50">
                     <td className="py-2 px-3 text-caso-white">Supabase Pro</td>
                     <td className="py-2 px-3 text-right text-caso-warm font-mono">
-                      {formatCents(data.fixed_costs.supabase)}
+                      {formatCents(data.fixed_costs.breakdown.supabase_db_cents)}
                     </td>
                   </tr>
                   <tr className="border-b border-caso-border/50">
@@ -318,13 +331,13 @@ export default function ProfitabilityPage() {
                       Render Starter
                     </td>
                     <td className="py-2 px-3 text-right text-caso-warm font-mono">
-                      {formatCents(data.fixed_costs.render)}
+                      {formatCents(data.fixed_costs.breakdown.render_cents)}
                     </td>
                   </tr>
                   <tr className="border-b border-caso-border/50">
                     <td className="py-2 px-3 text-caso-white">Vercel Pro</td>
                     <td className="py-2 px-3 text-right text-caso-warm font-mono">
-                      {formatCents(data.fixed_costs.vercel)}
+                      {formatCents(data.fixed_costs.breakdown.vercel_cents)}
                     </td>
                   </tr>
                   <tr>
@@ -332,7 +345,7 @@ export default function ProfitabilityPage() {
                       Total Fixed
                     </td>
                     <td className="py-2 px-3 text-right text-caso-warm font-bold font-mono">
-                      {formatCents(data.fixed_costs.total)}
+                      {formatCents(data.fixed_costs.monthly_total_cents)}
                     </td>
                   </tr>
                 </tbody>
@@ -376,7 +389,7 @@ export default function ProfitabilityPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.tenants.length === 0 ? (
+                  {data.per_tenant.length === 0 ? (
                     <tr>
                       <td
                         colSpan={7}
@@ -386,7 +399,7 @@ export default function ProfitabilityPage() {
                       </td>
                     </tr>
                   ) : (
-                    [...data.tenants]
+                    [...data.per_tenant]
                       .sort((a, b) => b.revenue_cents - a.revenue_cents)
                       .map((t) => (
                         <tr

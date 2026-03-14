@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 
 interface Review {
   id: string;
@@ -161,8 +162,10 @@ export default function AdminReviewQueuePage() {
                     <td className="px-6 py-3 text-caso-white font-medium">
                       {review.tenants?.name || "Unknown"}
                     </td>
-                    <td className="px-6 py-3 text-caso-white font-mono text-xs">
-                      {review.filename}
+                    <td className="px-6 py-3 font-mono text-xs">
+                      <Link href={`/dashboard/admin/reviews/${review.id}`} className="text-caso-blue hover:underline">
+                        {review.filename}
+                      </Link>
                     </td>
                     <td className="px-6 py-3">
                       <span className="text-caso-red font-bold">{review.ai_score}</span>
@@ -248,8 +251,10 @@ export default function AdminReviewQueuePage() {
                     <td className="px-6 py-3 text-caso-white font-medium">
                       {review.tenants?.name || "Unknown"}
                     </td>
-                    <td className="px-6 py-3 text-caso-white font-mono text-xs">
-                      {review.filename}
+                    <td className="px-6 py-3 font-mono text-xs">
+                      <Link href={`/dashboard/admin/reviews/${review.id}`} className="text-caso-blue hover:underline">
+                        {review.filename}
+                      </Link>
                     </td>
                     <td className="px-6 py-3 text-caso-slate">{review.ai_score}</td>
                     <td className="px-6 py-3">
