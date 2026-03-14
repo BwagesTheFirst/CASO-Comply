@@ -7,6 +7,10 @@ on:
       - "agent/**"
   workflow_dispatch:
 
+concurrency:
+  group: docker-agent-publish
+  cancel-in-progress: true
+
 env:
   IMAGE_NAME: bwages/caso-comply-agent
 
